@@ -1086,6 +1086,7 @@ def main():
     with (output_dir / "efficiency_vs_pt_test.json").open("w") as handle:
         json.dump(eff_rows, handle, indent=2)
 
+    save_predictions_csv(output_dir / "val_predictions.csv", val_pack, file_entries, code_to_sample)
     save_predictions_csv(output_dir / "test_predictions.csv", test_pack, file_entries, code_to_sample)
 
     with (output_dir / "test_metrics.json").open("w") as handle:

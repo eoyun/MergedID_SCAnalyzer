@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
 import argparse
+import csv
 import json
 import os
+from collections import Counter
 from pathlib import Path
 
 os.environ.setdefault("MPLCONFIGDIR", "/tmp/matplotlib")
@@ -97,6 +99,12 @@ def parse_args():
         default="max-f1",
         help="Validation rule used to choose the operating threshold on the fused score.",
     )
+    parser.add_argument(
+        "--prediction-source",
+        choices=("auto", "csv", "rescore"),
+        default="auto",
+        help="Use saved prediction CSVs, force raw-data rescoring, or auto-select CSVs when available.",
+    )
     return parser.parse_args()
 
 
@@ -148,6 +156,68 @@ def attach_metrics(pack):
     return pack
 
 
+def load_prediction_pack_from_csv(csv_path, has_track_columns):
+    rows = []
+    with csv_path.open(newline="") as handle:
+        reader = csv.DictReader(handle)
+        for row in reader:
+            rows.append(row)
+
+    if not rows:
+        raise RuntimeError(f"No rows found in prediction CSV: {csv_path}")
+
+    pack = {
+        "score": np.asarray([float(row["score"]) for row in rows], dtype=np.float64),
+        "label": np.asarray([int(row["label"]) for row in rows], dtype=np.int64),
+        "weight": np.asarray([float(row["weight"]) for row in rows], dtype=np.float64),
+        "pt": np.asarray([float(row["pt"]) for row in rows], dtype=np.float64),
+        "file_idx": np.asarray([int(row["file_idx"]) for row in rows], dtype=np.int32),
+        "object_idx": np.asarray([int(row["object_idx"]) for row in rows], dtype=np.int32),
+        "event_idx": np.asarray([int(row["event_idx"]) for row in rows], dtype=np.int32),
+        "sample_id": np.asarray([row["sample_id"] for row in rows], dtype=object),
+        "raw_file": np.asarray([row["raw_file"] for row in rows], dtype=object),
+    }
+
+    sample_ids = pack["sample_id"].tolist()
+    sample_to_code = {sample_id: code for code, sample_id in enumerate(sorted(set(sample_ids)))}
+    pack["sample_code"] = np.asarray([sample_to_code[sample_id] for sample_id in sample_ids], dtype=np.int16)
+
+    if has_track_columns:
+        pack["track_counts"] = np.asarray(
+            [
+                [float(row["n_gsf"]), float(row["n_pf"]), float(row["n_lost"])]
+                for row in rows
+            ],
+            dtype=np.float64,
+        )
+        pack["track_sum_pt"] = np.asarray(
+            [
+                [float(row["sum_pt_gsf"]), float(row["sum_pt_pf"]), float(row["sum_pt_lost"])]
+                for row in rows
+            ],
+            dtype=np.float64,
+        )
+
+    return pack
+
+
+def save_prediction_pack_summary(output_path, val_pack, test_pack):
+    summary = {}
+    for split_name, pack in (("val", val_pack), ("test", test_pack)):
+        labels = pack["label"]
+        weights = pack["weight"]
+        sample_counts = Counter(pack["sample_id"].tolist())
+        summary[split_name] = {
+            "n_objects": int(len(labels)),
+            "weight_sum": float(np.sum(weights)),
+            "background_weight_sum": float(np.sum(weights[labels == 0])),
+            "signal_weight_sum": float(np.sum(weights[labels == 1])),
+            "samples": {sample_id: int(count) for sample_id, count in sorted(sample_counts.items())},
+        }
+    with output_path.open("w") as handle:
+        json.dump(summary, handle, indent=2)
+
+
 def reorder_pack(pack, order):
     reordered = {}
     for key, value in pack.items():
@@ -187,6 +257,9 @@ def align_packs(image_pack, track_pack):
     for key in ("weight", "pt"):
         if not np.allclose(image_pack[key], track_pack[key], rtol=1e-6, atol=1e-8):
             raise RuntimeError(f"Aligned packs disagree on {key}.")
+    if "sample_id" in image_pack and "sample_id" in track_pack:
+        if not np.array_equal(image_pack["sample_id"], track_pack["sample_id"]):
+            raise RuntimeError("Aligned packs disagree on sample_id.")
 
     return image_pack, track_pack
 
@@ -224,7 +297,7 @@ def build_fusion_features(image_pack, track_pack):
     return features, feature_names
 
 
-def save_fusion_predictions_csv(output_path, fused_score, image_pack, track_pack, file_entries, code_to_sample):
+def save_fusion_predictions_csv(output_path, fused_score, image_pack, track_pack, file_entries=None, code_to_sample=None):
     header = (
         "fused_score,image_score,track_score,label,weight,pt,file_idx,object_idx,event_idx,sample_id,raw_file,"
         "n_gsf,n_pf,n_lost,sum_pt_gsf,sum_pt_pf,sum_pt_lost\n"
@@ -233,8 +306,14 @@ def save_fusion_predictions_csv(output_path, fused_score, image_pack, track_pack
         handle.write(header)
         for i in range(len(fused_score)):
             file_idx = int(image_pack["file_idx"][i])
-            sample_id = code_to_sample[int(image_pack["sample_code"][i])]
-            raw_file = file_entries[file_idx].raw_path
+            if "sample_id" in image_pack:
+                sample_id = str(image_pack["sample_id"][i])
+            else:
+                sample_id = code_to_sample[int(image_pack["sample_code"][i])]
+            if "raw_file" in image_pack:
+                raw_file = str(image_pack["raw_file"][i])
+            else:
+                raw_file = file_entries[file_idx].raw_path
             counts = track_pack["track_counts"][i]
             sum_pt = track_pack["track_sum_pt"][i]
             handle.write(
@@ -258,6 +337,15 @@ def build_loader_common(batch_size, effective_num_workers, device):
     return loader_common
 
 
+def csv_prediction_paths(image_run_dir, track_run_dir):
+    return {
+        "image_val": image_run_dir / "val_predictions.csv",
+        "image_test": image_run_dir / "test_predictions.csv",
+        "track_val": track_run_dir / "val_predictions.csv",
+        "track_test": track_run_dir / "test_predictions.csv",
+    }
+
+
 def main():
     args = parse_args()
 
@@ -278,6 +366,20 @@ def main():
     detector = image_cfg["detector"]
     weight_key = image_cfg["weight_key"]
     weight_h5_path = Path(image_cfg["weight_h5"]).resolve()
+    csv_paths = csv_prediction_paths(image_run_dir, track_run_dir)
+    has_csv_predictions = all(path.is_file() for path in csv_paths.values())
+
+    if args.prediction_source == "csv" and not has_csv_predictions:
+        missing = [str(path) for path in csv_paths.values() if not path.is_file()]
+        raise RuntimeError(
+            "CSV prediction mode was requested but required files are missing: "
+            + ", ".join(missing)
+        )
+    use_csv_predictions = args.prediction_source == "csv" or (
+        args.prediction_source == "auto" and has_csv_predictions
+    )
+    image_batch_size = None
+    track_batch_size = None
 
     print(f"[detector] {detector}")
     print(f"[weight_h5] {weight_h5_path}")
@@ -286,127 +388,145 @@ def main():
     print(f"[output] {output_dir}")
     print(f"[device] {device}")
     print(f"[num_workers] requested={args.num_workers} effective={effective_num_workers}")
+    print(f"[prediction_source] {'csv' if use_csv_predictions else 'rescore'}")
     if sharing_strategy is not None:
         print(f"[torch_sharing_strategy] {sharing_strategy}")
 
-    file_entries = parse_file_entries(weight_h5_path)
-    event_file_idx, event_local_idx, event_sample_code, sample_to_code, code_to_sample = build_event_registry(
-        file_entries=file_entries,
-        weight_h5_path=weight_h5_path,
-        detector=detector,
-        weight_key=weight_key,
-        debug=bool(image_cfg["debug"]),
-        debug_max_events_per_sample=int(image_cfg["debug_max_events_per_sample"]),
-        seed=int(image_cfg["seed"]),
-    )
-    split_event_maps = build_split_event_maps(
-        event_file_idx=event_file_idx,
-        event_local_idx=event_local_idx,
-        event_sample_code=event_sample_code,
-        train_frac=float(image_cfg["train_frac"]),
-        val_frac=float(image_cfg["val_frac"]),
-        seed=int(image_cfg["seed"]),
-    )
+    file_entries = None
+    code_to_sample = None
 
-    split_manifests = {
-        split_name: build_object_manifest(
+    if use_csv_predictions:
+        image_val_pack = attach_metrics(load_prediction_pack_from_csv(csv_paths["image_val"], has_track_columns=False))
+        image_test_pack = attach_metrics(load_prediction_pack_from_csv(csv_paths["image_test"], has_track_columns=False))
+        track_val_pack = attach_metrics(load_prediction_pack_from_csv(csv_paths["track_val"], has_track_columns=True))
+        track_test_pack = attach_metrics(load_prediction_pack_from_csv(csv_paths["track_test"], has_track_columns=True))
+        save_prediction_pack_summary(output_dir / "manifest_summary.json", image_val_pack, image_test_pack)
+    else:
+        file_entries = parse_file_entries(weight_h5_path)
+        event_file_idx, event_local_idx, event_sample_code, sample_to_code, code_to_sample = build_event_registry(
             file_entries=file_entries,
             weight_h5_path=weight_h5_path,
             detector=detector,
             weight_key=weight_key,
-            split_event_map=split_map,
-            sample_to_code=sample_to_code,
+            debug=bool(image_cfg["debug"]),
+            debug_max_events_per_sample=int(image_cfg["debug_max_events_per_sample"]),
+            seed=int(image_cfg["seed"]),
         )
-        for split_name, split_map in split_event_maps.items()
-    }
+        split_event_maps = build_split_event_maps(
+            event_file_idx=event_file_idx,
+            event_local_idx=event_local_idx,
+            event_sample_code=event_sample_code,
+            train_frac=float(image_cfg["train_frac"]),
+            val_frac=float(image_cfg["val_frac"]),
+            seed=int(image_cfg["seed"]),
+        )
 
-    class_balance_stats = {}
-    for split_name, manifest in split_manifests.items():
-        split_manifests[split_name], class_balance_stats[split_name] = rebalance_manifest_class_weights(manifest)
+        split_manifests = {
+            split_name: build_object_manifest(
+                file_entries=file_entries,
+                weight_h5_path=weight_h5_path,
+                detector=detector,
+                weight_key=weight_key,
+                split_event_map=split_map,
+                sample_to_code=sample_to_code,
+            )
+            for split_name, split_map in split_event_maps.items()
+        }
 
-    for split_name, manifest in split_manifests.items():
-        summarize_manifest(split_name, manifest, code_to_sample)
-    save_manifest_summary(
-        output_dir / "manifest_summary.json",
-        split_manifests,
-        code_to_sample,
-        class_balance_stats,
-    )
-    print_split_weight_sums(split_manifests, class_balance_stats)
+        class_balance_stats = {}
+        for split_name, manifest in split_manifests.items():
+            split_manifests[split_name], class_balance_stats[split_name] = rebalance_manifest_class_weights(manifest)
 
-    image_batch_size = args.image_batch_size or int(image_cfg["batch_size"])
-    track_batch_size = args.track_batch_size or int(track_cfg["batch_size"])
+        for split_name, manifest in split_manifests.items():
+            summarize_manifest(split_name, manifest, code_to_sample)
+        save_manifest_summary(
+            output_dir / "manifest_summary.json",
+            split_manifests,
+            code_to_sample,
+            class_balance_stats,
+        )
+        print_split_weight_sums(split_manifests, class_balance_stats)
 
-    image_loader_common = build_loader_common(image_batch_size, effective_num_workers, device)
-    track_loader_common = build_loader_common(track_batch_size, effective_num_workers, device)
-    track_loader_common["collate_fn"] = collate_track_point_cloud_batch
+        image_batch_size = args.image_batch_size or int(image_cfg["batch_size"])
+        track_batch_size = args.track_batch_size or int(track_cfg["batch_size"])
 
-    image_val_loader = DataLoader(
-        DetectorObjectDataset(
-            detector=detector,
-            file_entries=file_entries,
-            manifest=split_manifests["val"],
-            log_scale=bool(image_cfg.get("log_scale", True)),
-            max_open_files=DEFAULT_MAX_OPEN_RAW_FILES,
-        ),
-        shuffle=False,
-        **image_loader_common,
-    )
-    image_test_loader = DataLoader(
-        DetectorObjectDataset(
-            detector=detector,
-            file_entries=file_entries,
-            manifest=split_manifests["test"],
-            log_scale=bool(image_cfg.get("log_scale", True)),
-            max_open_files=DEFAULT_MAX_OPEN_RAW_FILES,
-        ),
-        shuffle=False,
-        **image_loader_common,
-    )
-    track_val_loader = DataLoader(
-        TrackPointCloudDataset(
-            detector=detector,
-            file_entries=file_entries,
-            manifest=split_manifests["val"],
-            max_points=int(track_cfg["max_points"]),
-            log_track_pt=bool(track_cfg["log_track_pt"]),
-            max_open_files=DEFAULT_MAX_OPEN_RAW_FILES,
-        ),
-        shuffle=False,
-        **track_loader_common,
-    )
-    track_test_loader = DataLoader(
-        TrackPointCloudDataset(
-            detector=detector,
-            file_entries=file_entries,
-            manifest=split_manifests["test"],
-            max_points=int(track_cfg["max_points"]),
-            log_track_pt=bool(track_cfg["log_track_pt"]),
-            max_open_files=DEFAULT_MAX_OPEN_RAW_FILES,
-        ),
-        shuffle=False,
-        **track_loader_common,
-    )
+        image_loader_common = build_loader_common(image_batch_size, effective_num_workers, device)
+        track_loader_common = build_loader_common(track_batch_size, effective_num_workers, device)
+        track_loader_common["collate_fn"] = collate_track_point_cloud_batch
 
-    image_checkpoint = torch.load(image_run_dir / "best_model.pt", map_location=device)
-    image_model = build_resnet(str(image_cfg["model"]), int(image_checkpoint.get("in_channels", 4 if detector == "eb" else 6))).to(device)
-    image_model.load_state_dict(image_checkpoint["model_state_dict"])
+        image_val_loader = DataLoader(
+            DetectorObjectDataset(
+                detector=detector,
+                file_entries=file_entries,
+                manifest=split_manifests["val"],
+                log_scale=bool(image_cfg.get("log_scale", True)),
+                max_open_files=DEFAULT_MAX_OPEN_RAW_FILES,
+            ),
+            shuffle=False,
+            **image_loader_common,
+        )
+        image_test_loader = DataLoader(
+            DetectorObjectDataset(
+                detector=detector,
+                file_entries=file_entries,
+                manifest=split_manifests["test"],
+                log_scale=bool(image_cfg.get("log_scale", True)),
+                max_open_files=DEFAULT_MAX_OPEN_RAW_FILES,
+            ),
+            shuffle=False,
+            **image_loader_common,
+        )
+        track_val_loader = DataLoader(
+            TrackPointCloudDataset(
+                detector=detector,
+                file_entries=file_entries,
+                manifest=split_manifests["val"],
+                max_points=int(track_cfg["max_points"]),
+                log_track_pt=bool(track_cfg["log_track_pt"]),
+                max_open_files=DEFAULT_MAX_OPEN_RAW_FILES,
+            ),
+            shuffle=False,
+            **track_loader_common,
+        )
+        track_test_loader = DataLoader(
+            TrackPointCloudDataset(
+                detector=detector,
+                file_entries=file_entries,
+                manifest=split_manifests["test"],
+                max_points=int(track_cfg["max_points"]),
+                log_track_pt=bool(track_cfg["log_track_pt"]),
+                max_open_files=DEFAULT_MAX_OPEN_RAW_FILES,
+            ),
+            shuffle=False,
+            **track_loader_common,
+        )
 
-    track_checkpoint = torch.load(track_run_dir / "best_model.pt", map_location=device)
-    track_model = PointCloudTransformerClassifier(
-        input_dim=int(track_checkpoint.get("input_dim", 6)),
-        embed_dim=int(track_checkpoint["embed_dim"]),
-        depth=int(track_checkpoint["depth"]),
-        num_heads=int(track_checkpoint["num_heads"]),
-        mlp_ratio=float(track_checkpoint["mlp_ratio"]),
-        dropout=float(track_checkpoint["dropout"]),
-    ).to(device)
-    track_model.load_state_dict(track_checkpoint["model_state_dict"])
+        image_checkpoint = torch.load(image_run_dir / "best_model.pt", map_location=device)
+        image_model = build_resnet(
+            str(image_cfg["model"]),
+            int(image_checkpoint.get("in_channels", 4 if detector == "eb" else 6)),
+        ).to(device)
+        image_model.load_state_dict(image_checkpoint["model_state_dict"])
 
-    image_val_pack = run_one_epoch(image_model, image_val_loader, device, optimizer=None, scaler=None)
-    image_test_pack = run_one_epoch(image_model, image_test_loader, device, optimizer=None, scaler=None)
-    track_val_pack = attach_metrics(run_point_transformer_epoch(track_model, track_val_loader, device, optimizer=None, scaler=None))
-    track_test_pack = attach_metrics(run_point_transformer_epoch(track_model, track_test_loader, device, optimizer=None, scaler=None))
+        track_checkpoint = torch.load(track_run_dir / "best_model.pt", map_location=device)
+        track_model = PointCloudTransformerClassifier(
+            input_dim=int(track_checkpoint.get("input_dim", 6)),
+            embed_dim=int(track_checkpoint["embed_dim"]),
+            depth=int(track_checkpoint["depth"]),
+            num_heads=int(track_checkpoint["num_heads"]),
+            mlp_ratio=float(track_checkpoint["mlp_ratio"]),
+            dropout=float(track_checkpoint["dropout"]),
+        ).to(device)
+        track_model.load_state_dict(track_checkpoint["model_state_dict"])
+
+        image_val_pack = run_one_epoch(image_model, image_val_loader, device, optimizer=None, scaler=None)
+        image_test_pack = run_one_epoch(image_model, image_test_loader, device, optimizer=None, scaler=None)
+        track_val_pack = attach_metrics(
+            run_point_transformer_epoch(track_model, track_val_loader, device, optimizer=None, scaler=None)
+        )
+        track_test_pack = attach_metrics(
+            run_point_transformer_epoch(track_model, track_test_loader, device, optimizer=None, scaler=None)
+        )
 
     image_val_pack, track_val_pack = align_packs(image_val_pack, track_val_pack)
     image_test_pack, track_test_pack = align_packs(image_test_pack, track_test_pack)
@@ -518,10 +638,12 @@ def main():
                 "num_workers_requested": args.num_workers,
                 "num_workers_effective": effective_num_workers,
                 "torch_sharing_strategy": sharing_strategy,
+                "prediction_source": "csv" if use_csv_predictions else "rescore",
                 "image_batch_size": image_batch_size,
                 "track_batch_size": track_batch_size,
                 "threshold_mode": args.threshold_mode,
                 "feature_names": feature_names,
+                "csv_paths": {key: str(path) for key, path in csv_paths.items()},
             },
             handle,
             indent=2,

@@ -493,6 +493,7 @@ Typical files:
 - `history.json`
 - `training_history.png`
 - `test_metrics.json`
+- `val_predictions.csv`
 - `test_predictions.csv`
 - `roc_test.png`
 - `score_distribution_test.png`
@@ -509,6 +510,7 @@ Typical files:
 - trains a binary classifier with weighted BCE loss
 - chooses the operating threshold from the validation set
 - evaluates weighted AUC and weighted F1 on the test set
+- saves `val_predictions.csv` and `test_predictions.csv` from the best checkpoint for downstream fusion
 
 ### Important training options
 
@@ -702,6 +704,17 @@ Example smoke test:
 
 ## Image + Track Stacking Ensemble
 
+The current fusion workflow is a holdout baseline.
+
+That means:
+
+- the image model is trained once on the `train` split
+- the track model is trained once on the `train` split
+- the stacker is trained on `val_predictions.csv`
+- the final score is reported on `test_predictions.csv`
+
+This is intentionally different from OOF stacking. OOF would require repeated fold-wise base-model training and is not the current implementation in this repository.
+
 `train_fusion_ensemble.py` is the fusion step. It does not train the base models from scratch. Instead it takes:
 
 - one completed image run directory from `train_resnet_image_classifier.py`
@@ -710,11 +723,12 @@ Example smoke test:
 and then:
 
 1. verifies that both runs use the same detector, weight sidecar, split seed, split fractions, and debug settings
-2. rebuilds the exact same validation and test object sets
-3. loads both checkpoints
-4. recomputes image scores and track scores on `val` and `test`
-5. trains a weighted logistic-regression stacking model on the `val` split
-6. applies the fitted fusion model to the `test` split
+2. reads `val_predictions.csv` and `test_predictions.csv` from both run directories by default
+3. aligns image and track predictions by `file_idx`, `object_idx`, and `event_idx`
+4. trains a weighted logistic-regression stacking model on the `val` split
+5. applies the fitted fusion model to the `test` split
+
+If saved CSVs are unavailable, the script can still fall back to raw-data rescoring.
 
 ### Fusion features
 
@@ -740,6 +754,29 @@ The ensemble weights must be learned on a split that is separate from the final 
 
 This avoids leaking test information into the ensemble coefficients.
 
+### Why the current baseline does not train the stacker on `train`
+
+The current baseline uses holdout stacking, not OOF stacking.
+
+- the large `train` split is already used to fit the two base models
+- the stacker is deliberately trained on `val`, where the base-model predictions come from samples that were not used to fit those base models
+- this keeps the baseline simple and leakage-safe
+
+If you want to use more data for the stacker later, that is the point where an OOF pipeline becomes useful.
+
+### Prediction sources
+
+`train_fusion_ensemble.py` supports three modes:
+
+- `--prediction-source csv`
+  Use saved `val_predictions.csv` and `test_predictions.csv`.
+- `--prediction-source auto`
+  Use CSVs if present, otherwise fall back to rescoring from raw HDF5.
+- `--prediction-source rescore`
+  Force raw-data rescoring even if CSVs exist.
+
+For the holdout baseline, `csv` is usually the preferred choice because it avoids an extra full pass over the raw detector files.
+
 ### Run the ensemble
 
 Example:
@@ -749,22 +786,23 @@ Example:
   --image-run-dir outputs/train_resnet_eb \
   --track-run-dir outputs/train_point_transformer_eb \
   --output-dir outputs/fusion_eb \
-  --num-workers 4
+  --prediction-source csv
 
 ./.venv/bin/python train_fusion_ensemble.py \
   --image-run-dir outputs/train_resnet_ee \
   --track-run-dir outputs/train_point_transformer_ee \
   --output-dir outputs/fusion_ee \
-  --num-workers 4
+  --prediction-source csv
 ```
 
 Example smoke test:
 
 ```bash
 ./.venv/bin/python train_fusion_ensemble.py \
-  --image-run-dir outputs/debug_resnet_eb_sep \
+  --image-run-dir outputs/debug_resnet_eb_sep_csv \
   --track-run-dir outputs/debug_point_transformer_eb_sep \
-  --output-dir outputs/debug_fusion_eb_sep
+  --output-dir outputs/debug_fusion_eb_csv \
+  --prediction-source csv
 ```
 
 ### What the ensemble writes
@@ -786,6 +824,19 @@ Example smoke test:
 - the fitted logistic-regression coefficients
 - the intercept
 - the mean and scale used by the `StandardScaler`
+
+### Required CSV files for holdout stacking
+
+The CSV-driven holdout baseline expects:
+
+- image run:
+  - `val_predictions.csv`
+  - `test_predictions.csv`
+- track run:
+  - `val_predictions.csv`
+  - `test_predictions.csv`
+
+The track trainer already writes both files. The image trainer now also writes both files from the best checkpoint.
 
 ### Important ensemble requirement
 
@@ -888,14 +939,38 @@ Run full training:
   --image-run-dir outputs/train_resnet_eb \
   --track-run-dir outputs/train_point_transformer_eb \
   --output-dir outputs/fusion_eb \
-  --num-workers 4
+  --prediction-source csv
 
 ./.venv/bin/python train_fusion_ensemble.py \
   --image-run-dir outputs/train_resnet_ee \
   --track-run-dir outputs/train_point_transformer_ee \
   --output-dir outputs/fusion_ee \
-  --num-workers 4
+  --prediction-source csv
 ```
+
+Run the full holdout baseline pipeline with one shell command:
+
+```bash
+./run_holdout_fusion_pipeline.sh \
+  --detector eb \
+  --weight-h5 outputs/test_event_background_1M_sep/event_level_weights.h5 \
+  --output-root outputs/holdout_eb \
+  --epochs 20 \
+  --num-workers 4 \
+  --prediction-source csv
+```
+
+What the shell script does:
+
+1. trains the image model
+2. trains the track model
+3. runs the fusion step on the resulting run directories
+
+Output directories created under `--output-root`:
+
+- `image_<detector>`
+- `track_<detector>`
+- `fusion_<detector>`
 
 Run smoke tests:
 
@@ -903,13 +978,13 @@ Run smoke tests:
 ./.venv/bin/python train_resnet_image_classifier.py \
   --detector eb \
   --weight-h5 outputs/test_event_background_1M_sep/event_level_weights.h5 \
-  --output-dir outputs/debug_resnet_eb_sep \
+  --output-dir outputs/debug_resnet_eb_sep_csv \
   --epochs 1 --batch-size 2 --debug --debug-max-events-per-sample 12
 
 ./.venv/bin/python train_resnet_image_classifier.py \
   --detector ee \
   --weight-h5 outputs/test_event_background_1M_sep/event_level_weights.h5 \
-  --output-dir outputs/debug_resnet_ee_sep \
+  --output-dir outputs/debug_resnet_ee_sep_csv \
   --epochs 1 --batch-size 2 --debug --debug-max-events-per-sample 12
 
 ./.venv/bin/python train_point_transformer_track_classifier.py \
@@ -919,9 +994,20 @@ Run smoke tests:
   --epochs 1 --batch-size 4 --debug --debug-max-events-per-sample 12
 
 ./.venv/bin/python train_fusion_ensemble.py \
-  --image-run-dir outputs/debug_resnet_eb_sep \
+  --image-run-dir outputs/debug_resnet_eb_sep_csv \
   --track-run-dir outputs/debug_point_transformer_eb_sep \
-  --output-dir outputs/debug_fusion_eb_sep
+  --output-dir outputs/debug_fusion_eb_csv \
+  --prediction-source csv
+
+./run_holdout_fusion_pipeline.sh \
+  --detector eb \
+  --weight-h5 outputs/test_event_background_1M_sep/event_level_weights.h5 \
+  --output-root outputs/debug_holdout_eb \
+  --epochs 1 \
+  --image-batch-size 2 \
+  --track-batch-size 4 \
+  --debug \
+  --prediction-source csv
 ```
 
 ## Troubleshooting
@@ -934,6 +1020,7 @@ Run smoke tests:
 - If a sample has no entries in a detector case, the weight builder will raise an error because equal per-sample balancing is impossible for that case.
 - If you want to override the default weight dataset in the classifier, use `--weight-key`.
 - If the fusion script reports incompatible runs, retrain one branch so the image and track models share the same split settings.
+- If `--prediction-source csv` fails, check that both the image and track run directories contain `val_predictions.csv` and `test_predictions.csv`.
 
 ## Verified Example Outputs in This Workspace
 
