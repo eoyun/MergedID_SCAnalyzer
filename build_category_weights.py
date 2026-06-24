@@ -44,3 +44,33 @@ def is_excluded_sample(sample_id, mode):
     if mode == "all":
         return False
     raise ValueError(f"Unknown hasADD mode: {mode}")
+
+
+def make_object_weight_lookup(sample_bin_counts, sample_total_target):
+    """Per-sample, per-bin object weight so each non-empty pT bin contributes an
+    equal share of the sample's target total, split evenly over its objects."""
+    lookup = {}
+    for sample_id, counts in sample_bin_counts.items():
+        counts = np.asarray(counts, dtype=np.int64)
+        nonempty = counts > 0
+        n_nonempty = int(nonempty.sum())
+        weights = np.zeros(counts.shape, dtype=np.float64)
+        if n_nonempty > 0:
+            target_bin_sum = float(sample_total_target[sample_id]) / n_nonempty
+            weights[nonempty] = target_bin_sum / counts[nonempty]
+        lookup[sample_id] = weights
+    return lookup
+
+
+def build_sample_targets(sample_ids):
+    """background -> 1.0; signal total 1.0 split equally over included signal ids."""
+    signal_ids = [s for s in sample_ids if s != "background"]
+    if "background" not in sample_ids:
+        raise ValueError("No background sample present.")
+    if not signal_ids:
+        raise ValueError("No included signal samples present.")
+    per_signal = 1.0 / len(signal_ids)
+    targets = {"background": 1.0}
+    for s in signal_ids:
+        targets[s] = per_signal
+    return targets
