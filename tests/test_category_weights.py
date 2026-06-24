@@ -62,3 +62,55 @@ def test_fixture_files_present(tier_dir):
     with h5py.File(str(tier_dir / "signal" / "signal_0.h5"), "r") as f:
         assert f["hasAdditionalTrk_EB"].shape == (4,)
         assert "source_root_files" in f.attrs
+
+
+def _class_sums(out_h5, weight_key):
+    """Sum weight_key over all objects, split into background vs signal."""
+    bg = sig = 0.0
+    seen_samples = set()
+    with h5py.File(out_h5, "r") as f:
+        for split in f["files"]:
+            for stem in f["files"][split]:
+                g = f["files"][split][stem]
+                w = g[weight_key][:]
+                sid = str(g.attrs["sample_id"])
+                if sid != "background" and float(w.sum()) > 0:
+                    seen_samples.add(sid)
+                if sid == "background":
+                    bg += float(w.sum())
+                else:
+                    sig += float(w.sum())
+    return bg, sig, seen_samples
+
+
+def test_build_all_mode_balances_each_class(tier_dir, tmp_path):
+    out = tmp_path / "all" / "category_weights.h5"
+    bcw.build_category_weights(input_dir=tier_dir, output_path=out,
+                               hasadd_mode="all", background_max_events=None, seed=1)
+    for det, wk in bcw.WEIGHT_KEYS.items():
+        bg, sig, samples = _class_sums(out, wk)
+        assert np.isclose(bg, 1.0), (det, bg)
+        assert np.isclose(sig, 1.0), (det, sig)
+        assert samples == {"signal_H250_A2", "signal_H250_A10", "signal_H750_A0p4"}
+
+
+def test_build_eq1_excludes_a0p4_and_a1(tier_dir, tmp_path):
+    out = tmp_path / "eq1" / "category_weights.h5"
+    bcw.build_category_weights(input_dir=tier_dir, output_path=out,
+                               hasadd_mode="eq1", background_max_events=None, seed=1)
+    bg, sig, samples = _class_sums(out, "EB_weight_split")
+    assert "signal_H750_A0p4" not in samples
+    assert np.isclose(sig, 1.0)
+    assert np.isclose(bg, 1.0)
+
+
+def test_build_eq1_only_keeps_hasadd1_objects(tier_dir, tmp_path):
+    out = tmp_path / "eq1b" / "category_weights.h5"
+    bcw.build_category_weights(input_dir=tier_dir, output_path=out,
+                               hasadd_mode="eq1", background_max_events=None, seed=1)
+    # In the fixture, signal objects 0,1 are hasADD==1 and 2,3 are ==0.
+    with h5py.File(out, "r") as f:
+        g = f["files"]["signal"]["signal_0"]   # H250_A2, kept by eq1
+        w = g["EB_weight_split"][:]
+        assert w[0] > 0 and w[1] > 0
+        assert w[2] == 0 and w[3] == 0

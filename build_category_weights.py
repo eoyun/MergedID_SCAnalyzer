@@ -74,3 +74,85 @@ def build_sample_targets(sample_ids):
     for s in signal_ids:
         targets[s] = per_signal
     return targets
+
+
+def _object_selection(raw, detector, sample_id, hasadd_mode, n_events, bg_local_events):
+    """Return (det_event_idx, selected_mask) for one file+detector."""
+    det_event_idx = raw[DET_EVENT_IDX_KEYS[detector]][:].astype(np.int64)
+    hasadd = raw[HASADD_KEYS[detector]][:]
+    mask = hasadd_object_mask(hasadd, hasadd_mode)
+    if is_excluded_sample(sample_id, hasadd_mode):
+        mask = np.zeros(mask.shape, dtype=bool)
+    if sample_id == "background" and bg_local_events is not None:
+        ev_sel = np.zeros(n_events, dtype=bool)
+        ev_sel[bg_local_events] = True
+        mask = mask & ev_sel[det_event_idx]
+    return det_event_idx, mask
+
+
+def build_category_weights(input_dir, output_path, hasadd_mode,
+                           background_max_events=None, seed=1234, event_pt_mode="max"):
+    input_dir = Path(input_dir)
+    output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    file_infos, n_bkg = scan_file_metadata(input_dir)
+    bg_global, bg_selected = select_background_global_event_indices(
+        n_bkg, background_max_events, seed)
+
+    # ----- count pass: per detector, per sample, per pT bin (selected objects) -----
+    counts = {det: {} for det in DETECTORS}
+    for info in file_infos:
+        bg_local = get_background_local_event_indices(bg_global, info) if info.sample_id == "background" else None
+        with h5py.File(info.path, "r") as raw:
+            a_pt = raw["A_pT"][:].astype(np.float64)
+            a_event_idx = raw["A_event_idx"][:].astype(np.int64)
+            event_pt = derive_event_pt(info.n_events, a_pt, a_event_idx, mode=event_pt_mode)
+            for det in DETECTORS:
+                det_event_idx, mask = _object_selection(
+                    raw, det, info.sample_id, hasadd_mode, info.n_events, bg_local)
+                if not np.any(mask):
+                    continue
+                obj_bin = find_bin_indices(event_pt[det_event_idx][mask])
+                c = counts[det].setdefault(info.sample_id, np.zeros(N_BINS, dtype=np.int64))
+                c += np.bincount(obj_bin, minlength=N_BINS)
+
+    # ----- per-detector weight lookups -----
+    lookups = {}
+    for det in DETECTORS:
+        targets = build_sample_targets(sorted(counts[det].keys()))
+        lookups[det] = make_object_weight_lookup(counts[det], targets)
+
+    # ----- write pass -----
+    with h5py.File(output_path, "w") as out:
+        out.attrs["input_dir"] = str(input_dir)
+        out.attrs["hasadd_mode"] = hasadd_mode
+        out.attrs["background_max_events"] = -1 if background_max_events is None else int(background_max_events)
+        out.attrs["background_selected_events"] = int(bg_selected)
+        out.attrs["seed"] = int(seed)
+        out.attrs["weight_basis"] = "object"
+        files_group = out.create_group("files")
+        for info in file_infos:
+            bg_local = get_background_local_event_indices(bg_global, info) if info.sample_id == "background" else None
+            with h5py.File(info.path, "r") as raw:
+                a_pt = raw["A_pT"][:].astype(np.float64)
+                a_event_idx = raw["A_event_idx"][:].astype(np.int64)
+                event_pt = derive_event_pt(info.n_events, a_pt, a_event_idx, mode=event_pt_mode)
+                grp = files_group.require_group(info.split).create_group(info.stem)
+                grp.attrs["input_file"] = str(info.path)
+                grp.attrs["split"] = info.split
+                grp.attrs["process_name"] = info.process_name
+                grp.attrs["sample_id"] = info.sample_id
+                grp.attrs["n_events"] = info.n_events
+                grp.create_dataset("event_pt", data=event_pt, compression="gzip")
+                for det in DETECTORS:
+                    det_event_idx, mask = _object_selection(
+                        raw, det, info.sample_id, hasadd_mode, info.n_events, bg_local)
+                    w = np.zeros(det_event_idx.shape, dtype=np.float64)
+                    if np.any(mask):
+                        obj_bin = find_bin_indices(event_pt[det_event_idx][mask])
+                        lut = lookups[det].get(info.sample_id)
+                        if lut is not None:
+                            w[mask] = lut[obj_bin]
+                    grp.create_dataset(WEIGHT_KEYS[det], data=w, compression="gzip")
+    return output_path
