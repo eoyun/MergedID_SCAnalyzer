@@ -54,3 +54,11 @@ def test_object_weight_lookup_empty_sample_is_all_zero():
     counts = {"background": np.zeros(bcw.N_BINS, dtype=np.int64)}
     lookup = bcw.make_object_weight_lookup(counts, {"background": 1.0})
     assert np.all(lookup["background"] == 0.0)
+
+
+def test_fixture_files_present(tier_dir):
+    files = glob.glob(str(tier_dir / "*" / "*.h5"))
+    assert len(files) == 5  # W, Z, 3 signal
+    with h5py.File(str(tier_dir / "signal" / "signal_0.h5"), "r") as f:
+        assert f["hasAdditionalTrk_EB"].shape == (4,)
+        assert "source_root_files" in f.attrs
