@@ -156,3 +156,33 @@ def build_category_weights(input_dir, output_path, hasadd_mode,
                             w[mask] = lut[obj_bin]
                     grp.create_dataset(WEIGHT_KEYS[det], data=w, compression="gzip")
     return output_path
+
+
+def parse_args():
+    p = argparse.ArgumentParser(
+        description="Object-based per-category (tier x hasADD) event weights with "
+                    "hasAdditionalTrk filtering and signal mass-point exclusion.")
+    p.add_argument("--input-dir", type=Path, required=True,
+                   help="Tier directory containing W/, Z/, signal/.")
+    p.add_argument("--output-path", type=Path, required=True,
+                   help="Output HDF5 path (category_weights.h5).")
+    p.add_argument("--hasadd-mode", choices=HASADD_MODES, required=True)
+    p.add_argument("--background-max-events", type=int, default=1_000_000,
+                   help="Cap on background events (resampling target). -1 = all.")
+    p.add_argument("--event-pt-mode", choices=("max", "leading", "mean"), default="max")
+    p.add_argument("--seed", type=int, default=1234)
+    return p.parse_args()
+
+
+def main():
+    args = parse_args()
+    bmax = None if args.background_max_events is not None and args.background_max_events < 0 else args.background_max_events
+    out = build_category_weights(
+        input_dir=args.input_dir, output_path=args.output_path,
+        hasadd_mode=args.hasadd_mode, background_max_events=bmax,
+        seed=args.seed, event_pt_mode=args.event_pt_mode)
+    print(f"[saved] {out}")
+
+
+if __name__ == "__main__":
+    main()
