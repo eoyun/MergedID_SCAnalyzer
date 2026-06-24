@@ -58,11 +58,46 @@ one trained track model → 12 track trainings, not 18.
 ## Decomposition (build order)
 
 ### Sub-project 1 — Per-category weights (prerequisite, separate)
-Extend `build_event_level_weights.py` with a per-object `hasAdditionalTrk`
-filter (`all|eq0|eq1`) and ~1M resampling, producing 12 weight files keyed by
-`tier × detector × hasADD`. ES-independent. Out of scope for the training
-pipeline plan; tracked separately. Until built, training can fall back to the
-baseline tier weights + train-time `rebalance_manifest_class_weights`.
+Build **12 object-level balanced weight files** keyed by
+`tier × detector × hasADD` (ES-independent). This requires moving the existing
+event-based balancing to an **object-based** scheme (because `hasAdditionalTrk`
+is a per-object flag) with a per-object `hasAdditionalTrk` filter
+(`all | eq0 | eq1`) and ~1M **background** resampling (signal is the scarce class
+— used in full; EE signal totals only ~99k).
+
+Balancing (per category): background class sum = 1, signal class sum = 1, with
+the signal total split **equally among the included mass points**. Object pT
+binning keeps the existing equal-weight-per-nonempty-bin rule.
+
+**Per-category signal mass-point inclusion** (decision 2026-06-24, approach b):
+
+| hasADD | included signal mass points | count |
+|--------|------------------------------|-------|
+| `all`  | all (`A{0p4,1,2,5,10} × H{250,750,2000}`) | 15 |
+| `eq1`  | exclude `A0p4`, `A1` → `A{2,5,10} × H{250,750,2000}` | 9 |
+| `eq0`  | exclude `H250_A10` | 14 |
+
+Rationale: `hasADD==1` selects resolved (wide-opening-angle) topologies, so the
+merged points `A0p4/A1` barely populate `eq1` (single/double-digit object counts
+in some EE mass points). `hasADD==0` represents merged topology, so the maximally
+resolved `H250_A10` is dropped. Excluded mass points are removed entirely from
+that category's training set and from its balancing. Background (no mass points)
+is always included.
+
+FYI noted: in `eq0`, `H2000_A10` / `H750_A10` (EE) actually have smaller object
+counts than `H250_A10`; only `H250_A10` is excluded per decision (physics
+intent, not pure statistics).
+
+This sub-project is tracked separately and built first. Until ready, training
+can fall back to the baseline tier weights + train-time
+`rebalance_manifest_class_weights`.
+
+Signal hasADD==1 fractions are nearly identical between AOD and MiniAOD (the
+MiniAOD hasADD==1 reduction is a *background-only* effect: soft additional tracks
+are pruned from `lostTracks`, while signal's hard second-electron track survives
+in both tiers). Confirmed via track-multiplicity: AOD `GenTrk` covers 98.6% of
+EB objects (~1.05 trk/obj), MiniAOD `lostTracks` only 7.1% (~0.08 trk/obj), both
+with the same 5 GeV pT floor.
 
 ### Sub-project 2 — Script parameterization (code changes)
 Add the new axes as explicit options so one script body serves all categories:
