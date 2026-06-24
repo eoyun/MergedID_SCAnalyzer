@@ -10,8 +10,21 @@ import torch.nn.functional as F
 from torch.amp import autocast
 from torch.utils.data import Dataset
 
-TRACK_TYPES = ("GSF", "PF", "Lost")
-POINT_FEATURE_DIM = 6
+TRACK_TYPES = ("GSF", "PF", "Lost")          # default (MiniAOD) track collections
+POINT_FEATURE_DIM = 3 + len(TRACK_TYPES)     # default; real dim derived from track_types
+
+
+def parse_track_types(s):
+    return tuple(t for t in str(s).split(",") if t)
+
+
+def point_feature_dim(track_types):
+    return 3 + len(track_types)
+
+
+def track_csv_columns(track_types):
+    lows = [t.lower() for t in track_types]
+    return [f"n_{t}" for t in lows] + [f"sum_pt_{t}" for t in lows]
 
 
 def weighted_bce_loss(logits, targets, sample_weights):
@@ -26,11 +39,13 @@ def weighted_bce_loss(logits, targets, sample_weights):
     return loss_num / loss_den, loss_num.detach(), loss_den.detach()
 
 
-def sparse_track_arrays_to_points(flat_idx, values, track_type_id, image_size=512, log_track_pt=True):
+def sparse_track_arrays_to_points(flat_idx, values, track_type_id, n_track_types,
+                                  image_size=512, log_track_pt=True):
     idx = np.asarray(flat_idx, dtype=np.int64)
     pt = np.asarray(values, dtype=np.float32)
+    dim = 3 + n_track_types
     if idx.size == 0:
-        return np.zeros((0, POINT_FEATURE_DIM), dtype=np.float32), np.zeros(0, dtype=np.float32)
+        return np.zeros((0, dim), dtype=np.float32), np.zeros(0, dtype=np.float32)
 
     pt = np.clip(pt, 0.0, None)
     x = ((idx % image_size).astype(np.float32) + 0.5) / float(image_size)
@@ -39,7 +54,7 @@ def sparse_track_arrays_to_points(flat_idx, values, track_type_id, image_size=51
     y = 2.0 * y - 1.0
 
     pt_feature = np.log1p(pt) if log_track_pt else pt
-    onehot = np.zeros((idx.size, len(TRACK_TYPES)), dtype=np.float32)
+    onehot = np.zeros((idx.size, n_track_types), dtype=np.float32)
     onehot[:, track_type_id] = 1.0
     points = np.concatenate(
         [
@@ -53,19 +68,23 @@ def sparse_track_arrays_to_points(flat_idx, values, track_type_id, image_size=51
     return points, pt
 
 
-def build_track_point_cloud(raw_handle, detector, obj_idx, max_points, log_track_pt=True):
+def build_track_point_cloud(raw_handle, detector, obj_idx, max_points, track_types,
+                            log_track_pt=True):
     prefix = "EB" if detector == "eb" else "EE"
+    n_types = len(track_types)
+    dim = 3 + n_types
     point_parts = []
-    counts = np.zeros(len(TRACK_TYPES), dtype=np.float32)
-    sum_pt = np.zeros(len(TRACK_TYPES), dtype=np.float32)
+    counts = np.zeros(n_types, dtype=np.float32)
+    sum_pt = np.zeros(n_types, dtype=np.float32)
 
-    for type_id, track_type in enumerate(TRACK_TYPES):
+    for type_id, track_type in enumerate(track_types):
         idx_key = f"{prefix}_track_pt_{track_type}_idx"
         val_key = f"{prefix}_track_pt_{track_type}_val"
         points, raw_pt = sparse_track_arrays_to_points(
             raw_handle[idx_key][obj_idx],
             raw_handle[val_key][obj_idx],
             track_type_id=type_id,
+            n_track_types=n_types,
             log_track_pt=log_track_pt,
         )
         counts[type_id] = float(raw_pt.size)
@@ -80,16 +99,17 @@ def build_track_point_cloud(raw_handle, detector, obj_idx, max_points, log_track
             order = np.argsort(-points[:, 2], kind="stable")
             points = points[order[:max_points]]
     else:
-        points = np.zeros((0, POINT_FEATURE_DIM), dtype=np.float32)
+        points = np.zeros((0, dim), dtype=np.float32)
 
     return points, counts, sum_pt
 
 
 def collate_track_point_cloud_batch(batch):
     batch_size = len(batch)
+    feat_dim = batch[0]["points"].shape[1]
     max_points_in_batch = max(1, max(item["points"].shape[0] for item in batch))
 
-    points = torch.zeros(batch_size, max_points_in_batch, POINT_FEATURE_DIM, dtype=torch.float32)
+    points = torch.zeros(batch_size, max_points_in_batch, feat_dim, dtype=torch.float32)
     mask = torch.zeros(batch_size, max_points_in_batch, dtype=torch.bool)
 
     for batch_idx, item in enumerate(batch):
@@ -127,12 +147,14 @@ class TrackPointCloudDataset(Dataset):
         file_entries,
         manifest,
         max_points,
+        track_types=TRACK_TYPES,
         log_track_pt=True,
         max_open_files=32,
     ):
         self.detector = detector
         self.file_entries = file_entries
         self.max_points = max(1, int(max_points))
+        self.track_types = tuple(track_types)
         self.log_track_pt = log_track_pt
         self.max_open_files = max(1, int(max_open_files))
 
@@ -186,6 +208,7 @@ class TrackPointCloudDataset(Dataset):
             detector=self.detector,
             obj_idx=obj_idx,
             max_points=self.max_points,
+            track_types=self.track_types,
             log_track_pt=self.log_track_pt,
         )
 
