@@ -33,3 +33,28 @@ def test_fusion_points_to_shared_track():
     assert es["track_run"] == noes["track_run"]
     assert es["track_run"].endswith("track_mini_ee_all")
     assert es["image_run"].endswith("image_mini_ee_es_all")
+
+
+import pipeline.make_submit as ms
+
+
+def test_arglist_lines_roundtrip(tmp_path):
+    cats = cat.track_categories()
+    listfile = tmp_path / "track.txt"
+    ms.write_arglist(listfile, cats)
+    lines = [ln for ln in listfile.read_text().splitlines() if ln.strip()]
+    assert len(lines) == 12
+    assert any("train_point_transformer_track_classifier.py --detector eb" in ln for ln in lines)
+    assert any("--track-types Lost,PF,GSF" in ln for ln in lines)
+
+
+def test_submit_file_has_gpu_and_transfers(tmp_path):
+    sub = tmp_path / "train_track.sub"
+    ms.write_submit(sub, "train_track", tmp_path / "track.txt", request_gpus=1)
+    text = sub.read_text()
+    assert "request_gpus   = 1" in text
+    assert "queue arguments from" in text
+    for mod in ("train_resnet_image_classifier.py", "track_point_transformer.py",
+                "train_point_transformer_track_classifier.py",
+                "train_fusion_ensemble.py", "build_event_level_weights.py"):
+        assert mod in text
