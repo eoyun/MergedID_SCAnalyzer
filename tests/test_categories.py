@@ -58,3 +58,22 @@ def test_submit_file_has_gpu_and_transfers(tmp_path):
                 "train_point_transformer_track_classifier.py",
                 "train_fusion_ensemble.py", "build_event_level_weights.py"):
         assert mod in text
+
+
+import json
+import pipeline.collect_results as cr
+
+
+def test_collect_reads_fusion_metrics(tmp_path):
+    runs = tmp_path / "runs"
+    (runs / "fusion_aod_eb_all").mkdir(parents=True)
+    (runs / "fusion_aod_eb_all" / "test_metrics.json").write_text(json.dumps({
+        "test_auc": 0.91, "test_f1": 0.8,
+        "component_metrics": {"image_test_auc": 0.85, "track_test_auc": 0.7,
+                              "fusion_test_auc": 0.91},
+    }))
+    rows = cr.collect(runs_root=runs)
+    assert rows and rows[0]["name"] == "aod_eb_all"
+    assert rows[0]["fusion_test_auc"] == 0.91
+    assert rows[0]["image_test_auc"] == 0.85
+    assert rows[0]["track_test_auc"] == 0.7
