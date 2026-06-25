@@ -42,10 +42,16 @@ queue arguments from {listfile}
 
 
 def write_submit(path, stage, listfile, request_gpus=1, cpus=2, mem="8 GB",
-                 disk="8 GB", flavour="tomorrow"):
+                 disk="8 GB", flavour="tomorrow", min_gpu_capability=7.5):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    gpu_line = f"request_gpus   = {request_gpus}\n" if request_gpus else ""
+    # The LCG_109_cuda PyTorch supports CUDA capability 7.5-9.0, so exclude
+    # V100/V100S (cc 7.0). require_gpus ANDs with the auto GPU matching without
+    # clobbering the default requirements.
+    gpu_line = ""
+    if request_gpus:
+        gpu_line = (f"request_gpus   = {request_gpus}\n"
+                    f"require_gpus   = (Capability >= {min_gpu_capability})\n")
     text = SUBMIT_TEMPLATE.format(
         transfers=", ".join(TRANSFER_MODULES),
         stage=stage, cpus=cpus, mem=mem, disk=disk,

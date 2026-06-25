@@ -11,6 +11,7 @@ request_cpus   = 2
 request_memory = 8 GB
 request_disk   = 8 GB
 request_gpus   = 1
+require_gpus   = (Capability >= 7.5)
 +JobFlavour = "tomorrow"
 
 queue arguments from condor/fusion.txt
