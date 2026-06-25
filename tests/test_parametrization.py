@@ -33,3 +33,24 @@ def test_track_csv_columns_for_track_types():
     assert "n_pf" not in hdr1
     hdr3 = tpt.track_csv_columns(("GSF", "PF", "Lost"))
     assert hdr3 == ["n_gsf", "n_pf", "n_lost", "sum_pt_gsf", "sum_pt_pf", "sum_pt_lost"]
+
+
+import train_resnet_image_classifier as tri
+
+
+def test_image_channel_keys():
+    eb = tri.image_channel_keys("eb", ("Lost", "PF", "GSF"), include_es=False)
+    assert [k for k, _ in eb] == ["calo", "track", "track", "track"]
+    assert len(eb) == 4
+    eb_aod = tri.image_channel_keys("eb", ("GenTrk",), include_es=False)
+    assert len(eb_aod) == 2
+    ee = tri.image_channel_keys("ee", ("Lost", "PF", "GSF"), include_es=True)
+    assert len(ee) == 6
+    ee_noes = tri.image_channel_keys("ee", ("GenTrk",), include_es=False)
+    assert len(ee_noes) == 2
+
+
+def test_image_in_channels():
+    assert tri.image_in_channels("eb", ("Lost", "PF", "GSF"), True) == 4
+    assert tri.image_in_channels("ee", ("Lost", "PF", "GSF"), True) == 6
+    assert tri.image_in_channels("ee", ("GenTrk",), False) == 2

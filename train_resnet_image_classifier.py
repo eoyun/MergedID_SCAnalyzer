@@ -102,6 +102,18 @@ def parse_args():
         help="Use raw channel values instead of log1p(max(x,0)).",
     )
     parser.add_argument(
+        "--track-types",
+        type=str,
+        default="Lost,PF,GSF",
+        help="Comma-separated track collections used as image channels "
+             "('Lost,PF,GSF' for MiniAOD, 'GenTrk' for AOD).",
+    )
+    parser.add_argument(
+        "--no-es",
+        action="store_true",
+        help="Drop the two ES preshower channels (EE only).",
+    )
+    parser.add_argument(
         "--monitor",
         choices=("auc", "f1"),
         default="auc",
@@ -407,11 +419,41 @@ def save_history_plot(history, output_path: Path):
     plt.close()
 
 
+DEFAULT_IMAGE_TRACK_TYPES = ("Lost", "PF", "GSF")
+
+
+def image_channel_keys(detector, track_types, include_es):
+    """Ordered list of (kind, h5key) channels. kind in {calo, es, track}.
+
+    For track channels the h5key is the '{PREFIX}_track_pt_{TYPE}' stem; the
+    image builder appends '_idx'/'_val'.
+    """
+    prefix = "EB" if detector == "eb" else "EE"
+    keys = []
+    if detector == "eb":
+        keys.append(("calo", "SC_energy"))
+    else:
+        keys.append(("calo", "EE_seed_energy"))
+        if include_es:
+            keys.append(("es", "ES_seed_plane1_energy"))
+            keys.append(("es", "ES_seed_plane2_energy"))
+    for t in track_types:
+        keys.append(("track", f"{prefix}_track_pt_{t}"))
+    return keys
+
+
+def image_in_channels(detector, track_types, include_es):
+    return len(image_channel_keys(detector, track_types, include_es))
+
+
 class DetectorObjectDataset(Dataset):
-    def __init__(self, detector, file_entries, manifest, log_scale=True, max_open_files=DEFAULT_MAX_OPEN_RAW_FILES):
+    def __init__(self, detector, file_entries, manifest, log_scale=True,
+                 track_types=DEFAULT_IMAGE_TRACK_TYPES, include_es=True,
+                 max_open_files=DEFAULT_MAX_OPEN_RAW_FILES):
         self.detector = detector
         self.file_entries = file_entries
         self.log_scale = log_scale
+        self.channel_keys = image_channel_keys(detector, tuple(track_types), include_es)
         self.max_open_files = max(1, int(max_open_files))
 
         self.file_idx = np.asarray(manifest["file_idx"], dtype=np.int32)
@@ -454,23 +496,14 @@ class DetectorObjectDataset(Dataset):
         self._raw_handles[file_idx] = handle
         return handle
 
-    def _build_eb_image(self, raw, obj_idx):
-        ecal = repeat_to_512(raw["SC_energy"][obj_idx])
-        lost = sparse_to_dense(raw["EB_track_pt_Lost_idx"][obj_idx], raw["EB_track_pt_Lost_val"][obj_idx])
-        pf = sparse_to_dense(raw["EB_track_pt_PF_idx"][obj_idx], raw["EB_track_pt_PF_val"][obj_idx])
-        gsf = sparse_to_dense(raw["EB_track_pt_GSF_idx"][obj_idx], raw["EB_track_pt_GSF_val"][obj_idx])
-        channels = [ecal, lost, pf, gsf]
-        channels = [preprocess_channel(ch, self.log_scale) for ch in channels]
-        return np.stack(channels, axis=0).astype(np.float32)
-
-    def _build_ee_image(self, raw, obj_idx):
-        ee = repeat_to_512(raw["EE_seed_energy"][obj_idx])
-        es1 = repeat_to_512(raw["ES_seed_plane1_energy"][obj_idx])
-        es2 = repeat_to_512(raw["ES_seed_plane2_energy"][obj_idx])
-        lost = sparse_to_dense(raw["EE_track_pt_Lost_idx"][obj_idx], raw["EE_track_pt_Lost_val"][obj_idx])
-        pf = sparse_to_dense(raw["EE_track_pt_PF_idx"][obj_idx], raw["EE_track_pt_PF_val"][obj_idx])
-        gsf = sparse_to_dense(raw["EE_track_pt_GSF_idx"][obj_idx], raw["EE_track_pt_GSF_val"][obj_idx])
-        channels = [ee, es1, es2, lost, pf, gsf]
+    def _build_image(self, raw, obj_idx):
+        channels = []
+        for kind, key in self.channel_keys:
+            if kind in ("calo", "es"):
+                channels.append(repeat_to_512(raw[key][obj_idx]))
+            else:  # track: key is the "{PREFIX}_track_pt_{TYPE}" stem
+                channels.append(sparse_to_dense(raw[f"{key}_idx"][obj_idx],
+                                                raw[f"{key}_val"][obj_idx]))
         channels = [preprocess_channel(ch, self.log_scale) for ch in channels]
         return np.stack(channels, axis=0).astype(np.float32)
 
@@ -479,10 +512,7 @@ class DetectorObjectDataset(Dataset):
         obj_idx = int(self.object_idx[index])
         raw = self._ensure_open(file_idx)
 
-        if self.detector == "eb":
-            image = self._build_eb_image(raw, obj_idx)
-        else:
-            image = self._build_ee_image(raw, obj_idx)
+        image = self._build_image(raw, obj_idx)
 
         return {
             "image": torch.from_numpy(image),
@@ -832,6 +862,8 @@ def main():
     detector = args.detector
     weight_key = args.weight_key or ("EB_weight_split" if detector == "eb" else "EE_weight_split")
     log_scale = not args.disable_log_scale
+    track_types = tuple(t for t in args.track_types.split(",") if t)
+    include_es = not args.no_es
 
     weight_h5_path = args.weight_h5.resolve()
     output_dir = args.output_dir.resolve()
@@ -897,9 +929,12 @@ def main():
         class_balance_stats,
     )
 
-    train_dataset = DetectorObjectDataset(detector, file_entries, split_manifests["train"], log_scale=log_scale)
-    val_dataset = DetectorObjectDataset(detector, file_entries, split_manifests["val"], log_scale=log_scale)
-    test_dataset = DetectorObjectDataset(detector, file_entries, split_manifests["test"], log_scale=log_scale)
+    train_dataset = DetectorObjectDataset(detector, file_entries, split_manifests["train"], log_scale=log_scale,
+                                          track_types=track_types, include_es=include_es)
+    val_dataset = DetectorObjectDataset(detector, file_entries, split_manifests["val"], log_scale=log_scale,
+                                        track_types=track_types, include_es=include_es)
+    test_dataset = DetectorObjectDataset(detector, file_entries, split_manifests["test"], log_scale=log_scale,
+                                         track_types=track_types, include_es=include_es)
 
     loader_common_kwargs = {
         "batch_size": args.batch_size,
@@ -926,7 +961,7 @@ def main():
         **loader_common_kwargs,
     )
 
-    in_channels = 4 if detector == "eb" else 6
+    in_channels = image_in_channels(detector, track_types, include_es)
     model = build_resnet(args.model, in_channels=in_channels).to(device)
     optimizer = optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     scaler = GradScaler("cuda", enabled=(device.type == "cuda"))
@@ -975,6 +1010,8 @@ def main():
                 "debug": args.debug,
                 "debug_max_events_per_sample": args.debug_max_events_per_sample,
                 "log_scale": log_scale,
+                "track_types": list(track_types),
+                "include_es": include_es,
                 "class_rebalancing": {
                     "enabled": True,
                     "target_weight_sum_per_class_per_split": 1.0,
@@ -1022,6 +1059,8 @@ def main():
                     "detector": detector,
                     "model_name": args.model,
                     "in_channels": in_channels,
+                    "track_types": list(track_types),
+                    "include_es": include_es,
                 },
                 best_model_path,
             )
