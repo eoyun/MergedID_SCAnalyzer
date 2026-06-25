@@ -54,3 +54,27 @@ def test_image_in_channels():
     assert tri.image_in_channels("eb", ("Lost", "PF", "GSF"), True) == 4
     assert tri.image_in_channels("ee", ("Lost", "PF", "GSF"), True) == 6
     assert tri.image_in_channels("ee", ("GenTrk",), False) == 2
+
+
+import train_fusion_ensemble as tfe
+
+
+def test_fusion_feature_names_dynamic():
+    names1 = tfe.fusion_feature_names(("GenTrk",))
+    assert names1 == ["image_logit", "track_logit", "log1p_n_gentrk", "log1p_sum_pt_gentrk"]
+    names3 = tfe.fusion_feature_names(("GSF", "PF", "Lost"))
+    assert names3 == [
+        "image_logit", "track_logit",
+        "log1p_n_gsf", "log1p_n_pf", "log1p_n_lost",
+        "log1p_sum_pt_gsf", "log1p_sum_pt_pf", "log1p_sum_pt_lost",
+    ]
+
+
+def test_build_fusion_features_dynamic_shape():
+    img = {"score": np.array([0.2, 0.8])}
+    trk = {"score": np.array([0.5, 0.5]),
+           "track_counts": np.array([[1.0], [2.0]]),
+           "track_sum_pt": np.array([[10.0], [20.0]])}
+    feats, names = tfe.build_fusion_features(img, trk, ("GenTrk",))
+    assert feats.shape == (2, 4)
+    assert names == ["image_logit", "track_logit", "log1p_n_gentrk", "log1p_sum_pt_gentrk"]

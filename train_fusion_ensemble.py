@@ -22,6 +22,7 @@ from track_point_transformer import (
     PointCloudTransformerClassifier,
     TrackPointCloudDataset,
     collate_track_point_cloud_batch,
+    point_feature_dim,
     run_point_transformer_epoch,
 )
 from train_resnet_image_classifier import (
@@ -156,7 +157,7 @@ def attach_metrics(pack):
     return pack
 
 
-def load_prediction_pack_from_csv(csv_path, has_track_columns):
+def load_prediction_pack_from_csv(csv_path, track_types=None):
     rows = []
     with csv_path.open(newline="") as handle:
         reader = csv.DictReader(handle)
@@ -182,19 +183,14 @@ def load_prediction_pack_from_csv(csv_path, has_track_columns):
     sample_to_code = {sample_id: code for code, sample_id in enumerate(sorted(set(sample_ids)))}
     pack["sample_code"] = np.asarray([sample_to_code[sample_id] for sample_id in sample_ids], dtype=np.int16)
 
-    if has_track_columns:
+    if track_types is not None:
+        lows = [t.lower() for t in track_types]
         pack["track_counts"] = np.asarray(
-            [
-                [float(row["n_gsf"]), float(row["n_pf"]), float(row["n_lost"])]
-                for row in rows
-            ],
+            [[float(row[f"n_{t}"]) for t in lows] for row in rows],
             dtype=np.float64,
         )
         pack["track_sum_pt"] = np.asarray(
-            [
-                [float(row["sum_pt_gsf"]), float(row["sum_pt_pf"]), float(row["sum_pt_lost"])]
-                for row in rows
-            ],
+            [[float(row[f"sum_pt_{t}"]) for t in lows] for row in rows],
             dtype=np.float64,
         )
 
@@ -269,39 +265,33 @@ def score_to_logit(score):
     return np.log(score / (1.0 - score))
 
 
-def build_fusion_features(image_pack, track_pack):
+def fusion_feature_names(track_types):
+    lows = [t.lower() for t in track_types]
+    return (["image_logit", "track_logit"]
+            + [f"log1p_n_{t}" for t in lows]
+            + [f"log1p_sum_pt_{t}" for t in lows])
+
+
+def build_fusion_features(image_pack, track_pack, track_types):
     counts = np.log1p(np.clip(track_pack["track_counts"], 0.0, None))
     sum_pt = np.log1p(np.clip(track_pack["track_sum_pt"], 0.0, None))
-    features = np.column_stack(
-        [
-            score_to_logit(image_pack["score"]),
-            score_to_logit(track_pack["score"]),
-            counts[:, 0],
-            counts[:, 1],
-            counts[:, 2],
-            sum_pt[:, 0],
-            sum_pt[:, 1],
-            sum_pt[:, 2],
-        ]
-    ).astype(np.float64)
-    feature_names = [
-        "image_logit",
-        "track_logit",
-        "log1p_n_gsf",
-        "log1p_n_pf",
-        "log1p_n_lost",
-        "log1p_sum_pt_gsf",
-        "log1p_sum_pt_pf",
-        "log1p_sum_pt_lost",
-    ]
-    return features, feature_names
+    n = len(track_types)
+    cols = [score_to_logit(image_pack["score"]), score_to_logit(track_pack["score"])]
+    cols += [counts[:, j] for j in range(n)]
+    cols += [sum_pt[:, j] for j in range(n)]
+    features = np.column_stack(cols).astype(np.float64)
+    return features, fusion_feature_names(track_types)
 
 
-def save_fusion_predictions_csv(output_path, fused_score, image_pack, track_pack, file_entries=None, code_to_sample=None):
+def save_fusion_predictions_csv(output_path, fused_score, image_pack, track_pack, track_types,
+                                file_entries=None, code_to_sample=None):
+    lows = [t.lower() for t in track_types]
+    extra = [f"n_{t}" for t in lows] + [f"sum_pt_{t}" for t in lows]
     header = (
         "fused_score,image_score,track_score,label,weight,pt,file_idx,object_idx,event_idx,sample_id,raw_file,"
-        "n_gsf,n_pf,n_lost,sum_pt_gsf,sum_pt_pf,sum_pt_lost\n"
+        + ",".join(extra) + "\n"
     )
+    n_types = len(track_types)
     with output_path.open("w") as handle:
         handle.write(header)
         for i in range(len(fused_score)):
@@ -316,12 +306,13 @@ def save_fusion_predictions_csv(output_path, fused_score, image_pack, track_pack
                 raw_file = file_entries[file_idx].raw_path
             counts = track_pack["track_counts"][i]
             sum_pt = track_pack["track_sum_pt"][i]
+            vals = [f"{float(counts[j]):.0f}" for j in range(n_types)] + \
+                   [f"{float(sum_pt[j]):.8f}" for j in range(n_types)]
             handle.write(
                 f"{float(fused_score[i]):.8f},{float(image_pack['score'][i]):.8f},{float(track_pack['score'][i]):.8f},"
                 f"{int(image_pack['label'][i])},{float(image_pack['weight'][i]):.8e},{float(image_pack['pt'][i]):.8f},"
                 f"{file_idx},{int(image_pack['object_idx'][i])},{int(image_pack['event_idx'][i])},{sample_id},{raw_file},"
-                f"{float(counts[0]):.0f},{float(counts[1]):.0f},{float(counts[2]):.0f},"
-                f"{float(sum_pt[0]):.8f},{float(sum_pt[1]):.8f},{float(sum_pt[2]):.8f}\n"
+                + ",".join(vals) + "\n"
             )
 
 
@@ -366,6 +357,7 @@ def main():
     detector = image_cfg["detector"]
     weight_key = image_cfg["weight_key"]
     weight_h5_path = Path(image_cfg["weight_h5"]).resolve()
+    track_types = tuple(track_cfg.get("track_types") or ("GSF", "PF", "Lost"))
     csv_paths = csv_prediction_paths(image_run_dir, track_run_dir)
     has_csv_predictions = all(path.is_file() for path in csv_paths.values())
 
@@ -396,10 +388,10 @@ def main():
     code_to_sample = None
 
     if use_csv_predictions:
-        image_val_pack = attach_metrics(load_prediction_pack_from_csv(csv_paths["image_val"], has_track_columns=False))
-        image_test_pack = attach_metrics(load_prediction_pack_from_csv(csv_paths["image_test"], has_track_columns=False))
-        track_val_pack = attach_metrics(load_prediction_pack_from_csv(csv_paths["track_val"], has_track_columns=True))
-        track_test_pack = attach_metrics(load_prediction_pack_from_csv(csv_paths["track_test"], has_track_columns=True))
+        image_val_pack = attach_metrics(load_prediction_pack_from_csv(csv_paths["image_val"], track_types=None))
+        image_test_pack = attach_metrics(load_prediction_pack_from_csv(csv_paths["image_test"], track_types=None))
+        track_val_pack = attach_metrics(load_prediction_pack_from_csv(csv_paths["track_val"], track_types=track_types))
+        track_test_pack = attach_metrics(load_prediction_pack_from_csv(csv_paths["track_test"], track_types=track_types))
         save_prediction_pack_summary(output_dir / "manifest_summary.json", image_val_pack, image_test_pack)
     else:
         file_entries = parse_file_entries(weight_h5_path)
@@ -482,6 +474,7 @@ def main():
                 file_entries=file_entries,
                 manifest=split_manifests["val"],
                 max_points=int(track_cfg["max_points"]),
+                track_types=track_types,
                 log_track_pt=bool(track_cfg["log_track_pt"]),
                 max_open_files=DEFAULT_MAX_OPEN_RAW_FILES,
             ),
@@ -494,6 +487,7 @@ def main():
                 file_entries=file_entries,
                 manifest=split_manifests["test"],
                 max_points=int(track_cfg["max_points"]),
+                track_types=track_types,
                 log_track_pt=bool(track_cfg["log_track_pt"]),
                 max_open_files=DEFAULT_MAX_OPEN_RAW_FILES,
             ),
@@ -510,7 +504,7 @@ def main():
 
         track_checkpoint = torch.load(track_run_dir / "best_model.pt", map_location=device)
         track_model = PointCloudTransformerClassifier(
-            input_dim=int(track_checkpoint.get("input_dim", 6)),
+            input_dim=int(track_checkpoint.get("input_dim", point_feature_dim(track_types))),
             embed_dim=int(track_checkpoint["embed_dim"]),
             depth=int(track_checkpoint["depth"]),
             num_heads=int(track_checkpoint["num_heads"]),
@@ -531,8 +525,8 @@ def main():
     image_val_pack, track_val_pack = align_packs(image_val_pack, track_val_pack)
     image_test_pack, track_test_pack = align_packs(image_test_pack, track_test_pack)
 
-    x_val, feature_names = build_fusion_features(image_val_pack, track_val_pack)
-    x_test, _ = build_fusion_features(image_test_pack, track_test_pack)
+    x_val, feature_names = build_fusion_features(image_val_pack, track_val_pack, track_types)
+    x_test, _ = build_fusion_features(image_test_pack, track_test_pack, track_types)
     y_val = image_val_pack["label"]
     y_test = image_test_pack["label"]
     w_val = image_val_pack["weight"]
@@ -601,6 +595,7 @@ def main():
         val_fused_score,
         image_val_pack,
         track_val_pack,
+        track_types,
         file_entries,
         code_to_sample,
     )
@@ -609,6 +604,7 @@ def main():
         test_fused_score,
         image_test_pack,
         track_test_pack,
+        track_types,
         file_entries,
         code_to_sample,
     )
