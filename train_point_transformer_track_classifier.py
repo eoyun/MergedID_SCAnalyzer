@@ -22,6 +22,8 @@ from track_point_transformer import (
     PointCloudTransformerClassifier,
     TrackPointCloudDataset,
     collate_track_point_cloud_batch,
+    parse_track_types,
+    point_feature_dim,
     run_point_transformer_epoch,
     save_track_predictions_csv,
 )
@@ -82,6 +84,12 @@ def parse_args():
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--train-frac", type=float, default=0.8)
     parser.add_argument("--val-frac", type=float, default=0.1)
+    parser.add_argument(
+        "--track-types",
+        type=str,
+        default="GSF,PF,Lost",
+        help="Comma-separated track collections (e.g. 'GSF,PF,Lost' for MiniAOD, 'GenTrk' for AOD).",
+    )
     parser.add_argument(
         "--weight-key",
         type=str,
@@ -181,6 +189,7 @@ def main():
     detector = args.detector
     weight_key = args.weight_key or ("EB_weight_split" if detector == "eb" else "EE_weight_split")
     log_track_pt = not args.disable_log_track_pt
+    track_types = parse_track_types(args.track_types)
 
     weight_h5_path = args.weight_h5.resolve()
     output_dir = args.output_dir.resolve()
@@ -251,6 +260,7 @@ def main():
         file_entries=file_entries,
         manifest=split_manifests["train"],
         max_points=args.max_points,
+        track_types=track_types,
         log_track_pt=log_track_pt,
         max_open_files=DEFAULT_MAX_OPEN_RAW_FILES,
     )
@@ -259,6 +269,7 @@ def main():
         file_entries=file_entries,
         manifest=split_manifests["val"],
         max_points=args.max_points,
+        track_types=track_types,
         log_track_pt=log_track_pt,
         max_open_files=DEFAULT_MAX_OPEN_RAW_FILES,
     )
@@ -267,6 +278,7 @@ def main():
         file_entries=file_entries,
         manifest=split_manifests["test"],
         max_points=args.max_points,
+        track_types=track_types,
         log_track_pt=log_track_pt,
         max_open_files=DEFAULT_MAX_OPEN_RAW_FILES,
     )
@@ -286,7 +298,7 @@ def main():
     test_loader = DataLoader(test_dataset, shuffle=False, **loader_common_kwargs)
 
     model = PointCloudTransformerClassifier(
-        input_dim=POINT_FEATURE_DIM,
+        input_dim=point_feature_dim(track_types),
         embed_dim=args.embed_dim,
         depth=args.depth,
         num_heads=args.num_heads,
@@ -340,6 +352,7 @@ def main():
                 "debug": args.debug,
                 "debug_max_events_per_sample": args.debug_max_events_per_sample,
                 "log_track_pt": log_track_pt,
+                "track_types": list(track_types),
                 "max_points": args.max_points,
                 "embed_dim": args.embed_dim,
                 "depth": args.depth,
@@ -395,7 +408,8 @@ def main():
                     "best_metric": best_metric,
                     "monitor": args.monitor,
                     "detector": detector,
-                    "input_dim": POINT_FEATURE_DIM,
+                    "input_dim": point_feature_dim(track_types),
+                    "track_types": list(track_types),
                     "embed_dim": args.embed_dim,
                     "depth": args.depth,
                     "num_heads": args.num_heads,
@@ -467,8 +481,8 @@ def main():
     with (output_dir / "efficiency_vs_pt_test.json").open("w") as handle:
         json.dump(eff_rows, handle, indent=2)
 
-    save_track_predictions_csv(output_dir / "val_predictions.csv", val_pack, file_entries, code_to_sample)
-    save_track_predictions_csv(output_dir / "test_predictions.csv", test_pack, file_entries, code_to_sample)
+    save_track_predictions_csv(output_dir / "val_predictions.csv", val_pack, file_entries, code_to_sample, track_types)
+    save_track_predictions_csv(output_dir / "test_predictions.csv", test_pack, file_entries, code_to_sample, track_types)
 
     with (output_dir / "test_metrics.json").open("w") as handle:
         json.dump(

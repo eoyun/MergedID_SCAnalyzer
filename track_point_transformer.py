@@ -357,11 +357,13 @@ def run_point_transformer_epoch(model, loader, device, optimizer=None, scaler=No
     }
 
 
-def save_track_predictions_csv(output_path, pack, file_entries, code_to_sample):
+def save_track_predictions_csv(output_path, pack, file_entries, code_to_sample, track_types=TRACK_TYPES):
+    extra = track_csv_columns(track_types)
     header = (
         "score,label,weight,pt,file_idx,object_idx,event_idx,sample_id,raw_file,"
-        "n_gsf,n_pf,n_lost,sum_pt_gsf,sum_pt_pf,sum_pt_lost\n"
+        + ",".join(extra) + "\n"
     )
+    n_types = len(track_types)
     with output_path.open("w") as handle:
         handle.write(header)
         for i in range(len(pack["label"])):
@@ -370,10 +372,11 @@ def save_track_predictions_csv(output_path, pack, file_entries, code_to_sample):
             raw_file = file_entries[file_idx].raw_path
             counts = pack["track_counts"][i]
             sum_pt = pack["track_sum_pt"][i]
+            vals = [f"{float(counts[j]):.0f}" for j in range(n_types)] + \
+                   [f"{float(sum_pt[j]):.8f}" for j in range(n_types)]
             handle.write(
                 f"{float(pack['score'][i]):.8f},{int(pack['label'][i])},{float(pack['weight'][i]):.8e},"
                 f"{float(pack['pt'][i]):.8f},{file_idx},{int(pack['object_idx'][i])},"
                 f"{int(pack['event_idx'][i])},{sample_id},{raw_file},"
-                f"{float(counts[0]):.0f},{float(counts[1]):.0f},{float(counts[2]):.0f},"
-                f"{float(sum_pt[0]):.8f},{float(sum_pt[1]):.8f},{float(sum_pt[2]):.8f}\n"
+                + ",".join(vals) + "\n"
             )

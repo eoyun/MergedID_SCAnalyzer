@@ -25,3 +25,11 @@ def test_sparse_points_onehot_width_matches_track_types():
 def test_parse_track_types():
     assert tpt.parse_track_types("Lost,PF,GSF") == ("Lost", "PF", "GSF")
     assert tpt.parse_track_types("GenTrk") == ("GenTrk",)
+
+
+def test_track_csv_columns_for_track_types():
+    hdr1 = tpt.track_csv_columns(("GenTrk",))
+    assert "n_gentrk" in hdr1 and "sum_pt_gentrk" in hdr1
+    assert "n_pf" not in hdr1
+    hdr3 = tpt.track_csv_columns(("GSF", "PF", "Lost"))
+    assert hdr3 == ["n_gsf", "n_pf", "n_lost", "sum_pt_gsf", "sum_pt_pf", "sum_pt_lost"]
