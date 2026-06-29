@@ -7,6 +7,7 @@ import h5py
 import numpy as np
 
 from build_event_level_weights import (
+    PT_BIN_EDGES,
     PT_BIN_EDGES_WITH_OVERFLOW,
     find_bin_indices,
     derive_event_pt,
@@ -131,6 +132,10 @@ def build_category_weights(input_dir, output_path, hasadd_mode,
         out.attrs["background_selected_events"] = int(bg_selected)
         out.attrs["seed"] = int(seed)
         out.attrs["weight_basis"] = "object"
+        # pT bin edges used for binning; downstream efficiency-vs-pT reads
+        # effective_pt_bin_edges to reproduce the exact same bins.
+        out.attrs["requested_pt_bin_edges"] = PT_BIN_EDGES
+        out.attrs["effective_pt_bin_edges"] = PT_BIN_EDGES_WITH_OVERFLOW
         files_group = out.create_group("files")
         for info in file_infos:
             bg_local = get_background_local_event_indices(bg_global, info) if info.sample_id == "background" else None
