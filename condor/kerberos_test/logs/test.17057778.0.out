@@ -1,0 +1,12 @@
+[host]   b9p20p6532.cern.ch
+[whoami] yeo
+[klist]
+Ticket cache: FILE:/pool/condor/dir_3578003/yeo.cc
+Default principal: yeo@CERN.CH
+
+Valid starting       Expires              Service principal
+06/30/2026 05:59:05  07/01/2026 06:59:05  krbtgt/CERN.CH@CERN.CH
+[mkdir]  /eos/user/y/yeo/4l/runs/kerberos/proc_0
+[ok] wrote /eos/user/y/yeo/4l/runs/kerberos/proc_0/hello.txt
+total 1
+-rw-r--r--. 1 yeo zh 76 Jun 30 13:58 hello.txt

@@ -1,0 +1,17 @@
+universe                = vanilla
+executable              = condor/kerberos_test/test_eos.sh
+arguments               = $(Process)
+
+# Forward the submitter's Kerberos credential so the worker can write to EOS.
+MY.SendCredential       = True
+
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+output = condor/kerberos_test/logs/test.$(Cluster).$(Process).out
+error  = condor/kerberos_test/logs/test.$(Cluster).$(Process).err
+log    = condor/kerberos_test/logs/test.$(Cluster).$(Process).log
+request_cpus   = 1
+request_memory = 1 GB
++JobFlavour = "espresso"
+
+queue 5

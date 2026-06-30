@@ -6,7 +6,7 @@ share one track model -> 12 track, 18 image, 18 fusion.
 """
 
 WEIGHTS_ROOT = "/eos/user/y/yeo/4l/weights/categories"
-RUNS_ROOT = "/eos/user/y/yeo/4l/runs"
+RUNS_ROOT = "/eos/user/y/yeo/4l/runs/v3"
 
 # (short, weight-dir tier, track_types)
 TIERS = [("aod", "AOD", "GenTrk"), ("mini", "MiniAOD", "Lost,PF,GSF")]
@@ -15,8 +15,8 @@ HASADD = ("all", "eq0", "eq1")
 ES_OPTS = ("es", "noes")
 
 # Training hyperparameters (edit here; one knob for the whole sweep).
-EPOCHS = 20
-IMAGE = {"model": "resnet18", "batch_size": "16", "lr": "1e-4"}
+EPOCHS = 100
+IMAGE = {"model": "resnet50", "batch_size": "16", "lr": "1e-4"}
 TRACK = {"batch_size": "64", "lr": "1e-4", "max_points": "16",
          "embed_dim": "128", "depth": "4", "num_heads": "4",
          "mlp_ratio": "4.0", "dropout": "0.1"}

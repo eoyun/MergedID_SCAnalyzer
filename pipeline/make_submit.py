@@ -26,6 +26,8 @@ SUBMIT_TEMPLATE = """\
 universe                = vanilla
 executable              = condor/run_job.sh
 arguments               = $(arguments)
+# Forward the submitter's Kerberos credential so workers can read/write EOS.
+MY.SendCredential       = True
 should_transfer_files   = YES
 when_to_transfer_output = ON_EXIT
 transfer_input_files    = {transfers}
