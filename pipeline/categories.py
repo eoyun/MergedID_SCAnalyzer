@@ -6,7 +6,7 @@ share one track model -> 12 track, 18 image, 18 fusion.
 """
 
 WEIGHTS_ROOT = "/eos/user/y/yeo/4l/weights/categories"
-RUNS_ROOT = "/eos/user/y/yeo/4l/runs/v3"
+RUNS_ROOT = "/eos/user/y/yeo/4l/runs/v4"
 
 # (short, weight-dir tier, track_types)
 TIERS = [("aod", "AOD", "GenTrk"), ("mini", "MiniAOD", "Lost,PF,GSF")]
@@ -16,6 +16,7 @@ ES_OPTS = ("es", "noes")
 
 # Training hyperparameters (edit here; one knob for the whole sweep).
 EPOCHS = 100
+NUM_WORKERS = "8"   # parallel dataloader workers (EOS reads are the bottleneck)
 IMAGE = {"model": "resnet50", "batch_size": "16", "lr": "1e-4"}
 TRACK = {"batch_size": "64", "lr": "1e-4", "max_points": "16",
          "embed_dim": "128", "depth": "4", "num_heads": "4",
@@ -40,6 +41,7 @@ def track_categories():
                     "--output-dir", outdir,
                     "--track-types", tt,
                     "--epochs", str(EPOCHS),
+                    "--num-workers", NUM_WORKERS,
                     "--batch-size", TRACK["batch_size"],
                     "--lr", TRACK["lr"],
                     "--max-points", TRACK["max_points"],
@@ -76,6 +78,7 @@ def image_categories():
             "--track-types", tt,
             "--model", IMAGE["model"],
             "--epochs", str(EPOCHS),
+            "--num-workers", NUM_WORKERS,
             "--batch-size", IMAGE["batch_size"],
             "--lr", IMAGE["lr"],
         ]
@@ -104,6 +107,7 @@ def fusion_categories():
             "--track-run-dir", track_run,
             "--output-dir", outdir,
             "--prediction-source", "csv",
+            "--num-workers", NUM_WORKERS,
         ]
         out.append({"name": name, "image_run": image_run,
                     "track_run": track_run, "outdir": outdir, "argv": argv})

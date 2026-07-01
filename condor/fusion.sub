@@ -6,14 +6,14 @@ MY.SendCredential       = True
 should_transfer_files   = YES
 when_to_transfer_output = ON_EXIT
 transfer_input_files    = train_resnet_image_classifier.py, track_point_transformer.py, train_point_transformer_track_classifier.py, train_fusion_ensemble.py, build_event_level_weights.py
-output = condor/logs/v3/fusion.$(Cluster).$(Process).out
-error  = condor/logs/v3/fusion.$(Cluster).$(Process).err
-log    = condor/logs/v3/fusion.$(Cluster).$(Process).log
-request_cpus   = 2
-request_memory = 8 GB
+output = condor/logs/v4/fusion.$(Cluster).$(Process).out
+error  = condor/logs/v4/fusion.$(Cluster).$(Process).err
+log    = condor/logs/v4/fusion.$(Cluster).$(Process).log
+request_cpus   = 8
+request_memory = 16 GB
 request_disk   = 8 GB
 request_gpus   = 1
-require_gpus   = (Capability >= 7.5)
+require_gpus   = (Capability >= 8.0)
 +JobFlavour = "tomorrow"
 
 queue arguments from condor/fusion.txt

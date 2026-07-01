@@ -44,8 +44,8 @@ queue arguments from {listfile}
 
 
 def write_submit(path, stage, listfile, log_dir="condor/logs", request_gpus=1,
-                 cpus=2, mem="8 GB", disk="8 GB", flavour="tomorrow",
-                 min_gpu_capability=7.5):
+                 cpus=8, mem="16 GB", disk="8 GB", flavour="tomorrow",
+                 min_gpu_capability=8.0):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     # The LCG_109_cuda PyTorch supports CUDA capability 7.5-9.0, so exclude

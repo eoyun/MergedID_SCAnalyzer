@@ -53,7 +53,7 @@ def test_submit_file_has_gpu_and_transfers(tmp_path):
     ms.write_submit(sub, "train_track", tmp_path / "track.txt", request_gpus=1)
     text = sub.read_text()
     assert "request_gpus   = 1" in text
-    assert "require_gpus   = (Capability >= 7.5)" in text
+    assert "require_gpus   = (Capability >= 8.0)" in text
     assert "MY.SendCredential       = True" in text
     assert "queue arguments from" in text
     for mod in ("train_resnet_image_classifier.py", "track_point_transformer.py",
