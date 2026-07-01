@@ -31,9 +31,9 @@ MY.SendCredential       = True
 should_transfer_files   = YES
 when_to_transfer_output = ON_EXIT
 transfer_input_files    = {transfers}
-output = condor/logs/{stage}.$(Cluster).$(Process).out
-error  = condor/logs/{stage}.$(Cluster).$(Process).err
-log    = condor/logs/{stage}.$(Cluster).$(Process).log
+output = {logdir}/{stage}.$(Cluster).$(Process).out
+error  = {logdir}/{stage}.$(Cluster).$(Process).err
+log    = {logdir}/{stage}.$(Cluster).$(Process).log
 request_cpus   = {cpus}
 request_memory = {mem}
 request_disk   = {disk}
@@ -43,8 +43,9 @@ queue arguments from {listfile}
 """
 
 
-def write_submit(path, stage, listfile, request_gpus=1, cpus=2, mem="8 GB",
-                 disk="8 GB", flavour="tomorrow", min_gpu_capability=7.5):
+def write_submit(path, stage, listfile, log_dir="condor/logs", request_gpus=1,
+                 cpus=2, mem="8 GB", disk="8 GB", flavour="tomorrow",
+                 min_gpu_capability=7.5):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     # The LCG_109_cuda PyTorch supports CUDA capability 7.5-9.0, so exclude
@@ -56,7 +57,7 @@ def write_submit(path, stage, listfile, request_gpus=1, cpus=2, mem="8 GB",
                     f"require_gpus   = (Capability >= {min_gpu_capability})\n")
     text = SUBMIT_TEMPLATE.format(
         transfers=", ".join(TRANSFER_MODULES),
-        stage=stage, cpus=cpus, mem=mem, disk=disk,
+        stage=stage, cpus=cpus, mem=mem, disk=disk, logdir=log_dir,
         gpu_line=gpu_line, flavour=flavour, listfile=listfile)
     path.write_text(text)
     return path
@@ -67,7 +68,11 @@ def main():
     ap.add_argument("--out-dir", default="condor", type=Path)
     args = ap.parse_args()
     args.out_dir.mkdir(parents=True, exist_ok=True)
-    (args.out_dir / "logs").mkdir(exist_ok=True)
+    # Group logs by the runs version tag (last component of RUNS_ROOT, e.g. "v3")
+    # so condor/logs doesn't become an undifferentiated pile across submissions.
+    tag = cat.RUNS_ROOT.rstrip("/").split("/")[-1]
+    log_dir = args.out_dir / "logs" / tag
+    log_dir.mkdir(parents=True, exist_ok=True)
     specs = [
         ("train_track", cat.track_categories()),
         ("train_image", cat.image_categories()),
@@ -76,8 +81,8 @@ def main():
     for stage, cats in specs:
         listfile = args.out_dir / f"{stage}.txt"
         write_arglist(listfile, cats)
-        write_submit(args.out_dir / f"{stage}.sub", stage, listfile)
-        print(f"[{stage}] {len(cats)} jobs -> {args.out_dir / (stage + '.sub')}")
+        write_submit(args.out_dir / f"{stage}.sub", stage, listfile, log_dir=str(log_dir))
+        print(f"[{stage}] {len(cats)} jobs -> {args.out_dir / (stage + '.sub')}  (logs: {log_dir})")
 
 
 if __name__ == "__main__":
