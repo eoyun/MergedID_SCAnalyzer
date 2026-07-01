@@ -8,11 +8,11 @@ transfer_input_files    = train_resnet_image_classifier.py, track_point_transfor
 output = condor/logs/canary/canary.$(Cluster).$(Process).out
 error  = condor/logs/canary/canary.$(Cluster).$(Process).err
 log    = condor/logs/canary/canary.$(Cluster).$(Process).log
-request_cpus   = 2
-request_memory = 8 GB
+request_cpus   = 8
+request_memory = 16 GB
 request_disk   = 8 GB
 request_gpus   = 1
-require_gpus   = (Capability >= 7.5)
+require_gpus   = (Capability >= 8.0)
 max_retries    = 3
 +JobFlavour = "tomorrow"
 
