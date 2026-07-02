@@ -54,3 +54,23 @@ def test_build_compact_roundtrip(tier_dir, tmp_path):
         raw_file = f["raw_file"][0]; oidx = int(f["object_idx"][0])
         with h5py.File(raw_file, "r") as r:
             assert np.array_equal(f["SC_energy"][0], r["SC_energy"][oidx])
+
+
+import pipeline.compact_manifest as cm
+
+
+def test_load_compact_manifest_split(tier_dir, tmp_path):
+    wpath = tmp_path / "w.h5"; out = tmp_path / "c_eb.h5"
+    bcw.build_category_weights(input_dir=tier_dir, output_path=wpath,
+                               hasadd_mode="all", background_max_events=None, seed=1)
+    n = bcd.build_compact_dataset(wpath, "eb", ("Lost", "PF", "GSF"), out,
+                                  train_frac=0.6, val_frac=0.2, seed=1)
+    fe, manifests = cm.load_compact_manifest(out)
+    assert len(fe) == 1 and fe[0].raw_path == str(out)
+    total = sum(len(manifests[s]["label"]) for s in ("train", "val", "test"))
+    assert total == n
+    for split in ("train", "val", "test"):
+        m = manifests[split]
+        assert (m["file_idx"] == 0).all()
+        if len(m["object_idx"]):
+            assert m["object_idx"].max() < n

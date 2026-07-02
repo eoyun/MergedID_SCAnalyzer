@@ -114,6 +114,12 @@ def parse_args():
         help="Drop the two ES preshower channels (EE only).",
     )
     parser.add_argument(
+        "--compact",
+        type=Path,
+        default=None,
+        help="Read a prebuilt compact dataset HDF5 (skips the raw file scan).",
+    )
+    parser.add_argument(
         "--monitor",
         choices=("auc", "f1"),
         default="auc",
@@ -879,52 +885,62 @@ def main():
     if sharing_strategy is not None:
         print(f"[torch_sharing_strategy] {sharing_strategy}")
 
-    file_entries = parse_file_entries(weight_h5_path)
+    if args.compact is not None:
+        from pipeline.compact_manifest import load_compact_manifest
+        print(f"[compact] {args.compact}")
+        file_entries, split_manifests = load_compact_manifest(args.compact)
+        code_to_sample = None
+        class_balance_stats = {}
+        for split_name in ("train", "val", "test"):
+            split_manifests[split_name], class_balance_stats[split_name] = \
+                rebalance_manifest_class_weights(split_manifests[split_name])
+    else:
+        file_entries = parse_file_entries(weight_h5_path)
 
-    event_file_idx, event_local_idx, event_sample_code, sample_to_code, code_to_sample = build_event_registry(
-        file_entries=file_entries,
-        weight_h5_path=weight_h5_path,
-        detector=detector,
-        weight_key=weight_key,
-        debug=args.debug,
-        debug_max_events_per_sample=args.debug_max_events_per_sample,
-        seed=args.seed,
-    )
-
-    split_event_maps = build_split_event_maps(
-        event_file_idx=event_file_idx,
-        event_local_idx=event_local_idx,
-        event_sample_code=event_sample_code,
-        train_frac=args.train_frac,
-        val_frac=args.val_frac,
-        seed=args.seed,
-    )
-
-    split_manifests = {
-        split_name: build_object_manifest(
+        event_file_idx, event_local_idx, event_sample_code, sample_to_code, code_to_sample = build_event_registry(
             file_entries=file_entries,
             weight_h5_path=weight_h5_path,
             detector=detector,
             weight_key=weight_key,
-            split_event_map=split_map,
-            sample_to_code=sample_to_code,
+            debug=args.debug,
+            debug_max_events_per_sample=args.debug_max_events_per_sample,
+            seed=args.seed,
         )
-        for split_name, split_map in split_event_maps.items()
-    }
 
-    class_balance_stats = {}
-    for split_name, manifest in split_manifests.items():
-        split_manifests[split_name], class_balance_stats[split_name] = rebalance_manifest_class_weights(manifest)
+        split_event_maps = build_split_event_maps(
+            event_file_idx=event_file_idx,
+            event_local_idx=event_local_idx,
+            event_sample_code=event_sample_code,
+            train_frac=args.train_frac,
+            val_frac=args.val_frac,
+            seed=args.seed,
+        )
 
-    for split_name, manifest in split_manifests.items():
-        summarize_manifest(split_name, manifest, code_to_sample)
+        split_manifests = {
+            split_name: build_object_manifest(
+                file_entries=file_entries,
+                weight_h5_path=weight_h5_path,
+                detector=detector,
+                weight_key=weight_key,
+                split_event_map=split_map,
+                sample_to_code=sample_to_code,
+            )
+            for split_name, split_map in split_event_maps.items()
+        }
 
-    save_manifest_summary(
-        output_dir / "manifest_summary.json",
-        split_manifests,
-        code_to_sample,
-        class_balance_stats,
-    )
+        class_balance_stats = {}
+        for split_name, manifest in split_manifests.items():
+            split_manifests[split_name], class_balance_stats[split_name] = rebalance_manifest_class_weights(manifest)
+
+        for split_name, manifest in split_manifests.items():
+            summarize_manifest(split_name, manifest, code_to_sample)
+
+        save_manifest_summary(
+            output_dir / "manifest_summary.json",
+            split_manifests,
+            code_to_sample,
+            class_balance_stats,
+        )
 
     train_dataset = DetectorObjectDataset(detector, file_entries, split_manifests["train"], log_scale=log_scale,
                                           track_types=track_types, include_es=include_es)
