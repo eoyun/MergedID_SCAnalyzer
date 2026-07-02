@@ -31,3 +31,26 @@ def test_combined_manifest_has_all_splits(tier_dir, tmp_path):
               "sample_code", "split"):
         assert len(m[k]) == len(m["label"])
     assert (m["weight"] > 0).all()
+
+
+import h5py
+
+
+def test_build_compact_roundtrip(tier_dir, tmp_path):
+    wpath = tmp_path / "w.h5"
+    bcw.build_category_weights(input_dir=tier_dir, output_path=wpath,
+                               hasadd_mode="all", background_max_events=None, seed=1)
+    out = tmp_path / "compact_eb.h5"
+    n = bcd.build_compact_dataset(weight_h5_path=wpath, detector="eb",
+                                  track_types=("Lost", "PF", "GSF"), output_path=out,
+                                  train_frac=0.6, val_frac=0.2, seed=1)
+    with h5py.File(out, "r") as f:
+        assert f["SC_energy"].shape[0] == n and f["SC_energy"].ndim == 3
+        for t in ("Lost", "PF", "GSF"):
+            assert f[f"EB_track_pt_{t}_idx"].shape == (n,)
+        assert len(f["label"]) == n and len(f["split"]) == n
+        assert f.attrs["detector"] == "eb"
+        assert f.attrs["track_types"] == "Lost,PF,GSF"
+        raw_file = f["raw_file"][0]; oidx = int(f["object_idx"][0])
+        with h5py.File(raw_file, "r") as r:
+            assert np.array_equal(f["SC_energy"][0], r["SC_energy"][oidx])

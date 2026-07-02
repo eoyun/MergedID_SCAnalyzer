@@ -24,6 +24,16 @@ def _write_file(path, n_events, eb_events, ee_events, eb_hasadd, ee_hasadd, sour
         f["EE_seed_energy"] = np.zeros((len(ee_events), 4, 4), dtype=np.float32)
         f["hasAdditionalTrk_EB"] = np.asarray(eb_hasadd, dtype=np.float32)
         f["hasAdditionalTrk_EE"] = np.asarray(ee_hasadd, dtype=np.int32)
+        # minimal per-object sparse track arrays (vlen), for compact builder tests
+        vi = h5py.special_dtype(vlen=np.int64)
+        vf = h5py.special_dtype(vlen=np.float32)
+        for prefix, nobj in (("EB", len(eb_events)), ("EE", len(ee_events))):
+            for t in ("Lost", "PF", "GSF"):
+                idx = f.create_dataset(f"{prefix}_track_pt_{t}_idx", (nobj,), dtype=vi)
+                val = f.create_dataset(f"{prefix}_track_pt_{t}_val", (nobj,), dtype=vf)
+                for i in range(nobj):
+                    idx[i] = np.array([(i * 7) % 16], dtype=np.int64)
+                    val[i] = np.array([5.0 + i], dtype=np.float32)
 
 
 @pytest.fixture
