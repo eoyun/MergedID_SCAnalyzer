@@ -137,3 +137,27 @@ def build_compact_dataset(weight_h5_path, detector, track_types, output_path,
             if raw is not None:
                 raw.close()
     return n
+
+
+def parse_args():
+    p = argparse.ArgumentParser(description="Build a compact per-category training HDF5.")
+    p.add_argument("--weight-h5", type=Path, required=True)
+    p.add_argument("--detector", choices=("eb", "ee"), required=True)
+    p.add_argument("--track-types", required=True, help="e.g. 'Lost,PF,GSF' or 'GenTrk'")
+    p.add_argument("--output-path", type=Path, required=True)
+    p.add_argument("--train-frac", type=float, default=0.8)
+    p.add_argument("--val-frac", type=float, default=0.1)
+    p.add_argument("--seed", type=int, default=42)
+    return p.parse_args()
+
+
+def main():
+    a = parse_args()
+    tt = tuple(t for t in a.track_types.split(",") if t)
+    n = build_compact_dataset(a.weight_h5, a.detector, tt, a.output_path,
+                              a.train_frac, a.val_frac, a.seed)
+    print(f"[compact] wrote {n} objects -> {a.output_path}")
+
+
+if __name__ == "__main__":
+    main()
