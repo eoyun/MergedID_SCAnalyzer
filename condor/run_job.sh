@@ -33,6 +33,18 @@ for ((i=0; i<${#args[@]}; i++)); do
 done
 mkdir -p "${local_out}"
 
+# Stage the compact dataset (single file) to local scratch and read it locally
+# (avoids per-object FUSE reads during training).
+for ((i=0; i<${#args[@]}; i++)); do
+  if [[ "${args[$i]}" == "--compact" ]]; then
+    eos_compact="${args[$((i+1))]}"
+    local_compact="${scratch}/$(basename "${eos_compact}")"
+    echo "[stage-in] ${eos_compact} -> ${local_compact}"
+    xrdcp -f "root://eosuser.cern.ch/${eos_compact}" "${local_compact}"
+    args[$((i+1))]="${local_compact}"
+  fi
+done
+
 python3 -c "import torch; print('[gpu]', torch.cuda.is_available(), torch.cuda.device_count())" || true
 
 set +e
