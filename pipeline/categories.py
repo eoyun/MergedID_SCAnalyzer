@@ -6,7 +6,12 @@ share one track model -> 12 track, 18 image, 18 fusion.
 """
 
 WEIGHTS_ROOT = "/eos/user/y/yeo/4l/weights/categories"
-RUNS_ROOT = "/eos/user/y/yeo/4l/runs/v4"
+COMPACT_ROOT = "/eos/user/y/yeo/4l/compact"
+RUNS_ROOT = "/eos/user/y/yeo/4l/runs/v5"
+
+
+def compact_h5(tier_dir, det, mode):
+    return f"{COMPACT_ROOT}/{tier_dir}_{det}_{mode}.h5"
 
 # (short, weight-dir tier, track_types)
 TIERS = [("aod", "AOD", "GenTrk"), ("mini", "MiniAOD", "Lost,PF,GSF")]
@@ -15,7 +20,7 @@ HASADD = ("all", "eq0", "eq1")
 ES_OPTS = ("es", "noes")
 
 # Training hyperparameters (edit here; one knob for the whole sweep).
-EPOCHS = 100
+EPOCHS = 20
 NUM_WORKERS = "8"   # parallel dataloader workers (EOS reads are the bottleneck)
 IMAGE = {"model": "resnet50", "batch_size": "16", "lr": "1e-4"}
 TRACK = {"batch_size": "64", "lr": "1e-4", "max_points": "16",
@@ -38,6 +43,7 @@ def track_categories():
                     "train_point_transformer_track_classifier.py",
                     "--detector", det,
                     "--weight-h5", weight_h5(tdir, mode),
+                    "--compact", compact_h5(tdir, det, mode),
                     "--output-dir", outdir,
                     "--track-types", tt,
                     "--epochs", str(EPOCHS),
@@ -74,6 +80,7 @@ def image_categories():
             "train_resnet_image_classifier.py",
             "--detector", det,
             "--weight-h5", weight_h5(tdir, mode),
+            "--compact", compact_h5(tdir, det, mode),
             "--output-dir", outdir,
             "--track-types", tt,
             "--model", IMAGE["model"],
