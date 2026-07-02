@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import multiprocessing as mp
 from pathlib import Path
 
 import h5py
@@ -33,6 +34,28 @@ def raw_source_keys(detector, track_types):
     }
 
 
+def _read_file_objects(task):
+    """Worker: read one raw file's needed arrays for the given object indices."""
+    raw_path, calo_k, es_keys, track_stems, rows, obj_idx = task
+    obj_idx = np.asarray(obj_idx, dtype=np.int64)
+    order = np.argsort(obj_idx, kind="stable")
+    sorted_idx = obj_idx[order]          # increasing -> valid h5py fancy index
+    inv = np.argsort(order, kind="stable")
+    out = {"rows": np.asarray(rows, dtype=np.int64)}
+    with h5py.File(raw_path, "r") as r:
+        out["calo"] = r[calo_k][sorted_idx][inv]
+        out["es"] = {k: r[k][sorted_idx][inv] for k in es_keys}
+        idx_d, val_d = {}, {}
+        for stem in track_stems:
+            ia = r[f"{stem}_idx"][:]      # vlen: read all, index in memory (safe)
+            va = r[f"{stem}_val"][:]
+            idx_d[stem] = [np.asarray(ia[j], dtype=np.int64) for j in obj_idx]
+            val_d[stem] = [np.asarray(va[j], dtype=np.float32) for j in obj_idx]
+        out["track_idx"] = idx_d
+        out["track_val"] = val_d
+    return out
+
+
 def build_combined_manifest(weight_h5_path, detector, weight_key,
                             train_frac, val_frac, seed,
                             debug=False, debug_max_events_per_sample=12):
@@ -63,7 +86,7 @@ def build_combined_manifest(weight_h5_path, detector, weight_key,
 
 def build_compact_dataset(weight_h5_path, detector, track_types, output_path,
                           train_frac=0.8, val_frac=0.1, seed=42,
-                          debug=False, debug_max_events_per_sample=12):
+                          debug=False, debug_max_events_per_sample=12, workers=16):
     weight_key = "EB_weight_split" if detector == "eb" else "EE_weight_split"
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -116,26 +139,34 @@ def build_compact_dataset(weight_h5_path, detector, track_types, output_path,
         trk_val = {t: out.create_dataset(f"{t}_val", shape=(n,), dtype=VLEN_F32, compression="gzip")
                    for t in src["track"]}
 
-        order = np.argsort(man["file_idx"], kind="stable")
-        cur_fi, raw = -1, None
-        try:
-            for row in order:
-                row = int(row)
-                fi = int(man["file_idx"][row]); oidx = int(man["object_idx"][row])
-                if fi != cur_fi:
-                    if raw is not None:
-                        raw.close()
-                    raw = h5py.File(file_entries[fi].raw_path, "r")
-                    cur_fi = fi
-                calo_ds[row] = raw[calo_k][oidx]
-                for k in src["es"]:
-                    es_ds[k][row] = raw[k][oidx]
-                for t in src["track"]:
-                    trk_idx[t][row] = np.asarray(raw[f"{t}_idx"][oidx], dtype=np.int64)
-                    trk_val[t][row] = np.asarray(raw[f"{t}_val"][oidx], dtype=np.float32)
-        finally:
-            if raw is not None:
-                raw.close()
+        # Read each raw file's needed objects in PARALLEL (overlap EOS-fuse
+        # latency), write serially. Group compact rows by their source file.
+        from collections import defaultdict
+        byfile = defaultdict(lambda: ([], []))
+        for row in range(n):
+            fi = int(man["file_idx"][row])
+            byfile[fi][0].append(row)
+            byfile[fi][1].append(int(man["object_idx"][row]))
+        tasks = [(file_entries[fi].raw_path, calo_k, src["es"], src["track"],
+                  np.asarray(rws, dtype=np.int64), np.asarray(oix, dtype=np.int64))
+                 for fi, (rws, oix) in byfile.items()]
+
+        def _write(res):
+            rws = res["rows"]
+            wo = np.argsort(rws, kind="stable")
+            rsorted = rws[wo]
+            calo_ds[rsorted] = res["calo"][wo]
+            for k in src["es"]:
+                es_ds[k][rsorted] = res["es"][k][wo]
+            for t in src["track"]:
+                for j, row in zip(wo.tolist(), rsorted.tolist()):
+                    trk_idx[t][int(row)] = res["track_idx"][t][j]
+                    trk_val[t][int(row)] = res["track_val"][t][j]
+
+        ctx = mp.get_context("spawn")  # avoid fork-in-multithreaded (h5py) deadlocks
+        with ctx.Pool(workers) as pool:
+            for res in pool.imap_unordered(_read_file_objects, tasks):
+                _write(res)
     return n
 
 
@@ -148,6 +179,7 @@ def parse_args():
     p.add_argument("--train-frac", type=float, default=0.8)
     p.add_argument("--val-frac", type=float, default=0.1)
     p.add_argument("--seed", type=int, default=42)
+    p.add_argument("--workers", type=int, default=16)
     return p.parse_args()
 
 
@@ -155,7 +187,7 @@ def main():
     a = parse_args()
     tt = tuple(t for t in a.track_types.split(",") if t)
     n = build_compact_dataset(a.weight_h5, a.detector, tt, a.output_path,
-                              a.train_frac, a.val_frac, a.seed)
+                              a.train_frac, a.val_frac, a.seed, workers=a.workers)
     print(f"[compact] wrote {n} objects -> {a.output_path}")
 
 
