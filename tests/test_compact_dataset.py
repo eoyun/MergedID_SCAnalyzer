@@ -65,8 +65,9 @@ def test_load_compact_manifest_split(tier_dir, tmp_path):
                                hasadd_mode="all", background_max_events=None, seed=1)
     n = bcd.build_compact_dataset(wpath, "eb", ("Lost", "PF", "GSF"), out,
                                   train_frac=0.6, val_frac=0.2, seed=1)
-    fe, manifests = cm.load_compact_manifest(out)
+    fe, manifests, code_to_sample = cm.load_compact_manifest(out)
     assert len(fe) == 1 and fe[0].raw_path == str(out)
+    assert isinstance(code_to_sample, dict) and len(code_to_sample) >= 1
     total = sum(len(manifests[s]["label"]) for s in ("train", "val", "test"))
     assert total == n
     for split in ("train", "val", "test"):

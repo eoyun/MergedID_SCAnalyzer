@@ -888,8 +888,7 @@ def main():
     if args.compact is not None:
         from pipeline.compact_manifest import load_compact_manifest
         print(f"[compact] {args.compact}")
-        file_entries, split_manifests = load_compact_manifest(args.compact)
-        code_to_sample = None
+        file_entries, split_manifests, code_to_sample = load_compact_manifest(args.compact)
         class_balance_stats = {}
         for split_name in ("train", "val", "test"):
             split_manifests[split_name], class_balance_stats[split_name] = \

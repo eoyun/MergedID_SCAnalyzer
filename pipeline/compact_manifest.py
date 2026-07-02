@@ -19,7 +19,13 @@ def load_compact_manifest(compact_path):
     with h5py.File(compact_path, "r") as f:
         split = f["split"][:]
         base = {k: f[k][:] for k in ("label", "weight", "pt", "event_idx", "sample_code")}
+        sample_id = f["sample_id"][:]
         n = len(split)
+    # rebuild code -> sample_id map (predictions CSV needs it)
+    code_to_sample = {}
+    for c, sid in zip(base["sample_code"].tolist(), sample_id.tolist()):
+        sid = sid.decode() if isinstance(sid, bytes) else str(sid)
+        code_to_sample.setdefault(int(c), sid)
     rows = np.arange(n, dtype=np.int32)
     fe = [FileEntry(split="compact", stem="compact", raw_path=compact_path,
                     sample_id="compact", process_name="compact", n_events=n)]
@@ -35,4 +41,4 @@ def load_compact_manifest(compact_path):
             "pt": base["pt"][m].astype(np.float32),
             "sample_code": base["sample_code"][m].astype(np.int16),
         }
-    return fe, manifests
+    return fe, manifests, code_to_sample
