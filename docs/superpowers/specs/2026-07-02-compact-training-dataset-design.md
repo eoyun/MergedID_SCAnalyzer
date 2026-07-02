@@ -94,28 +94,32 @@ Add a `--compact <file>` data source:
 
 ## Decisions (resolved 2026-07-02)
 1. **Granularity: 12 files** per `(tier,det,hasADD)`, shared by image+track (ES
-   stored always; `--no-es` ignores it). Measured footprint ~183 GB total vs
-   ~202 GB for the 30-file scheme (12-file saves ~19 GB / ~10% by not duplicating
-   calo+track into separate ES-off image files and separate track files).
-2. **ES: keep full 16×512 resolution.** This is why EE is large: ES = plane1
-   (16×512) + plane2 (512×16) = 16,384 float32 = **64 KB/object** (16× the 4 KB
-   calo). EE-`all` ≈ 570k objects × ~69 KB ≈ **~39 GB/file**; 6 EE files ≈ 157 GB.
+   stored always; `--no-es` ignores it). Chosen for fewer files + no calo/track
+   duplication; with compression the size difference vs 30-file is negligible.
+2. **ES: keep full 16×512 resolution**, stored **gzip-compressed** like the raw
+   files. Uncompressed ES is 64 KB/obj (16,384 float32), but preshower planes are
+   mostly zeros → **~63× compression → ~1.0 KB/obj on disk** (measured).
 3. **Build once on the login node** (parallel across files), store on EOS; jobs
    load. Not per-job, not per-epoch.
 4. **Path**: `/eos/user/y/yeo/4l/compact/<tier>_<det>_<hasadd>.h5`.
 
-### Measured selected-object counts (weight>0), for sizing
-| category | n_EB | n_EE | EB compact | EE compact (ES) |
-|----------|-----:|-----:|-----------:|----------------:|
-| MiniAOD_all | 1,348,012 | 569,700 | ~6.7 GB | ~39 GB |
-| MiniAOD_eq0 | 1,157,969 | 530,032 | ~5.8 GB | ~37 GB |
-| MiniAOD_eq1 |   180,722 |  34,590 | ~0.9 GB | ~2.4 GB |
-| AOD_all     | 1,346,834 | 570,055 | ~6.7 GB | ~39 GB |
-| AOD_eq0     | 1,137,880 | 528,215 | ~5.7 GB | ~36 GB |
-| AOD_eq1     |   197,047 |  36,758 | ~1.0 GB | ~2.5 GB |
+### Measured sizes (gzip on-disk, `get_storage_size`)
+Per object: **EB ~0.29 KB**, **EE ~1.31 KB** (ES ~1.04 of it). Selected-object
+counts (weight>0) and resulting **compressed** compact sizes:
 
-Per-job stage-in = one file (≤ ~39 GB) to local scratch (worker `/` had 320 GB
-free). Total EOS footprint ~183 GB (confirm personal quota).
+| category | n_EB | n_EE | EB compact | EE compact |
+|----------|-----:|-----:|-----------:|-----------:|
+| MiniAOD_all | 1,348,012 | 569,700 | ~0.39 GB | ~0.75 GB |
+| MiniAOD_eq0 | 1,157,969 | 530,032 | ~0.34 GB | ~0.69 GB |
+| MiniAOD_eq1 |   180,722 |  34,590 | ~0.05 GB | ~0.05 GB |
+| AOD_all     | 1,346,834 | 570,055 | ~0.39 GB | ~0.75 GB |
+| AOD_eq0     | 1,137,880 | 528,215 | ~0.33 GB | ~0.69 GB |
+| AOD_eq1     |   197,047 |  36,758 | ~0.06 GB | ~0.05 GB |
+
+**Total ~5 GB** for all 12 files. EOS home quota: 1.00 TB logical, ~808 GB used,
+**~191 GB free** → ample. Per-job stage-in is one small file (≤ ~1 GB).
+
+(Earlier draft cited ~183 GB — that was the *uncompressed* size; corrected here.)
 
 ## Validation plan
 Build ONE compact (e.g. MiniAOD·eb·all), run a 1-epoch canary reading it, and
