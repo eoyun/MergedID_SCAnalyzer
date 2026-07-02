@@ -92,14 +92,30 @@ Add a `--compact <file>` data source:
 - Store compact files on EOS (small for most); training stages the single file
   to local scratch via xrdcp (fast, one file).
 
-## Open questions (for your review)
-1. **Granularity**: 12 files per `(tier,det,hasADD)` shared by image+track (my
-   recommendation), vs 30 per `(category, model)`? Shared = fewer files, ES
-   stored once.
-2. **EE+ES size (~tens of GB)**: keep ES at full 16×512 resolution (accept the
-   size, stage locally), or downsample/omit ES? (Modeling decision — yours.)
-3. **Build location**: login node (parallel) vs CPU condor jobs.
-4. **Compact storage path** on EOS (e.g. `/eos/user/y/yeo/4l/compact/<tier>_<det>_<hasadd>.h5`).
+## Decisions (resolved 2026-07-02)
+1. **Granularity: 12 files** per `(tier,det,hasADD)`, shared by image+track (ES
+   stored always; `--no-es` ignores it). Measured footprint ~183 GB total vs
+   ~202 GB for the 30-file scheme (12-file saves ~19 GB / ~10% by not duplicating
+   calo+track into separate ES-off image files and separate track files).
+2. **ES: keep full 16×512 resolution.** This is why EE is large: ES = plane1
+   (16×512) + plane2 (512×16) = 16,384 float32 = **64 KB/object** (16× the 4 KB
+   calo). EE-`all` ≈ 570k objects × ~69 KB ≈ **~39 GB/file**; 6 EE files ≈ 157 GB.
+3. **Build once on the login node** (parallel across files), store on EOS; jobs
+   load. Not per-job, not per-epoch.
+4. **Path**: `/eos/user/y/yeo/4l/compact/<tier>_<det>_<hasadd>.h5`.
+
+### Measured selected-object counts (weight>0), for sizing
+| category | n_EB | n_EE | EB compact | EE compact (ES) |
+|----------|-----:|-----:|-----------:|----------------:|
+| MiniAOD_all | 1,348,012 | 569,700 | ~6.7 GB | ~39 GB |
+| MiniAOD_eq0 | 1,157,969 | 530,032 | ~5.8 GB | ~37 GB |
+| MiniAOD_eq1 |   180,722 |  34,590 | ~0.9 GB | ~2.4 GB |
+| AOD_all     | 1,346,834 | 570,055 | ~6.7 GB | ~39 GB |
+| AOD_eq0     | 1,137,880 | 528,215 | ~5.7 GB | ~36 GB |
+| AOD_eq1     |   197,047 |  36,758 | ~1.0 GB | ~2.5 GB |
+
+Per-job stage-in = one file (≤ ~39 GB) to local scratch (worker `/` had 320 GB
+free). Total EOS footprint ~183 GB (confirm personal quota).
 
 ## Validation plan
 Build ONE compact (e.g. MiniAOD·eb·all), run a 1-epoch canary reading it, and
