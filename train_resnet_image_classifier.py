@@ -628,14 +628,14 @@ def build_event_registry(file_entries, weight_h5_path: Path, detector: str, weig
     pending_by_sample = defaultdict(list)
 
     with h5py.File(weight_h5_path, "r") as weight_h5:
+        ev_key = "EB_ele_event_idx" if detector == "eb" else "EE_ele_event_idx"
         for file_idx, entry in enumerate(file_entries):
             weight_group = weight_h5["files"][entry.split][entry.stem]
-            with h5py.File(entry.raw_path, "r") as raw:
-                if detector == "eb":
-                    event_idx = raw["EB_ele_event_idx"][:].astype(np.int64)
-                else:
-                    event_idx = raw["EE_ele_event_idx"][:].astype(np.int64)
-                obj_weights = weight_group[weight_key][:].astype(np.float64)
+            # object->event map lives in the weight file (written by the weight
+            # builder) so we do NOT open the raw file here — opening every raw
+            # file over EOS-fuse at startup was the dominant stall.
+            event_idx = weight_group[ev_key][:].astype(np.int64)
+            obj_weights = weight_group[weight_key][:].astype(np.float64)
 
             positive_events = np.unique(event_idx[obj_weights > 0])
             if positive_events.size == 0:
@@ -707,6 +707,7 @@ def build_object_manifest(file_entries, weight_h5_path: Path, detector: str, wei
     sample_code_all = []
 
     with h5py.File(weight_h5_path, "r") as weight_h5:
+        ev_key = "EB_ele_event_idx" if detector == "eb" else "EE_ele_event_idx"
         for file_idx, entry in enumerate(file_entries):
             selected_events = split_event_map.get(file_idx)
             if selected_events is None or len(selected_events) == 0:
@@ -715,12 +716,8 @@ def build_object_manifest(file_entries, weight_h5_path: Path, detector: str, wei
             weight_group = weight_h5["files"][entry.split][entry.stem]
             event_pt = weight_group["event_pt"][:].astype(np.float64)
             obj_weights = weight_group[weight_key][:].astype(np.float64)
-
-            with h5py.File(entry.raw_path, "r") as raw:
-                if detector == "eb":
-                    event_idx = raw["EB_ele_event_idx"][:].astype(np.int64)
-                else:
-                    event_idx = raw["EE_ele_event_idx"][:].astype(np.int64)
+            # object->event map from the weight file (no raw open at startup).
+            event_idx = weight_group[ev_key][:].astype(np.int64)
 
             event_mask = np.zeros(entry.n_events, dtype=bool)
             event_mask[selected_events] = True

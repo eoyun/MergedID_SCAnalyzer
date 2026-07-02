@@ -160,6 +160,12 @@ def build_category_weights(input_dir, output_path, hasadd_mode,
                         if lut is not None:
                             w[mask] = lut[obj_bin]
                     grp.create_dataset(WEIGHT_KEYS[det], data=w, compression="gzip")
+                    # Persist the object->event map so training does NOT need to
+                    # open raw files at startup (that serial EOS-fuse scan was
+                    # the dominant stall). Same length as the weight dataset.
+                    grp.create_dataset(DET_EVENT_IDX_KEYS[det],
+                                       data=det_event_idx.astype(np.int64),
+                                       compression="gzip")
     return output_path
 
 
