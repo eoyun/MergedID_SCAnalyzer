@@ -10,6 +10,7 @@ TRANSFER_MODULES = [
     "train_point_transformer_track_classifier.py",
     "train_fusion_ensemble.py",
     "build_event_level_weights.py",
+    "pipeline",  # package dir: compact_manifest.py etc. (import pipeline.*)
 ]
 
 
@@ -31,6 +32,10 @@ MY.SendCredential       = True
 should_transfer_files   = YES
 when_to_transfer_output = ON_EXIT
 transfer_input_files    = {transfers}
+# All outputs are staged to EOS via xrdcp inside run_job.sh. Disable Condor's
+# automatic output transfer so the compact .h5 staged into scratch is NOT copied
+# back to the AFS submit dir (blows the AFS quota: errno 122).
+transfer_output_files   = ""
 output = {logdir}/{stage}.$(Cluster).$(Process).out
 error  = {logdir}/{stage}.$(Cluster).$(Process).err
 log    = {logdir}/{stage}.$(Cluster).$(Process).log
