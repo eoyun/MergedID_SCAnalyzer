@@ -51,24 +51,37 @@ def integrated_bkg_eff(y_true, y_score, weights, thr):
     return float(weights[passed].sum() / denom) if denom > 0 else float("nan")
 
 
-def process_run(run_dir, target):
+def process_run(run_dir, target, basis="val", unweighted=False):
     run_dir = Path(run_dir)
     val_csv = run_dir / "val_predictions.csv"
     test_csv = run_dir / "test_predictions.csv"
     eff_json = run_dir / "efficiency_vs_pt_test.json"
-    for p in (val_csv, test_csv, eff_json):
+    needed = (test_csv, eff_json) if basis == "test" else (val_csv, test_csv, eff_json)
+    for p in needed:
         if not p.exists():
             return f"skip ({p.name} missing)"
 
-    v_score, v_true, v_w, _ = load_predictions(val_csv)
-    thr = threshold_for_bkg_eff(v_true, v_score, v_w, target)
-
     t_score, t_true, t_w, t_pt = load_predictions(test_csv)
+    if unweighted:
+        t_w = np.ones_like(t_w)          # raw object counts, not xsec weights
+    if basis == "test":
+        # choose the operating point on the same sample we plot: the drawn
+        # background efficiency then equals the target exactly (self-consistent
+        # plot), at the cost of not being an unbiased operating point.
+        thr = threshold_for_bkg_eff(t_true, t_score, t_w, target)
+    else:
+        v_score, v_true, v_w, _ = load_predictions(val_csv)
+        if unweighted:
+            v_w = np.ones_like(v_w)
+        thr = threshold_for_bkg_eff(v_true, v_score, v_w, target)
+
     edges = reconstruct_edges(eff_json)
     rows = compute_efficiency_by_pt(t_true, t_score, t_w, t_pt, thr, edges)
 
     realized = integrated_bkg_eff(t_true, t_score, t_w, thr)
-    tag = f"bkg{int(round(target * 100)):02d}"
+    tag = (f"bkg{int(round(target * 100)):02d}"
+           + ("test" if basis == "test" else "")
+           + ("_unw" if unweighted else ""))
     save_efficiency_plot(rows, run_dir / f"efficiency_vs_pt_test_{tag}.png", thr)
     with (run_dir / f"efficiency_vs_pt_test_{tag}.json").open("w") as fh:
         json.dump({"target_bkg_eff": target, "threshold": thr,
@@ -83,10 +96,14 @@ def main():
     ap.add_argument("--glob", default="*/")
     ap.add_argument("--target", type=float, default=0.10,
                     help="target background efficiency / fake rate")
+    ap.add_argument("--basis", choices=("val", "test"), default="val",
+                    help="sample used to choose the threshold")
+    ap.add_argument("--unweighted", action="store_true",
+                    help="use raw object counts (ignore per-object weights)")
     args = ap.parse_args()
     root = Path(args.runs_root)
     for d in sorted(x for x in root.glob(args.glob) if x.is_dir()):
-        print(f"[{d.name}] {process_run(d, args.target)}")
+        print(f"[{d.name}] {process_run(d, args.target, args.basis, args.unweighted)}")
 
 
 if __name__ == "__main__":
