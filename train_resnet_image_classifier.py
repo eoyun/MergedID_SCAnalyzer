@@ -319,6 +319,19 @@ def compute_efficiency_by_pt(y_true, y_score, weights, pt, threshold, pt_edges):
             numer = float(weights[numer_mask].sum())
             eff = numer / denom if denom > 0 else float("nan")
 
+            # Weighted binomial (pass/fail) error, matching ROOT TEfficiency's
+            # weighted-normal mode: var = [(1-e)^2*sum_w2_pass + e^2*sum_w2_fail]/T^2.
+            # Reduces to sqrt(e(1-e)/N) for unit weights; accounts for effective
+            # statistics when a few high-weight objects dominate a bin.
+            sw2_denom = float((weights[denom_mask] ** 2).sum())
+            sw2_numer = float((weights[numer_mask] ** 2).sum())
+            sw2_fail = sw2_denom - sw2_numer
+            if denom > 0:
+                var = ((1.0 - eff) ** 2 * sw2_numer + eff ** 2 * sw2_fail) / (denom ** 2)
+                eff_err = float(np.sqrt(max(var, 0.0)))
+            else:
+                eff_err = float("nan")
+
             results.append(
                 {
                     "class_name": name,
@@ -328,6 +341,7 @@ def compute_efficiency_by_pt(y_true, y_score, weights, pt, threshold, pt_edges):
                     "numer": numer,
                     "denom": denom,
                     "efficiency": eff,
+                    "efficiency_err": eff_err,
                 }
             )
     return results
@@ -337,13 +351,26 @@ def save_efficiency_plot(rows, output_path: Path, threshold: float):
     plt.figure(figsize=(8, 6))
     for class_name, color in [("signal", "tab:blue"), ("background", "tab:orange")]:
         subset = [r for r in rows if r["class_name"] == class_name]
-        x = []
-        y = []
+        x, y, xerr, yerr_lo, yerr_hi = [], [], [], [], []
         for row in subset:
             hi = np.inf if row["pt_high"] == "inf" else float(row["pt_high"])
-            x.append(row["pt_low"] if np.isinf(hi) else 0.5 * (row["pt_low"] + hi))
-            y.append(row["efficiency"])
-        plt.plot(x, y, marker="o", label=class_name, color=color)
+            lo = row["pt_low"]
+            x.append(lo if np.isinf(hi) else 0.5 * (lo + hi))
+            eff = row["efficiency"]
+            y.append(eff)
+            # horizontal bar = half bin width (overflow bin has no upper edge)
+            xerr.append(0.0 if np.isinf(hi) else 0.5 * (hi - lo))
+            # weighted-binomial error, clipped so the drawn bar stays in [0, 1]
+            err = row.get("efficiency_err", float("nan"))
+            if not np.isfinite(err) or not np.isfinite(eff):
+                yerr_lo.append(0.0)
+                yerr_hi.append(0.0)
+            else:
+                yerr_lo.append(min(err, eff))
+                yerr_hi.append(min(err, 1.0 - eff))
+        plt.errorbar(x, y, yerr=[yerr_lo, yerr_hi], xerr=xerr, marker="o",
+                     linestyle="-", capsize=3, elinewidth=1, label=class_name,
+                     color=color)
 
     plt.xlabel("pT [GeV]")
     plt.ylabel("Efficiency")
