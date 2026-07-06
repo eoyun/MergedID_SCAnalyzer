@@ -33,6 +33,12 @@ for ((i=0; i<${#args[@]}; i++)); do
 done
 mkdir -p "${local_out}"
 
+# Give the trainer the real EOS output dir so it can push/pull a rolling
+# checkpoint (last.pt/best_model.pt) each epoch and resume after an eviction.
+if [[ -n "${eos_out}" ]]; then
+  args+=("--resume-eos-dir" "${eos_out}")
+fi
+
 # Stage the compact dataset (single file) to local scratch and read it locally
 # (avoids per-object FUSE reads during training).
 for ((i=0; i<${#args[@]}; i++)); do

@@ -141,6 +141,12 @@ def parse_args():
         action="store_true",
         help="Drop the track-pT image channels; image = calo (+ES) only.",
     )
+    parser.add_argument(
+        "--resume-eos-dir",
+        default=None,
+        help="EOS output dir to push/pull last.pt+best_model.pt for eviction-safe "
+             "resume (set by run_job.sh). If unset, no EOS checkpoint I/O.",
+    )
     return parser.parse_args()
 
 
@@ -1038,6 +1044,27 @@ def main():
     best_metric = -np.inf
     epochs_no_improve = 0
     best_model_path = output_dir / "best_model.pt"
+    last_model_path = output_dir / "last.pt"
+
+    # ---- eviction-safe resume: pull rolling checkpoint from EOS if present ----
+    start_epoch = 1
+    if args.resume_eos_dir:
+        from pipeline import resume as _resume
+        got = _resume.stage_in(args.resume_eos_dir, output_dir, ["last.pt", "best_model.pt"])
+        if "last.pt" in got and last_model_path.exists():
+            ck = torch.load(last_model_path, map_location=device)
+            model.load_state_dict(ck["model_state_dict"])
+            optimizer.load_state_dict(ck["optimizer_state_dict"])
+            if ck.get("scheduler_state_dict") is not None:
+                scheduler.load_state_dict(ck["scheduler_state_dict"])
+            start_epoch = int(ck["epoch"]) + 1
+            best_metric = float(ck.get("best_metric", best_metric))
+            epochs_no_improve = int(ck.get("epochs_no_improve", 0))
+            history = ck.get("history", history)
+            print(f"[resume] loaded last.pt @epoch={ck['epoch']} best={best_metric:.4f}"
+                  f" -> resuming at epoch {start_epoch}")
+        else:
+            print("[resume] no checkpoint on EOS; starting fresh")
 
     with (output_dir / "run_config.json").open("w") as handle:
         json.dump(
@@ -1081,7 +1108,7 @@ def main():
     print_split_weight_sums(split_manifests, class_balance_stats)
 
     print("\n[start training]\n")
-    for epoch in range(1, args.epochs + 1):
+    for epoch in range(start_epoch, args.epochs + 1):
         train_pack = run_one_epoch(model, train_loader, device, optimizer=optimizer, scaler=scaler)
         val_pack = run_one_epoch(model, val_loader, device, optimizer=None, scaler=None)
 
@@ -1101,7 +1128,8 @@ def main():
             f"val_loss={val_pack['loss']:.6f} val_auc={val_pack['auc']:.4f} val_f1@0.5={val_pack['f1@0.5']:.4f}"
         )
 
-        if np.isfinite(monitor_value) and monitor_value > best_metric:
+        improved = np.isfinite(monitor_value) and monitor_value > best_metric
+        if improved:
             best_metric = monitor_value
             epochs_no_improve = 0
             torch.save(
@@ -1122,9 +1150,30 @@ def main():
             )
         else:
             epochs_no_improve += 1
-            if not args.no_early_stopping and epochs_no_improve >= args.patience:
-                print(f"\n[early stopping] epoch={epoch}")
-                break
+
+        # rolling checkpoint (model+optimizer+scheduler+bookkeeping) for resume
+        torch.save(
+            {
+                "epoch": epoch,
+                "model_state_dict": model.state_dict(),
+                "optimizer_state_dict": optimizer.state_dict(),
+                "scheduler_state_dict": scheduler.state_dict(),
+                "best_metric": best_metric,
+                "epochs_no_improve": epochs_no_improve,
+                "history": history,
+                "in_channels": in_channels,
+            },
+            last_model_path,
+        )
+        if args.resume_eos_dir:
+            from pipeline import resume as _resume
+            _resume.push(args.resume_eos_dir, last_model_path)
+            if improved:
+                _resume.push(args.resume_eos_dir, best_model_path)
+
+        if not args.no_early_stopping and epochs_no_improve >= args.patience:
+            print(f"\n[early stopping] epoch={epoch}")
+            break
 
     with (output_dir / "history.json").open("w") as handle:
         json.dump(history, handle, indent=2)

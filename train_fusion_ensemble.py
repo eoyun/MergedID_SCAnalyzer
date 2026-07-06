@@ -83,6 +83,12 @@ def parse_args():
         help="DataLoader worker count for inference.",
     )
     parser.add_argument(
+        "--resume-eos-dir",
+        default=None,
+        help="Accepted for run_job.sh compatibility; fusion is fast and does not "
+             "checkpoint-resume, so this is ignored.",
+    )
+    parser.add_argument(
         "--image-batch-size",
         type=int,
         default=None,
