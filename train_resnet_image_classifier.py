@@ -136,6 +136,11 @@ def parse_args():
         action="store_true",
         help="Train the full --epochs (disable early stopping; LR scheduler still runs).",
     )
+    parser.add_argument(
+        "--no-track-channels",
+        action="store_true",
+        help="Drop the track-pT image channels; image = calo (+ES) only.",
+    )
     return parser.parse_args()
 
 
@@ -460,11 +465,13 @@ def save_history_plot(history, output_path: Path):
 DEFAULT_IMAGE_TRACK_TYPES = ("Lost", "PF", "GSF")
 
 
-def image_channel_keys(detector, track_types, include_es):
+def image_channel_keys(detector, track_types, include_es, include_track=True):
     """Ordered list of (kind, h5key) channels. kind in {calo, es, track}.
 
     For track channels the h5key is the '{PREFIX}_track_pt_{TYPE}' stem; the
-    image builder appends '_idx'/'_val'.
+    image builder appends '_idx'/'_val'. When include_track is False the image
+    carries only calo (+ ES) so it is a pure calorimeter view, disjoint from the
+    point-cloud track model.
     """
     prefix = "EB" if detector == "eb" else "EE"
     keys = []
@@ -475,23 +482,25 @@ def image_channel_keys(detector, track_types, include_es):
         if include_es:
             keys.append(("es", "ES_seed_plane1_energy"))
             keys.append(("es", "ES_seed_plane2_energy"))
-    for t in track_types:
-        keys.append(("track", f"{prefix}_track_pt_{t}"))
+    if include_track:
+        for t in track_types:
+            keys.append(("track", f"{prefix}_track_pt_{t}"))
     return keys
 
 
-def image_in_channels(detector, track_types, include_es):
-    return len(image_channel_keys(detector, track_types, include_es))
+def image_in_channels(detector, track_types, include_es, include_track=True):
+    return len(image_channel_keys(detector, track_types, include_es, include_track))
 
 
 class DetectorObjectDataset(Dataset):
     def __init__(self, detector, file_entries, manifest, log_scale=True,
                  track_types=DEFAULT_IMAGE_TRACK_TYPES, include_es=True,
+                 include_track=True,
                  max_open_files=DEFAULT_MAX_OPEN_RAW_FILES):
         self.detector = detector
         self.file_entries = file_entries
         self.log_scale = log_scale
-        self.channel_keys = image_channel_keys(detector, tuple(track_types), include_es)
+        self.channel_keys = image_channel_keys(detector, tuple(track_types), include_es, include_track)
         self.max_open_files = max(1, int(max_open_files))
 
         self.file_idx = np.asarray(manifest["file_idx"], dtype=np.int32)
@@ -899,6 +908,7 @@ def main():
     log_scale = not args.disable_log_scale
     track_types = tuple(t for t in args.track_types.split(",") if t)
     include_es = not args.no_es
+    include_track = not args.no_track_channels
 
     weight_h5_path = args.weight_h5.resolve()
     output_dir = args.output_dir.resolve()
@@ -974,11 +984,11 @@ def main():
         )
 
     train_dataset = DetectorObjectDataset(detector, file_entries, split_manifests["train"], log_scale=log_scale,
-                                          track_types=track_types, include_es=include_es)
+                                          track_types=track_types, include_es=include_es, include_track=include_track)
     val_dataset = DetectorObjectDataset(detector, file_entries, split_manifests["val"], log_scale=log_scale,
-                                        track_types=track_types, include_es=include_es)
+                                        track_types=track_types, include_es=include_es, include_track=include_track)
     test_dataset = DetectorObjectDataset(detector, file_entries, split_manifests["test"], log_scale=log_scale,
-                                         track_types=track_types, include_es=include_es)
+                                         track_types=track_types, include_es=include_es, include_track=include_track)
 
     loader_common_kwargs = {
         "batch_size": args.batch_size,
@@ -1005,7 +1015,7 @@ def main():
         **loader_common_kwargs,
     )
 
-    in_channels = image_in_channels(detector, track_types, include_es)
+    in_channels = image_in_channels(detector, track_types, include_es, include_track)
     model = build_resnet(args.model, in_channels=in_channels).to(device)
     optimizer = optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     scaler = GradScaler("cuda", enabled=(device.type == "cuda"))
@@ -1056,6 +1066,7 @@ def main():
                 "log_scale": log_scale,
                 "track_types": list(track_types),
                 "include_es": include_es,
+                "include_track": include_track,
                 "class_rebalancing": {
                     "enabled": True,
                     "target_weight_sum_per_class_per_split": 1.0,
@@ -1105,6 +1116,7 @@ def main():
                     "in_channels": in_channels,
                     "track_types": list(track_types),
                     "include_es": include_es,
+                    "include_track": include_track,
                 },
                 best_model_path,
             )

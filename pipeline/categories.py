@@ -85,6 +85,7 @@ def image_categories():
             "--output-dir", outdir,
             "--track-types", tt,
             "--model", IMAGE["model"],
+            "--no-track-channels",
             "--epochs", str(EPOCHS),
             "--no-early-stopping",
             "--num-workers", NUM_WORKERS,

@@ -446,6 +446,13 @@ def main():
         track_loader_common = build_loader_common(track_batch_size, effective_num_workers, device)
         track_loader_common["collate_fn"] = collate_track_point_cloud_batch
 
+        # Reproduce the image model's exact channel set from its run_config so the
+        # rebuilt dataset matches the checkpoint's in_channels.
+        image_channel_kwargs = dict(
+            track_types=tuple(image_cfg.get("track_types", ["GSF", "PF", "Lost"])),
+            include_es=bool(image_cfg.get("include_es", True)),
+            include_track=bool(image_cfg.get("include_track", True)),
+        )
         image_val_loader = DataLoader(
             DetectorObjectDataset(
                 detector=detector,
@@ -453,6 +460,7 @@ def main():
                 manifest=split_manifests["val"],
                 log_scale=bool(image_cfg.get("log_scale", True)),
                 max_open_files=DEFAULT_MAX_OPEN_RAW_FILES,
+                **image_channel_kwargs,
             ),
             shuffle=False,
             **image_loader_common,
@@ -464,6 +472,7 @@ def main():
                 manifest=split_manifests["test"],
                 log_scale=bool(image_cfg.get("log_scale", True)),
                 max_open_files=DEFAULT_MAX_OPEN_RAW_FILES,
+                **image_channel_kwargs,
             ),
             shuffle=False,
             **image_loader_common,
