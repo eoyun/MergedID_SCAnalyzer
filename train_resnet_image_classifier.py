@@ -129,7 +129,12 @@ def parse_args():
         "--patience",
         type=int,
         default=5,
-        help="Early stopping patience in epochs.",
+        help="Early stopping patience in epochs (also drives LR-scheduler patience).",
+    )
+    parser.add_argument(
+        "--no-early-stopping",
+        action="store_true",
+        help="Train the full --epochs (disable early stopping; LR scheduler still runs).",
     )
     return parser.parse_args()
 
@@ -1105,7 +1110,7 @@ def main():
             )
         else:
             epochs_no_improve += 1
-            if epochs_no_improve >= args.patience:
+            if not args.no_early_stopping and epochs_no_improve >= args.patience:
                 print(f"\n[early stopping] epoch={epoch}")
                 break
 

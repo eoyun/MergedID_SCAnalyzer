@@ -7,7 +7,7 @@ share one track model -> 12 track, 18 image, 18 fusion.
 
 WEIGHTS_ROOT = "/eos/user/y/yeo/4l/weights/categories"
 COMPACT_ROOT = "/eos/user/y/yeo/4l/compact"
-RUNS_ROOT = "/eos/user/y/yeo/4l/runs/v5"
+RUNS_ROOT = "/eos/user/y/yeo/4l/runs/v6"
 
 
 def compact_h5(tier_dir, det, mode):
@@ -20,7 +20,7 @@ HASADD = ("all", "eq0", "eq1")
 ES_OPTS = ("es", "noes")
 
 # Training hyperparameters (edit here; one knob for the whole sweep).
-EPOCHS = 20
+EPOCHS = 50
 NUM_WORKERS = "8"   # parallel dataloader workers (EOS reads are the bottleneck)
 IMAGE = {"model": "resnet50", "batch_size": "16", "lr": "1e-4"}
 TRACK = {"batch_size": "64", "lr": "1e-4", "max_points": "16",
@@ -47,6 +47,7 @@ def track_categories():
                     "--output-dir", outdir,
                     "--track-types", tt,
                     "--epochs", str(EPOCHS),
+                    "--no-early-stopping",
                     "--num-workers", NUM_WORKERS,
                     "--batch-size", TRACK["batch_size"],
                     "--lr", TRACK["lr"],
@@ -85,6 +86,7 @@ def image_categories():
             "--track-types", tt,
             "--model", IMAGE["model"],
             "--epochs", str(EPOCHS),
+            "--no-early-stopping",
             "--num-workers", NUM_WORKERS,
             "--batch-size", IMAGE["batch_size"],
             "--lr", IMAGE["lr"],
