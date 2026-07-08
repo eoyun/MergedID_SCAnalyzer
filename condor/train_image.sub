@@ -5,10 +5,14 @@ arguments               = $(arguments)
 MY.SendCredential       = True
 should_transfer_files   = YES
 when_to_transfer_output = ON_EXIT
-transfer_input_files    = train_resnet_image_classifier.py, track_point_transformer.py, train_point_transformer_track_classifier.py, train_fusion_ensemble.py, build_event_level_weights.py
-output = condor/logs/v4/train_image.$(Cluster).$(Process).out
-error  = condor/logs/v4/train_image.$(Cluster).$(Process).err
-log    = condor/logs/v4/train_image.$(Cluster).$(Process).log
+transfer_input_files    = train_resnet_image_classifier.py, track_point_transformer.py, train_point_transformer_track_classifier.py, train_fusion_ensemble.py, build_event_level_weights.py, pipeline
+# All outputs are staged to EOS via xrdcp inside run_job.sh. Disable Condor's
+# automatic output transfer so the compact .h5 staged into scratch is NOT copied
+# back to the AFS submit dir (blows the AFS quota: errno 122).
+transfer_output_files   = ""
+output = condor/logs/v6/train_image.$(Cluster).$(Process).out
+error  = condor/logs/v6/train_image.$(Cluster).$(Process).err
+log    = condor/logs/v6/train_image.$(Cluster).$(Process).log
 request_cpus   = 8
 request_memory = 16 GB
 request_disk   = 8 GB
