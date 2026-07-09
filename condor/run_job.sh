@@ -51,6 +51,19 @@ for ((i=0; i<${#args[@]}; i++)); do
   fi
 done
 
+# Stage the weight HDF5 to local scratch too. It is only read for the pt-bin
+# edges, but reading it over the EOS FUSE mount fails on some worker nodes
+# (errno 13 Permission denied) -- xrdcp with the forwarded credential is robust.
+for ((i=0; i<${#args[@]}; i++)); do
+  if [[ "${args[$i]}" == "--weight-h5" ]]; then
+    eos_weight="${args[$((i+1))]}"
+    local_weight="${scratch}/weight_$(basename "${eos_weight}")"
+    echo "[stage-in] ${eos_weight} -> ${local_weight}"
+    xrdcp -f "root://eosuser.cern.ch/${eos_weight}" "${local_weight}"
+    args[$((i+1))]="${local_weight}"
+  fi
+done
+
 python3 -c "import torch; print('[gpu]', torch.cuda.is_available(), torch.cuda.device_count())" || true
 
 set +e
