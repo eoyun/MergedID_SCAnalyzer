@@ -423,15 +423,20 @@ def save_score_distribution(y_true, y_score, weights, output_path: Path,
     bins = np.linspace(0.0, 1.0, 51)
     for cls, name, color in [(1, "signal", "tab:blue"), (0, "background", "tab:orange")]:
         mask = (y_true == cls)
+        w = weights[mask].astype(np.float64)
+        if normalize:
+            # each class normalized so its bar contents sum to 1 (fraction per bin)
+            total = w.sum()
+            if total > 0:
+                w = w / total
         plt.hist(
             y_score[mask],
             bins=bins,
-            weights=weights[mask],
+            weights=w,
             histtype="step",
             linewidth=2.0,
             label=name,
             color=color,
-            density=normalize,   # normalize each class to unit area when True
         )
     plt.xlabel("Signal score")
     plt.ylabel(ylabel if ylabel is not None else ("a.u." if normalize else "Weighted entries"))
