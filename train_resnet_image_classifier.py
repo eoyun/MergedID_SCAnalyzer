@@ -417,7 +417,8 @@ def save_roc_plot(y_true, y_score, weights, output_path: Path):
     return float(roc_auc)
 
 
-def save_score_distribution(y_true, y_score, weights, output_path: Path):
+def save_score_distribution(y_true, y_score, weights, output_path: Path,
+                            normalize=False, ylabel=None):
     plt.figure(figsize=(8, 6))
     bins = np.linspace(0.0, 1.0, 51)
     for cls, name, color in [(1, "signal", "tab:blue"), (0, "background", "tab:orange")]:
@@ -430,9 +431,10 @@ def save_score_distribution(y_true, y_score, weights, output_path: Path):
             linewidth=2.0,
             label=name,
             color=color,
+            density=normalize,   # normalize each class to unit area when True
         )
     plt.xlabel("Signal score")
-    plt.ylabel("Weighted entries")
+    plt.ylabel(ylabel if ylabel is not None else ("a.u." if normalize else "Weighted entries"))
     plt.title("Score distribution")
     plt.grid(True, alpha=0.3)
     plt.legend()

@@ -24,7 +24,8 @@ def regenerate_run(run_dir):
     score, label, weight, _pt = load_predictions(csv_path)
     ones = np.ones_like(weight)
     auc = save_roc_plot(label, score, ones, run_dir / "roc_test_unw.png")
-    save_score_distribution(label, score, ones, run_dir / "score_distribution_test_unw.png")
+    save_score_distribution(label, score, ones, run_dir / "score_distribution_test_unw.png",
+                            normalize=True, ylabel="a.u.")
     return f"ok (unweighted AUC={auc:.4f}, {len(label)} objs)"
 
 
