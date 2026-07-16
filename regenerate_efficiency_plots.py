@@ -46,7 +46,7 @@ def load_predictions(csv_path):
             np.array(weight), np.array(pt))
 
 
-def regenerate_run(run_dir):
+def regenerate_run(run_dir, unweighted=False):
     run_dir = Path(run_dir)
     csv_path = run_dir / "test_predictions.csv"
     eff_json = run_dir / "efficiency_vs_pt_test.json"
@@ -58,10 +58,13 @@ def regenerate_run(run_dir):
     threshold = float(json.loads(metrics.read_text())["threshold"])
     edges = reconstruct_edges(eff_json)
     y_score, y_true, weights, pt = load_predictions(csv_path)
+    if unweighted:
+        weights = np.ones_like(weights)   # raw per-object efficiency at the same threshold
 
     rows = compute_efficiency_by_pt(y_true, y_score, weights, pt, threshold, edges)
-    save_efficiency_plot(rows, run_dir / "efficiency_vs_pt_test.png", threshold)
-    with eff_json.open("w") as fh:
+    tag = "_unw" if unweighted else ""
+    save_efficiency_plot(rows, run_dir / f"efficiency_vs_pt_test{tag}.png", threshold)
+    with (run_dir / f"efficiency_vs_pt_test{tag}.json").open("w") as fh:
         json.dump(rows, fh, indent=2)
     return f"ok ({len(y_true)} objs, thr={threshold:.3f}, {len(edges)-1} bins)"
 
@@ -71,11 +74,13 @@ def main():
     ap.add_argument("--runs-root", default="/eos/user/y/yeo/4l/runs/v5")
     ap.add_argument("--glob", default="*/",
                     help="subdir glob under runs-root (default all run dirs)")
+    ap.add_argument("--unweighted", action="store_true",
+                    help="raw per-object efficiency (weights=1) at the stored threshold")
     args = ap.parse_args()
     root = Path(args.runs_root)
     dirs = sorted(d for d in root.glob(args.glob) if d.is_dir())
     for d in dirs:
-        print(f"[{d.name}] {regenerate_run(d)}")
+        print(f"[{d.name}] {regenerate_run(d, args.unweighted)}")
 
 
 if __name__ == "__main__":
