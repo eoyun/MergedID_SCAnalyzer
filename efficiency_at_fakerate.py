@@ -79,7 +79,9 @@ def process_run(run_dir, target, basis="val", unweighted=False):
     rows = compute_efficiency_by_pt(t_true, t_score, t_w, t_pt, thr, edges)
 
     realized = integrated_bkg_eff(t_true, t_score, t_w, thr)
-    tag = (f"bkg{int(round(target * 100)):02d}"
+    pct = target * 100.0
+    ptag = f"{int(round(pct)):02d}" if abs(pct - round(pct)) < 1e-9 else f"{pct:g}".replace(".", "p")
+    tag = ("bkg" + ptag
            + ("test" if basis == "test" else "")
            + ("_unw" if unweighted else ""))
     save_efficiency_plot(rows, run_dir / f"efficiency_vs_pt_test_{tag}.png", thr)
