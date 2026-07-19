@@ -458,6 +458,7 @@ def main():
             track_types=tuple(image_cfg.get("track_types", ["GSF", "PF", "Lost"])),
             include_es=bool(image_cfg.get("include_es", True)),
             include_track=bool(image_cfg.get("include_track", True)),
+            normalize_channels=bool(image_cfg.get("normalize_channels", False)),
         )
         image_val_loader = DataLoader(
             DetectorObjectDataset(

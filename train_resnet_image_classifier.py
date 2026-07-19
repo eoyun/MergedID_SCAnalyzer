@@ -142,6 +142,12 @@ def parse_args():
         help="Drop the track-pT image channels; image = calo (+ES) only.",
     )
     parser.add_argument(
+        "--normalize-channels",
+        action="store_true",
+        help="Per-image, per-channel min-max to [0,1] after log1p (v7: equalizes "
+             "calo vs ES scale). Default off = v6 behaviour (log1p only).",
+    )
+    parser.add_argument(
         "--resume-eos-dir",
         default=None,
         help="EOS output dir to push/pull last.pt+best_model.pt for eviction-safe "
@@ -212,10 +218,20 @@ def sparse_to_dense(flat_idx, values, size=512):
     return dense
 
 
-def preprocess_channel(arr: np.ndarray, log_scale: bool):
+def preprocess_channel(arr: np.ndarray, log_scale: bool, normalize01: bool = False):
     out = np.asarray(arr, dtype=np.float32)
     if log_scale:
         out = np.log1p(np.clip(out, 0.0, None))
+    if normalize01:
+        # per-image, per-channel min-max to [0,1] so channels with very different
+        # absolute scales (e.g. calo ~7 vs ES ~0.05) contribute comparably. An
+        # all-zero channel (no hits) stays 0.
+        mn = float(out.min())
+        mx = float(out.max())
+        if mx > mn:
+            out = (out - mn) / (mx - mn)
+        else:
+            out = np.zeros_like(out)
     return out
 
 
@@ -508,11 +524,12 @@ def image_in_channels(detector, track_types, include_es, include_track=True):
 class DetectorObjectDataset(Dataset):
     def __init__(self, detector, file_entries, manifest, log_scale=True,
                  track_types=DEFAULT_IMAGE_TRACK_TYPES, include_es=True,
-                 include_track=True,
+                 include_track=True, normalize_channels=False,
                  max_open_files=DEFAULT_MAX_OPEN_RAW_FILES):
         self.detector = detector
         self.file_entries = file_entries
         self.log_scale = log_scale
+        self.normalize_channels = normalize_channels
         self.channel_keys = image_channel_keys(detector, tuple(track_types), include_es, include_track)
         self.max_open_files = max(1, int(max_open_files))
 
@@ -564,7 +581,8 @@ class DetectorObjectDataset(Dataset):
             else:  # track: key is the "{PREFIX}_track_pt_{TYPE}" stem
                 channels.append(sparse_to_dense(raw[f"{key}_idx"][obj_idx],
                                                 raw[f"{key}_val"][obj_idx]))
-        channels = [preprocess_channel(ch, self.log_scale) for ch in channels]
+        channels = [preprocess_channel(ch, self.log_scale, self.normalize_channels)
+                    for ch in channels]
         return np.stack(channels, axis=0).astype(np.float32)
 
     def __getitem__(self, index):
@@ -922,6 +940,7 @@ def main():
     track_types = tuple(t for t in args.track_types.split(",") if t)
     include_es = not args.no_es
     include_track = not args.no_track_channels
+    normalize_channels = args.normalize_channels
 
     weight_h5_path = args.weight_h5.resolve()
     output_dir = args.output_dir.resolve()
@@ -997,11 +1016,14 @@ def main():
         )
 
     train_dataset = DetectorObjectDataset(detector, file_entries, split_manifests["train"], log_scale=log_scale,
-                                          track_types=track_types, include_es=include_es, include_track=include_track)
+                                          track_types=track_types, include_es=include_es, include_track=include_track,
+                                          normalize_channels=normalize_channels)
     val_dataset = DetectorObjectDataset(detector, file_entries, split_manifests["val"], log_scale=log_scale,
-                                        track_types=track_types, include_es=include_es, include_track=include_track)
+                                        track_types=track_types, include_es=include_es, include_track=include_track,
+                                        normalize_channels=normalize_channels)
     test_dataset = DetectorObjectDataset(detector, file_entries, split_manifests["test"], log_scale=log_scale,
-                                         track_types=track_types, include_es=include_es, include_track=include_track)
+                                         track_types=track_types, include_es=include_es, include_track=include_track,
+                                         normalize_channels=normalize_channels)
 
     loader_common_kwargs = {
         "batch_size": args.batch_size,
@@ -1101,6 +1123,7 @@ def main():
                 "track_types": list(track_types),
                 "include_es": include_es,
                 "include_track": include_track,
+                "normalize_channels": normalize_channels,
                 "class_rebalancing": {
                     "enabled": True,
                     "target_weight_sum_per_class_per_split": 1.0,
@@ -1152,6 +1175,7 @@ def main():
                     "track_types": list(track_types),
                     "include_es": include_es,
                     "include_track": include_track,
+                    "normalize_channels": normalize_channels,
                 },
                 best_model_path,
             )
