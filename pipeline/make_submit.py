@@ -49,7 +49,7 @@ queue arguments from {listfile}
 
 
 def write_submit(path, stage, listfile, log_dir="condor/logs", request_gpus=1,
-                 cpus=8, mem="16 GB", disk="8 GB", flavour="tomorrow",
+                 cpus=8, mem="16 GB", disk="8 GB", flavour="nextweek",
                  min_gpu_capability=8.0):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
