@@ -217,6 +217,33 @@ def select_background_global_event_indices(n_background_events: int, max_events:
     return selected.astype(np.int64), max_events
 
 
+def select_background_global_event_indices_ptmin(file_infos, max_events, seed,
+                                                 pt_min, event_pt_mode):
+    """Like select_background_global_event_indices but the sampling pool is limited
+    to background events with representative pT >= pt_min (v8 preselection). Returns
+    (sorted global indices, n_selected) in the same global index space."""
+    eligible = []
+    for info in file_infos:
+        if info.sample_id != "background":
+            continue
+        with h5py.File(info.path, "r") as h:
+            ev_pt = derive_event_pt(info.n_events, h["A_pT"][:].astype(np.float64),
+                                    h["A_event_idx"][:].astype(np.int64), event_pt_mode)
+        loc = np.nonzero(ev_pt >= pt_min)[0].astype(np.int64)
+        eligible.append(loc + info.background_event_offset_start)
+    eligible = np.concatenate(eligible) if eligible else np.zeros(0, dtype=np.int64)
+    n_elig = int(eligible.size)
+    if max_events is None or max_events >= n_elig:
+        eligible.sort()
+        return eligible, n_elig
+    if max_events <= 0:
+        raise ValueError("--background-max-events must be positive when provided.")
+    rng = np.random.default_rng(seed)
+    selected = rng.choice(eligible, size=max_events, replace=False)
+    selected.sort()
+    return selected.astype(np.int64), max_events
+
+
 def get_background_local_event_indices(selected_background_global_idx, info: FileInfo):
     if selected_background_global_idx is None:
         return None

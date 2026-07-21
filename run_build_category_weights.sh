@@ -18,6 +18,7 @@ DATA_ROOT="/eos/user/y/yeo/4l/data"
 OUTPUT_ROOT="/eos/user/y/yeo/4l/weights/categories"
 PYTHON_BIN="python3"
 BG_MAX="1000000"
+PTMIN="0"
 TIER="both"
 HASADD="all-modes"
 
@@ -27,6 +28,7 @@ while [[ $# -gt 0 ]]; do
     --output-root) OUTPUT_ROOT="$2"; shift 2;;
     --python) PYTHON_BIN="$2"; shift 2;;
     --background-max-events) BG_MAX="$2"; shift 2;;
+    --pt-min) PTMIN="$2"; shift 2;;
     --tier) TIER="$2"; shift 2;;
     --hasadd) HASADD="$2"; shift 2;;
     -h|--help) usage; exit 0;;
@@ -53,7 +55,8 @@ for tier in "${TIERS[@]}"; do
       --input-dir "${DATA_ROOT}/${tier}" \
       --output-path "${out}" \
       --hasadd-mode "${mode}" \
-      --background-max-events "${BG_MAX}"
+      --background-max-events "${BG_MAX}" \
+      --pt-min "${PTMIN}"
   done
 done
 echo "done."

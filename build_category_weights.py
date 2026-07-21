@@ -13,6 +13,7 @@ from build_event_level_weights import (
     derive_event_pt,
     scan_file_metadata,
     select_background_global_event_indices,
+    select_background_global_event_indices_ptmin,
     get_background_local_event_indices,
 )
 
@@ -77,13 +78,19 @@ def build_sample_targets(sample_ids):
     return targets
 
 
-def _object_selection(raw, detector, sample_id, hasadd_mode, n_events, bg_local_events):
-    """Return (det_event_idx, selected_mask) for one file+detector."""
+def _object_selection(raw, detector, sample_id, hasadd_mode, n_events, bg_local_events,
+                      event_pt=None, pt_min=0.0):
+    """Return (det_event_idx, selected_mask) for one file+detector.
+
+    pt_min > 0 (v8): keep only objects whose event pT >= pt_min (applies to signal
+    AND background). Default pt_min=0 reproduces v6 (no pT preselection)."""
     det_event_idx = raw[DET_EVENT_IDX_KEYS[detector]][:].astype(np.int64)
     hasadd = raw[HASADD_KEYS[detector]][:]
     mask = hasadd_object_mask(hasadd, hasadd_mode)
     if is_excluded_sample(sample_id, hasadd_mode):
         mask = np.zeros(mask.shape, dtype=bool)
+    if pt_min > 0.0 and event_pt is not None:
+        mask = mask & (event_pt[det_event_idx] >= pt_min)
     if sample_id == "background" and bg_local_events is not None:
         ev_sel = np.zeros(n_events, dtype=bool)
         ev_sel[bg_local_events] = True
@@ -92,14 +99,20 @@ def _object_selection(raw, detector, sample_id, hasadd_mode, n_events, bg_local_
 
 
 def build_category_weights(input_dir, output_path, hasadd_mode,
-                           background_max_events=None, seed=1234, event_pt_mode="max"):
+                           background_max_events=None, seed=1234, event_pt_mode="max",
+                           pt_min=0.0):
     input_dir = Path(input_dir)
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     file_infos, n_bkg = scan_file_metadata(input_dir)
-    bg_global, bg_selected = select_background_global_event_indices(
-        n_bkg, background_max_events, seed)
+    if pt_min and pt_min > 0.0:
+        # v8: draw the background subsample from the pT>=pt_min event pool only.
+        bg_global, bg_selected = select_background_global_event_indices_ptmin(
+            file_infos, background_max_events, seed, pt_min, event_pt_mode)
+    else:
+        bg_global, bg_selected = select_background_global_event_indices(
+            n_bkg, background_max_events, seed)
 
     # ----- count pass: per detector, per sample, per pT bin (selected objects) -----
     counts = {det: {} for det in DETECTORS}
@@ -111,7 +124,8 @@ def build_category_weights(input_dir, output_path, hasadd_mode,
             event_pt = derive_event_pt(info.n_events, a_pt, a_event_idx, mode=event_pt_mode)
             for det in DETECTORS:
                 det_event_idx, mask = _object_selection(
-                    raw, det, info.sample_id, hasadd_mode, info.n_events, bg_local)
+                    raw, det, info.sample_id, hasadd_mode, info.n_events, bg_local,
+                    event_pt=event_pt, pt_min=pt_min)
                 if not np.any(mask):
                     continue
                 obj_bin = find_bin_indices(event_pt[det_event_idx][mask])
@@ -132,6 +146,7 @@ def build_category_weights(input_dir, output_path, hasadd_mode,
         out.attrs["background_selected_events"] = int(bg_selected)
         out.attrs["seed"] = int(seed)
         out.attrs["weight_basis"] = "object"
+        out.attrs["pt_min"] = float(pt_min)
         # pT bin edges used for binning; downstream efficiency-vs-pT reads
         # effective_pt_bin_edges to reproduce the exact same bins.
         out.attrs["requested_pt_bin_edges"] = PT_BIN_EDGES
@@ -152,7 +167,8 @@ def build_category_weights(input_dir, output_path, hasadd_mode,
                 grp.create_dataset("event_pt", data=event_pt, compression="gzip")
                 for det in DETECTORS:
                     det_event_idx, mask = _object_selection(
-                        raw, det, info.sample_id, hasadd_mode, info.n_events, bg_local)
+                        raw, det, info.sample_id, hasadd_mode, info.n_events, bg_local,
+                        event_pt=event_pt, pt_min=pt_min)
                     w = np.zeros(det_event_idx.shape, dtype=np.float64)
                     if np.any(mask):
                         obj_bin = find_bin_indices(event_pt[det_event_idx][mask])
@@ -182,6 +198,9 @@ def parse_args():
                    help="Cap on background events (resampling target). -1 = all.")
     p.add_argument("--event-pt-mode", choices=("max", "leading", "mean"), default="max")
     p.add_argument("--seed", type=int, default=1234)
+    p.add_argument("--pt-min", type=float, default=0.0,
+                   help="v8: keep only objects with event pT >= this (GeV); background "
+                        "subsample drawn from the pT>=pt_min pool. 0 = no cut (v6).")
     return p.parse_args()
 
 
@@ -191,7 +210,7 @@ def main():
     out = build_category_weights(
         input_dir=args.input_dir, output_path=args.output_path,
         hasadd_mode=args.hasadd_mode, background_max_events=bmax,
-        seed=args.seed, event_pt_mode=args.event_pt_mode)
+        seed=args.seed, event_pt_mode=args.event_pt_mode, pt_min=args.pt_min)
     print(f"[saved] {out}")
 
 
