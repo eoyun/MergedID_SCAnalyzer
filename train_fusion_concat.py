@@ -34,6 +34,7 @@ from train_resnet_image_classifier import (
     save_efficiency_plot,
     save_roc_plot,
     save_score_distribution,
+    save_unweighted_test_plots,
     save_history_plot,
     set_seed,
 )
@@ -259,6 +260,8 @@ def main():
     save_efficiency_plot(eff, out / "efficiency_vs_pt_test.png", threshold)
     with (out / "efficiency_vs_pt_test.json").open("w") as fh:
         json.dump(eff, fh, indent=2)
+    save_unweighted_test_plots(out, va["label"], va["score"], te["label"], te["score"],
+                               packs["test"]["pt"], pt_edges)
     save_predictions_csv(out / "val_predictions.csv", packs["val"], va["score"], code_to_sample)
     save_predictions_csv(out / "test_predictions.csv", packs["test"], te["score"], code_to_sample)
     with (out / "run_config.json").open("w") as fh:

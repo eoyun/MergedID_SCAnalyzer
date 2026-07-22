@@ -416,6 +416,41 @@ def save_efficiency_plot(rows, output_path: Path, threshold: float):
     plt.close()
 
 
+def threshold_for_bkg_eff_unw(y_true, y_score, target):
+    """Unweighted threshold giving background efficiency ~= target (object-level):
+    the (1-target) quantile of the background score distribution."""
+    bkg = np.asarray(y_score)[np.asarray(y_true) == 0]
+    if bkg.size == 0:
+        return 0.5
+    return float(np.quantile(bkg, 1.0 - target))
+
+
+def save_unweighted_test_plots(output_dir, val_true, val_score, test_true, test_score,
+                               test_pt, pt_edges, fake_rate_targets=(0.025, 0.05, 0.10)):
+    """Additive unweighted test views, written next to the weighted ones every run:
+      roc_test_unw.png, score_distribution_test_unw.png (area=1, y='a.u.'),
+      efficiency_vs_pt_test_bkg{2p5,05,10}_unw.png at fixed background fake-rate
+      working points (threshold chosen on validation, unweighted).
+    """
+    output_dir = Path(output_dir)
+    val_true = np.asarray(val_true); val_score = np.asarray(val_score)
+    test_true = np.asarray(test_true); test_score = np.asarray(test_score)
+    ones = np.ones_like(test_score, dtype=np.float64)
+    save_roc_plot(test_true, test_score, ones, output_dir / "roc_test_unw.png")
+    save_score_distribution(test_true, test_score, ones,
+                            output_dir / "score_distribution_test_unw.png",
+                            normalize=True, ylabel="a.u.")
+    for tgt in fake_rate_targets:
+        thr = threshold_for_bkg_eff_unw(val_true, val_score, tgt)
+        rows = compute_efficiency_by_pt(test_true, test_score, ones, test_pt, thr, pt_edges)
+        pct = tgt * 100.0
+        ptag = (f"{int(round(pct)):02d}" if abs(pct - round(pct)) < 1e-9
+                else f"{pct:g}".replace(".", "p"))
+        save_efficiency_plot(rows, output_dir / f"efficiency_vs_pt_test_bkg{ptag}_unw.png", thr)
+        with (output_dir / f"efficiency_vs_pt_test_bkg{ptag}_unw.json").open("w") as fh:
+            json.dump(rows, fh, indent=2)
+
+
 def save_roc_plot(y_true, y_score, weights, output_path: Path):
     fpr, tpr, _ = roc_curve(y_true, y_score, sample_weight=weights)
     roc_auc = auc(fpr, tpr)
@@ -1260,6 +1295,10 @@ def main():
 
     with (output_dir / "efficiency_vs_pt_test.json").open("w") as handle:
         json.dump(eff_rows, handle, indent=2)
+
+    # additive unweighted views: ROC, score dist, efficiency at bkg fake-rate WPs
+    save_unweighted_test_plots(output_dir, val_pack["label"], val_pack["score"],
+                               test_pack["label"], test_pack["score"], test_pack["pt"], pt_edges)
 
     save_predictions_csv(output_dir / "val_predictions.csv", val_pack, file_entries, code_to_sample)
     save_predictions_csv(output_dir / "test_predictions.csv", test_pack, file_entries, code_to_sample)

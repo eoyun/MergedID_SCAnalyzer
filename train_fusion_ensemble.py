@@ -46,6 +46,7 @@ from train_resnet_image_classifier import (
     save_manifest_summary,
     save_roc_plot,
     save_score_distribution,
+    save_unweighted_test_plots,
     set_seed,
     summarize_manifest,
 )
@@ -605,6 +606,9 @@ def main():
 
     with (output_dir / "efficiency_vs_pt_test.json").open("w") as handle:
         json.dump(eff_rows, handle, indent=2)
+
+    save_unweighted_test_plots(output_dir, y_val, val_fused_score, y_test, test_fused_score,
+                               image_test_pack["pt"], pt_edges)
 
     save_fusion_predictions_csv(
         output_dir / "val_predictions.csv",
