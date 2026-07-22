@@ -53,6 +53,10 @@ for tier in "${TIERS[@]}"; do
     for mode in "${MODES[@]}"; do
       w="${WROOT}/${tier}_${mode}/category_weights.h5"
       o="${OUT}/${tier}_${det}_${mode}.h5"
+      if [ -f "${o}" ]; then
+        echo "=== ${tier} ${det} ${mode} -> ${o} (SKIP: exists) ==="
+        continue
+      fi
       echo "=== ${tier} ${det} ${mode} -> ${o} ==="
       "${PY}" "${SCRIPT_DIR}/build_compact_dataset.py" --weight-h5 "${w}" \
         --detector "${det}" --track-types "${TT[$tier]}" --output-path "${o}"
