@@ -78,23 +78,71 @@ def build_sample_targets(sample_ids):
     return targets
 
 
-def _object_selection(raw, detector, sample_id, hasadd_mode, n_events, bg_local_events,
-                      event_pt=None, pt_min=0.0):
+def select_background_object_masks(file_infos, detector, hasadd_mode, max_objects,
+                                   seed, pt_min, event_pt_mode):
+    """Per-detector, per-mode background OBJECT sampling.
+
+    Eligible background objects = hasADD matches the mode AND (pt_min<=0 or event
+    pT>=pt_min). Randomly keep up to max_objects of them across ALL background
+    files (independently per detector); if fewer are eligible, keep all. Signal is
+    never sampled here (handled directly, kept in full).
+
+    Returns (masks, n_selected, n_eligible) where masks[file.stem] is a boolean
+    mask over that file's `detector` objects.
+    """
+    ha_key = HASADD_KEYS[detector]
+    ev_key = DET_EVENT_IDX_KEYS[detector]
+    per_file, counts = [], []
+    for info in file_infos:
+        if info.sample_id != "background":
+            continue
+        with h5py.File(info.path, "r") as raw:
+            elig = hasadd_object_mask(np.asarray(raw[ha_key][:]), hasadd_mode)
+            if pt_min and pt_min > 0.0:
+                dei = raw[ev_key][:].astype(np.int64)
+                event_pt = derive_event_pt(info.n_events, raw["A_pT"][:].astype(np.float64),
+                                           raw["A_event_idx"][:].astype(np.int64), event_pt_mode)
+                elig = elig & (event_pt[dei] >= pt_min)
+        per_file.append((info.stem, elig))
+        counts.append(int(elig.sum()))
+
+    n_elig = int(sum(counts))
+    if max_objects is None or n_elig <= max_objects:
+        return {stem: elig.copy() for stem, elig in per_file}, n_elig, n_elig
+
+    rng = np.random.default_rng(seed)
+    chosen = np.sort(rng.choice(n_elig, size=max_objects, replace=False))
+    masks, offset = {}, 0
+    for (stem, elig), cnt in zip(per_file, counts):
+        lo = np.searchsorted(chosen, offset, "left")
+        hi = np.searchsorted(chosen, offset + cnt, "left")
+        pos = chosen[lo:hi] - offset                 # positions within this file's eligible
+        m = np.zeros(elig.shape, dtype=bool)
+        if pos.size:
+            m[np.nonzero(elig)[0][pos]] = True
+        masks[stem] = m
+        offset += cnt
+    return masks, max_objects, n_elig
+
+
+def _object_selection(raw, detector, sample_id, hasadd_mode, event_pt=None, pt_min=0.0,
+                      bg_obj_mask=None):
     """Return (det_event_idx, selected_mask) for one file+detector.
 
-    pt_min > 0 (v8): keep only objects whose event pT >= pt_min (applies to signal
-    AND background). Default pt_min=0 reproduces v6 (no pT preselection)."""
+    Background: use the precomputed per-detector sampled-object mask (already
+    hasADD- and pT-filtered and randomly capped). Signal: keep ALL objects that
+    match hasADD, pass pt_min, and are not an excluded mass point (no sampling)."""
     det_event_idx = raw[DET_EVENT_IDX_KEYS[detector]][:].astype(np.int64)
+    if sample_id == "background":
+        mask = (bg_obj_mask if bg_obj_mask is not None
+                else np.zeros(det_event_idx.shape, dtype=bool))
+        return det_event_idx, mask
     hasadd = raw[HASADD_KEYS[detector]][:]
     mask = hasadd_object_mask(hasadd, hasadd_mode)
     if is_excluded_sample(sample_id, hasadd_mode):
         mask = np.zeros(mask.shape, dtype=bool)
     if pt_min > 0.0 and event_pt is not None:
         mask = mask & (event_pt[det_event_idx] >= pt_min)
-    if sample_id == "background" and bg_local_events is not None:
-        ev_sel = np.zeros(n_events, dtype=bool)
-        ev_sel[bg_local_events] = True
-        mask = mask & ev_sel[det_event_idx]
     return det_event_idx, mask
 
 
@@ -106,26 +154,26 @@ def build_category_weights(input_dir, output_path, hasadd_mode,
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     file_infos, n_bkg = scan_file_metadata(input_dir)
-    if pt_min and pt_min > 0.0:
-        # v8: draw the background subsample from the pT>=pt_min event pool only.
-        bg_global, bg_selected = select_background_global_event_indices_ptmin(
-            file_infos, background_max_events, seed, pt_min, event_pt_mode)
-    else:
-        bg_global, bg_selected = select_background_global_event_indices(
-            n_bkg, background_max_events, seed)
+    # Per-detector, per-mode background OBJECT sampling: randomly keep up to
+    # background_max_events objects (or all if fewer) among the mode-eligible
+    # background objects, independently for EB and EE. Signal is kept in full.
+    bg_masks, bg_selected = {}, {}
+    for det in DETECTORS:
+        bg_masks[det], bg_selected[det], _elig = select_background_object_masks(
+            file_infos, det, hasadd_mode, background_max_events, seed, pt_min, event_pt_mode)
 
     # ----- count pass: per detector, per sample, per pT bin (selected objects) -----
     counts = {det: {} for det in DETECTORS}
     for info in file_infos:
-        bg_local = get_background_local_event_indices(bg_global, info) if info.sample_id == "background" else None
         with h5py.File(info.path, "r") as raw:
             a_pt = raw["A_pT"][:].astype(np.float64)
             a_event_idx = raw["A_event_idx"][:].astype(np.int64)
             event_pt = derive_event_pt(info.n_events, a_pt, a_event_idx, mode=event_pt_mode)
             for det in DETECTORS:
+                bg_m = bg_masks[det].get(info.stem) if info.sample_id == "background" else None
                 det_event_idx, mask = _object_selection(
-                    raw, det, info.sample_id, hasadd_mode, info.n_events, bg_local,
-                    event_pt=event_pt, pt_min=pt_min)
+                    raw, det, info.sample_id, hasadd_mode,
+                    event_pt=event_pt, pt_min=pt_min, bg_obj_mask=bg_m)
                 if not np.any(mask):
                     continue
                 obj_bin = find_bin_indices(event_pt[det_event_idx][mask])
@@ -142,10 +190,12 @@ def build_category_weights(input_dir, output_path, hasadd_mode,
     with h5py.File(output_path, "w") as out:
         out.attrs["input_dir"] = str(input_dir)
         out.attrs["hasadd_mode"] = hasadd_mode
-        out.attrs["background_max_events"] = -1 if background_max_events is None else int(background_max_events)
-        out.attrs["background_selected_events"] = int(bg_selected)
+        out.attrs["background_max_objects"] = -1 if background_max_events is None else int(background_max_events)
+        out.attrs["background_selected_objects_eb"] = int(bg_selected["eb"])
+        out.attrs["background_selected_objects_ee"] = int(bg_selected["ee"])
         out.attrs["seed"] = int(seed)
         out.attrs["weight_basis"] = "object"
+        out.attrs["background_sampling"] = "per_detector_per_mode_object"
         out.attrs["pt_min"] = float(pt_min)
         # pT bin edges used for binning; downstream efficiency-vs-pT reads
         # effective_pt_bin_edges to reproduce the exact same bins.
@@ -153,7 +203,6 @@ def build_category_weights(input_dir, output_path, hasadd_mode,
         out.attrs["effective_pt_bin_edges"] = PT_BIN_EDGES_WITH_OVERFLOW
         files_group = out.create_group("files")
         for info in file_infos:
-            bg_local = get_background_local_event_indices(bg_global, info) if info.sample_id == "background" else None
             with h5py.File(info.path, "r") as raw:
                 a_pt = raw["A_pT"][:].astype(np.float64)
                 a_event_idx = raw["A_event_idx"][:].astype(np.int64)
@@ -166,9 +215,10 @@ def build_category_weights(input_dir, output_path, hasadd_mode,
                 grp.attrs["n_events"] = info.n_events
                 grp.create_dataset("event_pt", data=event_pt, compression="gzip")
                 for det in DETECTORS:
+                    bg_m = bg_masks[det].get(info.stem) if info.sample_id == "background" else None
                     det_event_idx, mask = _object_selection(
-                        raw, det, info.sample_id, hasadd_mode, info.n_events, bg_local,
-                        event_pt=event_pt, pt_min=pt_min)
+                        raw, det, info.sample_id, hasadd_mode,
+                        event_pt=event_pt, pt_min=pt_min, bg_obj_mask=bg_m)
                     w = np.zeros(det_event_idx.shape, dtype=np.float64)
                     if np.any(mask):
                         obj_bin = find_bin_indices(event_pt[det_event_idx][mask])
