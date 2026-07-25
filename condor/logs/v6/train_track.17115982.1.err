@@ -1,0 +1,18 @@
+/pool/condor/dir_1107972/track_point_transformer.py:257: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=depth)
+Traceback (most recent call last):
+  File "/pool/condor/dir_1107972/train_point_transformer_track_classifier.py", line 572, in <module>
+    main()
+    ~~~~^^
+  File "/pool/condor/dir_1107972/train_point_transformer_track_classifier.py", line 538, in main
+    with h5py.File(weight_h5_path, "r") as weight_h5:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/cvmfs/sft.cern.ch/lcg/views/LCG_109_cuda/x86_64-el9-gcc13-opt/lib/python3.13/site-packages/h5py/_hl/files.py", line 564, in __init__
+    fid = make_fid(name, mode, userblock_size, fapl, fcpl, swmr=swmr)
+  File "/cvmfs/sft.cern.ch/lcg/views/LCG_109_cuda/x86_64-el9-gcc13-opt/lib/python3.13/site-packages/h5py/_hl/files.py", line 238, in make_fid
+    fid = h5f.open(name, flags, fapl=fapl)
+  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
+  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
+  File "h5py/h5f.pyx", line 102, in h5py.h5f.open
+PermissionError: [Errno 13] Unable to synchronously open file (unable to open file: name = '/eos/home-y/yeo/4l/weights/categories/AOD_eq0/category_weights.h5', errno = 13, error message = 'Permission denied', flags = 0, o_flags = 0)
+[python] failed rc=1; not staging out

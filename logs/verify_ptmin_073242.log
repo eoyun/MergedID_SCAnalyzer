@@ -1,0 +1,4 @@
+  File "<stdin>", line 16
+    print(f"{m}: pt_min={h.attrs.get(\"pt_min\")} bg_attr(eb/ee)={h.attrs.get(\"background_selected_objects_eb\")}/{h.attrs.get(\"background_selected_objects_ee\")}  bg_nonzero(eb/ee)={nb[\"eb\"]}/{nb[\"ee\"]}  sig(eb/ee)={ns[\"eb\"]}/{ns[\"ee\"]}")
+                                      ^
+SyntaxError: unexpected character after line continuation character

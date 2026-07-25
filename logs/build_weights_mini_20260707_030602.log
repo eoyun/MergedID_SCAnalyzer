@@ -1,0 +1,48 @@
+[launch] Tue Jul  7 03:06:04 AM CEST 2026 host=lxplus902.cern.ch
+=== MiniAOD all -> /eos/user/y/yeo/4l/weights/categories/MiniAOD_all/category_weights.h5 ===
+[scan] files=250
+[scan] files=500
+[scan] files=750
+[scan] files=1000
+[scan] files=1250
+[scan] files=1500
+[scan] files=1750
+[scan] files=2000
+[scan] files=2250
+[scan] files=2500
+[scan] files=2750
+[scan] files=3000
+[scan] files=3250
+[saved] /eos/user/y/yeo/4l/weights/categories/MiniAOD_all/category_weights.h5
+=== MiniAOD eq0 -> /eos/user/y/yeo/4l/weights/categories/MiniAOD_eq0/category_weights.h5 ===
+[scan] files=250
+[scan] files=500
+[scan] files=750
+[scan] files=1000
+[scan] files=1250
+[scan] files=1500
+[scan] files=1750
+[scan] files=2000
+[scan] files=2250
+[scan] files=2500
+[scan] files=2750
+[scan] files=3000
+[scan] files=3250
+[saved] /eos/user/y/yeo/4l/weights/categories/MiniAOD_eq0/category_weights.h5
+=== MiniAOD eq1 -> /eos/user/y/yeo/4l/weights/categories/MiniAOD_eq1/category_weights.h5 ===
+[scan] files=250
+[scan] files=500
+[scan] files=750
+[scan] files=1000
+[scan] files=1250
+[scan] files=1500
+[scan] files=1750
+[scan] files=2000
+[scan] files=2250
+[scan] files=2500
+[scan] files=2750
+[scan] files=3000
+[scan] files=3250
+[saved] /eos/user/y/yeo/4l/weights/categories/MiniAOD_eq1/category_weights.h5
+done.
+[done] Tue Jul  7 04:42:20 AM CEST 2026

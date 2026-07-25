@@ -1,0 +1,84 @@
+000 (17502481.016.000) 07/23 21:46:08 Job submitted from host: <188.185.114.121:9618?addrs=188.185.114.121-9618+[2001-1458-d00-a--100-273]-9618&alias=bigbird19.cern.ch&noUDP&sock=schedd_5810_c156>
+...
+040 (17502481.016.000) 07/24 23:20:47 Started transferring input files
+	Transferring to host: <188.185.190.109:9618?addrs=188.185.190.109-9618+[2001-1458-d03-b--100-300]-9618&alias=b9pgpun014.cern.ch&noUDP&sock=slot1_3_21264_295a_6591>
+...
+040 (17502481.016.000) 07/24 23:20:48 Finished transferring input files
+...
+001 (17502481.016.000) 07/24 23:20:48 Job executing on host: <188.185.190.109:9618?addrs=188.185.190.109-9618+[2001-1458-d03-b--100-300]-9618&alias=b9pgpun014.cern.ch&noUDP&sock=startd_21087_81ac>
+	SlotName: slot1_3@b9pgpun014.cern.ch
+	AvailableGPUs = { GPUs_GPU_03db3194 }
+	CondorScratchDir = "/pool/condor/dir_3920665"
+	Cpus = 8
+	Disk = 8394765
+	GPUs = 1
+	GPUs_GPU_03db3194 = [ Id = "GPU-03db3194"; ClockMhz = 1785.0; Capability = 9.0; CoresPerCU = 128; DeviceName = "NVIDIA H100 NVL"; DeviceUuid = "03db3194-c613-0c44-8738-3084990b0d64"; ECCEnabled = true; ComputeUnits = 132; NvidiaDriver = "610.43.02"; DriverVersion = 13.3; DevicePciBusId = "0000:AD:00.0"; GlobalMemoryMb = 95312; MaxSupportedVersion = 13030 ]
+	Memory = 24000
+...
+006 (17502481.016.000) 07/24 23:20:57 Image size of job updated: 338252
+	331  -  MemoryUsage of job (MB)
+	338252  -  ResidentSetSize of job (KB)
+...
+006 (17502481.016.000) 07/24 23:25:58 Image size of job updated: 4775968
+	4201  -  MemoryUsage of job (MB)
+	4301208  -  ResidentSetSize of job (KB)
+...
+006 (17502481.016.000) 07/24 23:30:58 Image size of job updated: 4876564
+	4201  -  MemoryUsage of job (MB)
+	4301208  -  ResidentSetSize of job (KB)
+...
+006 (17502481.016.000) 07/24 23:35:59 Image size of job updated: 4904576
+	4243  -  MemoryUsage of job (MB)
+	4344036  -  ResidentSetSize of job (KB)
+...
+006 (17502481.016.000) 07/24 23:40:59 Image size of job updated: 4992692
+	4276  -  MemoryUsage of job (MB)
+	4377732  -  ResidentSetSize of job (KB)
+...
+006 (17502481.016.000) 07/24 23:45:59 Image size of job updated: 5069916
+	4945  -  MemoryUsage of job (MB)
+	5063192  -  ResidentSetSize of job (KB)
+...
+006 (17502481.016.000) 07/24 23:51:00 Image size of job updated: 5157620
+	4948  -  MemoryUsage of job (MB)
+	5066180  -  ResidentSetSize of job (KB)
+...
+006 (17502481.016.000) 07/24 23:56:00 Image size of job updated: 5166016
+	4948  -  MemoryUsage of job (MB)
+	5066180  -  ResidentSetSize of job (KB)
+...
+006 (17502481.016.000) 07/25 00:01:00 Image size of job updated: 5390588
+	4948  -  MemoryUsage of job (MB)
+	5066180  -  ResidentSetSize of job (KB)
+...
+006 (17502481.016.000) 07/25 00:16:02 Image size of job updated: 5463536
+	4948  -  MemoryUsage of job (MB)
+	5066180  -  ResidentSetSize of job (KB)
+...
+006 (17502481.016.000) 07/25 00:19:49 Image size of job updated: 6113292
+	4948  -  MemoryUsage of job (MB)
+	5066180  -  ResidentSetSize of job (KB)
+...
+040 (17502481.016.000) 07/25 00:19:49 Started transferring output files
+...
+040 (17502481.016.000) 07/25 00:19:49 Finished transferring output files
+...
+005 (17502481.016.000) 07/25 00:19:49 Job terminated.
+	(1) Normal termination (return value 0)
+		Usr 0 03:18:04, Sys 0 01:24:20  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+		Usr 0 03:18:04, Sys 0 01:24:20  -  Total Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Local Usage
+	5976  -  Run Bytes Sent By Job
+	213393  -  Run Bytes Received By Job
+	5976  -  Total Bytes Sent By Job
+	213393  -  Total Bytes Received By Job
+	Partitionable Resources :     Usage  Request Allocated Assigned
+	   Cpus                 :      4.92        8         8 
+	   Disk (KB)            : 587434     8388608   8394765 
+	   GPUs                 :      0.62        1         1 "GPU-03db3194"
+	   GpusMemory (MB)      :   3006                       
+	   Memory (MB)          :   4948       24000     24000 
+	   TimeExecute (s)      :   3541                       
+	   TimeSlotBusy (s)     :   3544                       
+...

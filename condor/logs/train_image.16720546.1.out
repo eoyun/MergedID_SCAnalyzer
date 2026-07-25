@@ -1,0 +1,78 @@
+[host] b9g57n0003.cern.ch
+[args] train_resnet_image_classifier.py --detector ee --weight-h5 /eos/user/y/yeo/4l/weights/categories/AOD_all/category_weights.h5 --output-dir /eos/user/y/yeo/4l/runs/v2/image_aod_ee_es_all --track-types GenTrk --model resnet50 --epochs 100 --batch-size 16 --lr 1e-4
+[gpu] True 1
+[detector] ee
+[weight_h5] /eos/home-y/yeo/4l/weights/categories/AOD_all/category_weights.h5
+[weight_key] EE_weight_split
+[output] /eos/home-y/yeo/4l/runs/v2/image_aod_ee_es_all
+[device] cuda
+[num_workers] requested=0 effective=0
+[torch_sharing_strategy] file_system
+
+[train] objects=455914 weight_sum=2.000000
+  label counts: background=376727 signal=79187
+  label weight sums: background=1.000000 signal=1.000000
+  background           376727
+  signal_H2000_A0p4    3147
+  signal_H2000_A10     3879
+  signal_H750_A0p4     4785
+  signal_H750_A10      7411
+  signal_H750_A1       4898
+  signal_H750_A2       4844
+  signal_H750_A5       5398
+  signal_H2000_A1      3112
+  signal_H2000_A2      3165
+  signal_H2000_A5      3242
+  signal_H250_A0p4     6009
+  signal_H250_A10      9342
+  signal_H250_A1       6032
+  signal_H250_A2       5918
+  signal_H250_A5       8005
+
+[val] objects=57112 weight_sum=2.000000
+  label counts: background=47152 signal=9960
+  label weight sums: background=1.000000 signal=1.000000
+  background           47152
+  signal_H2000_A0p4    389
+  signal_H2000_A10     495
+  signal_H750_A0p4     601
+  signal_H750_A10      938
+  signal_H750_A1       624
+  signal_H750_A2       607
+  signal_H750_A5       680
+  signal_H2000_A1      389
+  signal_H2000_A2      387
+  signal_H2000_A5      399
+  signal_H250_A0p4     756
+  signal_H250_A10      1195
+  signal_H250_A1       751
+  signal_H250_A2       741
+  signal_H250_A5       1008
+
+[test] objects=57029 weight_sum=2.000000
+  label counts: background=47123 signal=9906
+  label weight sums: background=1.000000 signal=1.000000
+  background           47123
+  signal_H2000_A0p4    380
+  signal_H2000_A10     469
+  signal_H750_A0p4     598
+  signal_H750_A10      927
+  signal_H750_A1       600
+  signal_H750_A2       613
+  signal_H750_A5       683
+  signal_H2000_A1      394
+  signal_H2000_A2      396
+  signal_H2000_A5      415
+  signal_H250_A0p4     753
+  signal_H250_A10      1178
+  signal_H250_A1       764
+  signal_H250_A2       732
+  signal_H250_A5       1004
+
+[weight sums before training]
+train background=1.00000000 signal=1.00000000 total=2.00000001 | before_rebalance background=0.78774480 signal=0.79189278
+val   background=1.00000000 signal=1.00000000 total=2.00000000 | before_rebalance background=0.09836537 signal=0.10691336
+test  background=1.00000000 signal=1.00000000 total=2.00000000 | before_rebalance background=0.11388982 signal=0.10119388
+
+[start training]
+

@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/pool/condor/dir_3269302/train_resnet_image_classifier.py", line 1160, in <module>
+    main()
+    ~~~~^^
+  File "/pool/condor/dir_3269302/train_resnet_image_classifier.py", line 1141, in main
+    save_predictions_csv(output_dir / "val_predictions.csv", val_pack, file_entries, code_to_sample)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/pool/condor/dir_3269302/train_resnet_image_classifier.py", line 852, in save_predictions_csv
+    sample_id = code_to_sample[int(pack["sample_code"][i])]
+                ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: 'NoneType' object is not subscriptable
+[python] failed rc=1; not staging out

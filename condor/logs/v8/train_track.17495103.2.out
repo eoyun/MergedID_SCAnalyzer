@@ -1,0 +1,29 @@
+[host] b9g57n3665.cern.ch
+[args] train_point_transformer_track_classifier.py --detector eb --weight-h5 /eos/user/y/yeo/4l/weights/categories_pt50/AOD_eq1/category_weights.h5 --compact /eos/user/y/yeo/4l/compact_pt50/AOD_eb_eq1.h5 --output-dir /eos/user/y/yeo/4l/runs/v8/track_aod_eb_eq1 --track-types GenTrk --epochs 50 --no-early-stopping --num-workers 8 --batch-size 64 --lr 1e-4 --max-points 16 --embed-dim 128 --depth 4 --num-heads 4 --mlp-ratio 4.0 --dropout 0.1
+[stage-in] /eos/user/y/yeo/4l/compact_pt50/AOD_eb_eq1.h5 -> /pool/condor/dir_1242771/AOD_eb_eq1.h5
+[stage-in] /eos/user/y/yeo/4l/weights/categories_pt50/AOD_eq1/category_weights.h5 -> /pool/condor/dir_1242771/weight_category_weights.h5
+[gpu] True 1
+[detector] eb
+[weight_h5] /pool/condor/dir_1242771/weight_category_weights.h5
+[weight_key] EB_weight_split
+[output] /pool/condor/dir_1242771/jobout
+[device] cuda
+[num_workers] requested=8 effective=8
+[torch_sharing_strategy] file_system
+[compact] /pool/condor/dir_1242771/AOD_eb_eq1.h5
+[resume] loaded last.pt @epoch=50 best=0.9126 -> resuming at epoch 51
+
+[weight sums before training]
+train background=0.99999999 signal=1.00000000 total=1.99999999 | before_rebalance background=0.77103712 signal=0.80813532
+val   background=1.00000001 signal=1.00000000 total=2.00000001 | before_rebalance background=0.15359631 signal=0.10246027
+test  background=1.00000000 signal=1.00000000 total=2.00000000 | before_rebalance background=0.07536657 signal=0.08940441
+
+[start training]
+
+
+[test summary]
+  threshold = 0.444000
+  test_auc  = 0.960177
+  test_f1   = 0.907322
+[stage-out] /pool/condor/dir_1242771/jobout -> root://eosuser.cern.ch//eos/user/y/yeo/4l/runs/v8/track_aod_eb_eq1
+[stage-out] done

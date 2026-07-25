@@ -1,0 +1,9 @@
+[host] b9g57n4074.cern.ch
+[args] train_fusion_cross_attention.py --detector eb --weight-h5 /eos/user/y/yeo/4l/weights/categories/MiniAOD_all/category_weights.h5 --compact /eos/user/y/yeo/4l/compact/MiniAOD_eb_all.h5 --output-dir /eos/user/y/yeo/4l/runs/cross_v1/cross_mini_eb_all --track-types Lost,PF,GSF --backbone resnet18 --epochs 50 --no-early-stopping --batch-size 16 --lr 1e-4 --num-workers 8
+[stage-in] /eos/user/y/yeo/4l/compact/MiniAOD_eb_all.h5 -> /pool/condor/dir_61862/MiniAOD_eb_all.h5
+[stage-in] /eos/user/y/yeo/4l/weights/categories/MiniAOD_all/category_weights.h5 -> /pool/condor/dir_61862/weight_category_weights.h5
+[gpu] True 1
+[resume] @epoch=15 best=0.9573 -> start 16
+
+[start training]
+

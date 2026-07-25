@@ -1,0 +1,56 @@
+000 (17115982.011.000) 07/08 08:20:08 Job submitted from host: <188.185.114.121:9618?addrs=188.185.114.121-9618+[2001-1458-d00-a--100-273]-9618&alias=bigbird19.cern.ch&noUDP&sock=schedd_5103_cfe0>
+...
+040 (17115982.011.000) 07/08 09:04:07 Started transferring input files
+	Transferring to host: <188.185.93.227:9618?addrs=188.185.93.227-9618&alias=b9g57n7827.cern.ch&noUDP&sock=slot1_1_16553_d5fa_166686>
+...
+040 (17115982.011.000) 07/08 09:04:07 Finished transferring input files
+...
+001 (17115982.011.000) 07/08 09:04:07 Job executing on host: <188.185.93.227:9618?addrs=188.185.93.227-9618&alias=b9g57n7827.cern.ch&noUDP&sock=startd_15635_e354>
+	SlotName: slot1_1@b9g57n7827.cern.ch
+	AvailableGPUs = { GPUs_GPU_ee78d802 }
+	CondorScratchDir = "/pool/condor/dir_695064"
+	Cpus = 8
+	Disk = 8389632
+	GPUs = 1
+	GPUs_GPU_ee78d802 = [ Id = "GPU-ee78d802"; ClockMhz = 1410.0; Capability = 8.0; CoresPerCU = 64; DeviceName = "NVIDIA A100-PCIE-40GB"; DeviceUuid = "ee78d802-96d0-a90a-d47c-1f122c066123"; ECCEnabled = true; ComputeUnits = 108; DriverVersion = 13.0; DevicePciBusId = "0000:06:00.0"; GlobalMemoryMb = 40441; MaxSupportedVersion = 13000 ]
+	Memory = 24000
+...
+006 (17115982.011.000) 07/08 09:04:20 Image size of job updated: 223412
+	219  -  MemoryUsage of job (MB)
+	223412  -  ResidentSetSize of job (KB)
+...
+006 (17115982.011.000) 07/08 09:09:20 Image size of job updated: 2247400
+	2195  -  MemoryUsage of job (MB)
+	2247400  -  ResidentSetSize of job (KB)
+...
+006 (17115982.011.000) 07/08 09:14:20 Image size of job updated: 2549452
+	2490  -  MemoryUsage of job (MB)
+	2549452  -  ResidentSetSize of job (KB)
+...
+006 (17115982.011.000) 07/08 09:15:34 Image size of job updated: 2724500
+	2490  -  MemoryUsage of job (MB)
+	2549452  -  ResidentSetSize of job (KB)
+...
+040 (17115982.011.000) 07/08 09:15:34 Started transferring output files
+...
+040 (17115982.011.000) 07/08 09:15:34 Finished transferring output files
+...
+005 (17115982.011.000) 07/08 09:15:34 Job terminated.
+	(1) Normal termination (return value 0)
+		Usr 0 01:03:23, Sys 0 00:06:20  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+		Usr 0 01:03:23, Sys 0 00:06:20  -  Total Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Local Usage
+	7919  -  Run Bytes Sent By Job
+	184975  -  Run Bytes Received By Job
+	7919  -  Total Bytes Sent By Job
+	184975  -  Total Bytes Received By Job
+	Partitionable Resources :    Usage  Request Allocated Assigned
+	   Cpus                 :     7.00        8         8 
+	   Disk (KB)            : 72244     8388608   8389632 
+	   GPUs                 :     0.09        1         1 "GPU-ee78d802"
+	   GpusMemory (MB)      :  1126                       
+	   Memory (MB)          :  2490       24000     24000 
+	   TimeExecute (s)      :   687                       
+	   TimeSlotBusy (s)     :   689                       
+...

@@ -1,0 +1,48 @@
+[host] b9pgpun015.cern.ch
+[args] train_resnet_image_classifier.py --detector eb --weight-h5 /eos/user/y/yeo/4l/weights/categories/AOD_eq1/category_weights.h5 --compact /eos/user/y/yeo/4l/compact/AOD_eb_eq1.h5 --output-dir /eos/user/y/yeo/4l/runs/v5/image_aod_eb_eq1 --track-types GenTrk --model resnet50 --epochs 20 --num-workers 8 --batch-size 16 --lr 1e-4
+[stage-in] /eos/user/y/yeo/4l/compact/AOD_eb_eq1.h5 -> /pool/condor/dir_689703/AOD_eb_eq1.h5
+[gpu] True 1
+[detector] eb
+[weight_h5] /eos/home-y/yeo/4l/weights/categories/AOD_eq1/category_weights.h5
+[weight_key] EB_weight_split
+[output] /pool/condor/dir_689703/jobout
+[device] cuda
+[num_workers] requested=8 effective=8
+[torch_sharing_strategy] file_system
+[compact] /pool/condor/dir_689703/AOD_eb_eq1.h5
+
+[weight sums before training]
+train background=0.99999999 signal=1.00000000 total=1.99999999 | before_rebalance background=0.81187702 signal=0.79348161
+val   background=1.00000000 signal=1.00000000 total=2.00000000 | before_rebalance background=0.09727935 signal=0.09325798
+test  background=1.00000000 signal=1.00000000 total=2.00000000 | before_rebalance background=0.09084364 signal=0.11326041
+
+[start training]
+
+Epoch 001 | train_loss=0.840414 train_auc=0.8011 train_f1@0.5=0.7884 | val_loss=1.157407 val_auc=0.8050 val_f1@0.5=0.6778
+Epoch 002 | train_loss=0.790323 train_auc=0.8312 train_f1@0.5=0.8218 | val_loss=0.571624 val_auc=0.8881 val_f1@0.5=0.8588
+Epoch 003 | train_loss=0.785401 train_auc=0.8447 train_f1@0.5=0.8338 | val_loss=0.408815 val_auc=0.9099 val_f1@0.5=0.8853
+Epoch 004 | train_loss=0.671853 train_auc=0.8628 train_f1@0.5=0.8491 | val_loss=0.341535 val_auc=0.9370 val_f1@0.5=0.8903
+Epoch 005 | train_loss=0.673814 train_auc=0.8709 train_f1@0.5=0.8492 | val_loss=0.321043 val_auc=0.9388 val_f1@0.5=0.8827
+Epoch 006 | train_loss=0.771806 train_auc=0.8784 train_f1@0.5=0.8625 | val_loss=1.016942 val_auc=0.8879 val_f1@0.5=0.8109
+Epoch 007 | train_loss=0.572248 train_auc=0.9005 train_f1@0.5=0.8662 | val_loss=0.426576 val_auc=0.9276 val_f1@0.5=0.8935
+Epoch 008 | train_loss=0.661357 train_auc=0.8884 train_f1@0.5=0.8682 | val_loss=0.405261 val_auc=0.9434 val_f1@0.5=0.8917
+Epoch 009 | train_loss=0.508308 train_auc=0.9199 train_f1@0.5=0.8782 | val_loss=0.381423 val_auc=0.9508 val_f1@0.5=0.8907
+Epoch 010 | train_loss=0.634159 train_auc=0.9016 train_f1@0.5=0.8742 | val_loss=0.358647 val_auc=0.9508 val_f1@0.5=0.8911
+Epoch 011 | train_loss=0.545734 train_auc=0.9096 train_f1@0.5=0.8741 | val_loss=0.306118 val_auc=0.9489 val_f1@0.5=0.9025
+Epoch 012 | train_loss=0.377662 train_auc=0.9468 train_f1@0.5=0.8866 | val_loss=0.347734 val_auc=0.9488 val_f1@0.5=0.8867
+Epoch 013 | train_loss=0.436779 train_auc=0.9404 train_f1@0.5=0.8953 | val_loss=0.240025 val_auc=0.9640 val_f1@0.5=0.9161
+Epoch 014 | train_loss=0.405316 train_auc=0.9432 train_f1@0.5=0.9010 | val_loss=0.229151 val_auc=0.9673 val_f1@0.5=0.9061
+Epoch 015 | train_loss=0.428790 train_auc=0.9484 train_f1@0.5=0.9051 | val_loss=0.292262 val_auc=0.9641 val_f1@0.5=0.9068
+Epoch 016 | train_loss=0.328252 train_auc=0.9634 train_f1@0.5=0.8990 | val_loss=0.297853 val_auc=0.9630 val_f1@0.5=0.9053
+Epoch 017 | train_loss=0.366853 train_auc=0.9590 train_f1@0.5=0.9066 | val_loss=0.337768 val_auc=0.9581 val_f1@0.5=0.9017
+Epoch 018 | train_loss=0.264122 train_auc=0.9748 train_f1@0.5=0.9172 | val_loss=0.278929 val_auc=0.9664 val_f1@0.5=0.9150
+Epoch 019 | train_loss=0.279853 train_auc=0.9740 train_f1@0.5=0.9272 | val_loss=0.315899 val_auc=0.9605 val_f1@0.5=0.9138
+
+[early stopping] epoch=19
+
+[test summary]
+  threshold = 0.226000
+  test_auc  = 0.882310
+  test_f1   = 0.875375
+[stage-out] /pool/condor/dir_689703/jobout -> root://eosuser.cern.ch//eos/user/y/yeo/4l/runs/v5/image_aod_eb_eq1
+[stage-out] done

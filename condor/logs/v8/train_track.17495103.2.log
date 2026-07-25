@@ -1,0 +1,149 @@
+000 (17495103.002.000) 07/22 05:14:29 Job submitted from host: <188.185.114.121:9618?addrs=188.185.114.121-9618+[2001-1458-d00-a--100-273]-9618&alias=bigbird19.cern.ch&noUDP&sock=schedd_5837_4664>
+...
+040 (17495103.002.000) 07/22 05:15:34 Started transferring input files
+	Transferring to host: <188.185.93.208:9618?addrs=188.185.93.208-9618+[2001-1458-d00-6c--100-e9]-9618&alias=b9g57n3665.cern.ch&noUDP&sock=slot1_1_4258_e566_5191>
+...
+040 (17495103.002.000) 07/22 05:15:34 Finished transferring input files
+...
+001 (17495103.002.000) 07/22 05:15:34 Job executing on host: <188.185.93.208:9618?addrs=188.185.93.208-9618+[2001-1458-d00-6c--100-e9]-9618&alias=b9g57n3665.cern.ch&noUDP&sock=startd_3993_71c1>
+	SlotName: slot1_1@b9g57n3665.cern.ch
+	AvailableGPUs = { GPUs_GPU_836178fb }
+	CondorScratchDir = "/pool/condor/dir_1237240"
+	Cpus = 8
+	Disk = 8389434
+	GPUs = 1
+	GPUs_GPU_836178fb = [ Id = "GPU-836178fb"; ClockMhz = 1410.0; Capability = 8.0; CoresPerCU = 64; DeviceName = "NVIDIA A100-PCIE-40GB"; DeviceUuid = "836178fb-b193-b354-8ad9-dc95f395b443"; ECCEnabled = true; ComputeUnits = 108; NvidiaDriver = "610.43.02"; DriverVersion = 13.3; DevicePciBusId = "0000:06:00.0"; GlobalMemoryMb = 40465; MaxSupportedVersion = 13030 ]
+	Memory = 24000
+...
+006 (17495103.002.000) 07/22 05:15:42 Image size of job updated: 210980
+	207  -  MemoryUsage of job (MB)
+	210980  -  ResidentSetSize of job (KB)
+...
+006 (17495103.002.000) 07/22 05:20:42 Image size of job updated: 2382204
+	2327  -  MemoryUsage of job (MB)
+	2382204  -  ResidentSetSize of job (KB)
+...
+006 (17495103.002.000) 07/22 05:25:43 Image size of job updated: 2515120
+	2457  -  MemoryUsage of job (MB)
+	2515120  -  ResidentSetSize of job (KB)
+...
+006 (17495103.002.000) 07/22 05:30:44 Image size of job updated: 2647016
+	2585  -  MemoryUsage of job (MB)
+	2647016  -  ResidentSetSize of job (KB)
+...
+006 (17495103.002.000) 07/22 05:35:44 Image size of job updated: 2806764
+	2741  -  MemoryUsage of job (MB)
+	2806764  -  ResidentSetSize of job (KB)
+...
+006 (17495103.002.000) 07/22 05:40:45 Image size of job updated: 2940656
+	2872  -  MemoryUsage of job (MB)
+	2940656  -  ResidentSetSize of job (KB)
+...
+022 (17495103.002.000) 07/22 05:47:24 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n3665.cern.ch <188.185.93.208:9618?addrs=188.185.93.208-9618+[2001-1458-d00-6c--100-e9]-9618&alias=b9g57n3665.cern.ch&noUDP&sock=startd_3993_71c1>
+...
+023 (17495103.002.000) 07/22 05:48:29 Job reconnected to slot1_1@b9g57n3665.cern.ch
+    startd address: <188.185.93.208:9618?addrs=188.185.93.208-9618+[2001-1458-d00-6c--100-e9]-9618&alias=b9g57n3665.cern.ch&noUDP&sock=startd_3993_71c1>
+    starter address: <188.185.93.208:9618?addrs=188.185.93.208-9618+[2001-1458-d00-6c--100-e9]-9618&alias=b9g57n3665.cern.ch&noUDP&sock=slot1_1_4258_e566_5191>
+...
+006 (17495103.002.000) 07/22 05:55:04 Image size of job updated: 3208068
+	3133  -  MemoryUsage of job (MB)
+	3208068  -  ResidentSetSize of job (KB)
+...
+006 (17495103.002.000) 07/22 06:00:04 Image size of job updated: 3339444
+	3262  -  MemoryUsage of job (MB)
+	3339444  -  ResidentSetSize of job (KB)
+...
+006 (17495103.002.000) 07/22 06:04:47 Image size of job updated: 3699472
+	3613  -  MemoryUsage of job (MB)
+	3699472  -  ResidentSetSize of job (KB)
+...
+022 (17495103.002.000) 07/22 06:06:46 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n3665.cern.ch <188.185.93.208:9618?addrs=188.185.93.208-9618+[2001-1458-d00-6c--100-e9]-9618&alias=b9g57n3665.cern.ch&noUDP&sock=startd_3993_71c1>
+...
+023 (17495103.002.000) 07/22 06:06:46 Job reconnected to slot1_1@b9g57n3665.cern.ch
+    startd address: <188.185.93.208:9618?addrs=188.185.93.208-9618+[2001-1458-d00-6c--100-e9]-9618&alias=b9g57n3665.cern.ch&noUDP&sock=startd_3993_71c1>
+    starter address: <188.185.93.208:9618?addrs=188.185.93.208-9618+[2001-1458-d00-6c--100-e9]-9618&alias=b9g57n3665.cern.ch&noUDP&sock=slot1_1_4258_e566_5191>
+...
+022 (17495103.002.000) 07/22 06:06:51 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n3665.cern.ch <188.185.93.208:9618?addrs=188.185.93.208-9618+[2001-1458-d00-6c--100-e9]-9618&alias=b9g57n3665.cern.ch&noUDP&sock=startd_3993_71c1>
+...
+023 (17495103.002.000) 07/22 06:06:51 Job reconnected to slot1_1@b9g57n3665.cern.ch
+    startd address: <188.185.93.208:9618?addrs=188.185.93.208-9618+[2001-1458-d00-6c--100-e9]-9618&alias=b9g57n3665.cern.ch&noUDP&sock=startd_3993_71c1>
+    starter address: <188.185.93.208:9618?addrs=188.185.93.208-9618+[2001-1458-d00-6c--100-e9]-9618&alias=b9g57n3665.cern.ch&noUDP&sock=slot1_1_4258_e566_5191>
+...
+022 (17495103.002.000) 07/22 06:06:56 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n3665.cern.ch <188.185.93.208:9618?addrs=188.185.93.208-9618+[2001-1458-d00-6c--100-e9]-9618&alias=b9g57n3665.cern.ch&noUDP&sock=startd_3993_71c1>
+...
+023 (17495103.002.000) 07/22 06:06:56 Job reconnected to slot1_1@b9g57n3665.cern.ch
+    startd address: <188.185.93.208:9618?addrs=188.185.93.208-9618+[2001-1458-d00-6c--100-e9]-9618&alias=b9g57n3665.cern.ch&noUDP&sock=startd_3993_71c1>
+    starter address: <188.185.93.208:9618?addrs=188.185.93.208-9618+[2001-1458-d00-6c--100-e9]-9618&alias=b9g57n3665.cern.ch&noUDP&sock=slot1_1_4258_e566_5191>
+...
+022 (17495103.002.000) 07/22 06:07:01 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n3665.cern.ch <188.185.93.208:9618?addrs=188.185.93.208-9618+[2001-1458-d00-6c--100-e9]-9618&alias=b9g57n3665.cern.ch&noUDP&sock=startd_3993_71c1>
+...
+023 (17495103.002.000) 07/22 06:07:01 Job reconnected to slot1_1@b9g57n3665.cern.ch
+    startd address: <188.185.93.208:9618?addrs=188.185.93.208-9618+[2001-1458-d00-6c--100-e9]-9618&alias=b9g57n3665.cern.ch&noUDP&sock=startd_3993_71c1>
+    starter address: <188.185.93.208:9618?addrs=188.185.93.208-9618+[2001-1458-d00-6c--100-e9]-9618&alias=b9g57n3665.cern.ch&noUDP&sock=slot1_1_4258_e566_5191>
+...
+021 (17495103.002.000) 07/22 06:07:06 Error from starter on slot1_1@b9g57n3665.cern.ch:
+	Repeated attempts to transfer output failed for unknown reasons
+...
+004 (17495103.002.000) 07/22 06:07:06 Job was evicted. Code 1007 Subcode 0
+	(0) CPU times
+		Usr 0 02:47:25, Sys 0 00:28:21  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+	0  -  Run Bytes Sent By Job
+	188559  -  Run Bytes Received By Job
+	Reason: Error from slot1_1@b9g57n3665.cern.ch: Repeated attempts to transfer output failed for unknown reasons
+	Partitionable Resources :     Usage  Request Allocated Assigned
+	   Cpus                 :      4.28        8         8 
+	   Disk (KB)            : 420432     8388608   8389434 
+	   GPUs                 :      0.19        1         1 "GPU-836178fb"
+	   GpusMemory (MB)      :   1103                       
+	   Memory (MB)          :   3613       24000     24000 
+	   TimeExecute (s)      :   3067                       
+	   TimeSlotBusy (s)     :   3094                       
+...
+040 (17495103.002.000) 07/22 06:07:41 Started transferring input files
+	Transferring to host: <188.185.93.208:9618?addrs=188.185.93.208-9618+[2001-1458-d00-6c--100-e9]-9618&alias=b9g57n3665.cern.ch&noUDP&sock=slot1_1_4258_e566_5217>
+...
+040 (17495103.002.000) 07/22 06:07:41 Finished transferring input files
+...
+001 (17495103.002.000) 07/22 06:07:41 Job executing on host: <188.185.93.208:9618?addrs=188.185.93.208-9618+[2001-1458-d00-6c--100-e9]-9618&alias=b9g57n3665.cern.ch&noUDP&sock=startd_3993_71c1>
+	SlotName: slot1_1@b9g57n3665.cern.ch
+	AvailableGPUs = { GPUs_GPU_836178fb }
+	CondorScratchDir = "/pool/condor/dir_1242771"
+	Cpus = 8
+	Disk = 8389604
+	GPUs = 1
+	GPUs_GPU_836178fb = [ Id = "GPU-836178fb"; ClockMhz = 1410.0; Capability = 8.0; CoresPerCU = 64; DeviceName = "NVIDIA A100-PCIE-40GB"; DeviceUuid = "836178fb-b193-b354-8ad9-dc95f395b443"; ECCEnabled = true; ComputeUnits = 108; NvidiaDriver = "610.43.02"; DriverVersion = 13.3; DevicePciBusId = "0000:06:00.0"; GlobalMemoryMb = 40465; MaxSupportedVersion = 13030 ]
+	Memory = 24000
+...
+040 (17495103.002.000) 07/22 06:09:45 Started transferring output files
+...
+040 (17495103.002.000) 07/22 06:09:45 Finished transferring output files
+...
+005 (17495103.002.000) 07/22 06:09:45 Job terminated.
+	(1) Normal termination (return value 0)
+		Usr 0 00:01:01, Sys 0 00:00:25  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+		Usr 0 02:48:26, Sys 0 00:28:46  -  Total Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Local Usage
+	1955  -  Run Bytes Sent By Job
+	188559  -  Run Bytes Received By Job
+	1955  -  Total Bytes Sent By Job
+	377118  -  Total Bytes Received By Job
+	Partitionable Resources :     Usage  Request Allocated Assigned
+	   Cpus                 :      0           8         8 
+	   Disk (KB)            : 420428     8388608   8389604 
+	   GPUs                 :      0.19        1         1 "GPU-836178fb"
+	   Memory (MB)          :   3663       24000     24000 
+	   TimeExecute (s)      :    124                       
+	   TimeSlotBusy (s)     :    124                       
+...

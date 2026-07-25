@@ -1,0 +1,63 @@
+[host] b9g57n1627.cern.ch
+[args] train_fusion_cross_attention.py --detector ee --weight-h5 /eos/user/y/yeo/4l/weights/categories_pt50/AOD_eq1/category_weights.h5 --compact /eos/user/y/yeo/4l/compact_pt50/AOD_ee_eq1.h5 --output-dir /eos/user/y/yeo/4l/runs/cross_v2/cross_aod_ee_es_eq1 --track-types GenTrk --backbone resnet18 --epochs 50 --no-early-stopping --batch-size 16 --lr 1e-4 --num-workers 8
+[stage-in] /eos/user/y/yeo/4l/compact_pt50/AOD_ee_eq1.h5 -> /pool/condor/dir_1195171/AOD_ee_eq1.h5
+[stage-in] /eos/user/y/yeo/4l/weights/categories_pt50/AOD_eq1/category_weights.h5 -> /pool/condor/dir_1195171/weight_category_weights.h5
+[gpu] True 1
+[resume] no checkpoint on EOS; starting fresh
+
+[start training]
+
+Epoch 001 | train_loss=0.46581 train_auc=0.8589 | val_loss=0.36515 val_auc=0.9302 val_f1=0.8516
+Epoch 002 | train_loss=0.36503 train_auc=0.9178 | val_loss=0.31221 val_auc=0.9533 val_f1=0.8789
+Epoch 003 | train_loss=0.35348 train_auc=0.9230 | val_loss=0.42347 val_auc=0.9130 val_f1=0.8098
+Epoch 004 | train_loss=0.34151 train_auc=0.9287 | val_loss=0.29086 val_auc=0.9548 val_f1=0.8913
+Epoch 005 | train_loss=0.35864 train_auc=0.9202 | val_loss=0.36538 val_auc=0.9459 val_f1=0.8659
+Epoch 006 | train_loss=0.33148 train_auc=0.9330 | val_loss=0.29354 val_auc=0.9486 val_f1=0.8915
+Epoch 007 | train_loss=0.31392 train_auc=0.9403 | val_loss=0.25487 val_auc=0.9606 val_f1=0.9035
+Epoch 008 | train_loss=0.29384 train_auc=0.9472 | val_loss=0.26032 val_auc=0.9639 val_f1=0.8925
+Epoch 009 | train_loss=0.27974 train_auc=0.9521 | val_loss=0.28106 val_auc=0.9539 val_f1=0.8942
+Epoch 010 | train_loss=0.27266 train_auc=0.9549 | val_loss=0.23666 val_auc=0.9660 val_f1=0.9169
+Epoch 011 | train_loss=0.26793 train_auc=0.9564 | val_loss=0.28830 val_auc=0.9606 val_f1=0.8791
+Epoch 012 | train_loss=0.28989 train_auc=0.9487 | val_loss=0.23938 val_auc=0.9665 val_f1=0.9129
+Epoch 013 | train_loss=0.26652 train_auc=0.9566 | val_loss=0.25354 val_auc=0.9615 val_f1=0.9052
+Epoch 014 | train_loss=0.25226 train_auc=0.9616 | val_loss=0.26838 val_auc=0.9630 val_f1=0.8913
+Epoch 015 | train_loss=0.25843 train_auc=0.9592 | val_loss=0.24973 val_auc=0.9605 val_f1=0.9121
+Epoch 016 | train_loss=0.22976 train_auc=0.9676 | val_loss=0.21185 val_auc=0.9705 val_f1=0.9324
+Epoch 017 | train_loss=0.21201 train_auc=0.9721 | val_loss=0.21053 val_auc=0.9709 val_f1=0.9294
+Epoch 018 | train_loss=0.20915 train_auc=0.9726 | val_loss=0.22872 val_auc=0.9701 val_f1=0.9121
+Epoch 019 | train_loss=0.20777 train_auc=0.9732 | val_loss=0.25215 val_auc=0.9677 val_f1=0.8977
+Epoch 020 | train_loss=0.20756 train_auc=0.9734 | val_loss=0.20718 val_auc=0.9720 val_f1=0.9217
+Epoch 021 | train_loss=0.19032 train_auc=0.9770 | val_loss=0.20616 val_auc=0.9722 val_f1=0.9308
+Epoch 022 | train_loss=0.20234 train_auc=0.9742 | val_loss=0.22475 val_auc=0.9682 val_f1=0.9192
+Epoch 023 | train_loss=0.19395 train_auc=0.9757 | val_loss=0.20695 val_auc=0.9726 val_f1=0.9281
+Epoch 024 | train_loss=0.18924 train_auc=0.9776 | val_loss=0.19892 val_auc=0.9742 val_f1=0.9269
+Epoch 025 | train_loss=0.18573 train_auc=0.9777 | val_loss=0.21008 val_auc=0.9708 val_f1=0.9251
+Epoch 026 | train_loss=0.17597 train_auc=0.9800 | val_loss=0.20706 val_auc=0.9713 val_f1=0.9248
+Epoch 027 | train_loss=0.19274 train_auc=0.9766 | val_loss=0.22549 val_auc=0.9698 val_f1=0.9205
+Epoch 028 | train_loss=0.16170 train_auc=0.9831 | val_loss=0.21642 val_auc=0.9701 val_f1=0.9228
+Epoch 029 | train_loss=0.15795 train_auc=0.9837 | val_loss=0.21299 val_auc=0.9707 val_f1=0.9214
+Epoch 030 | train_loss=0.14866 train_auc=0.9852 | val_loss=0.20983 val_auc=0.9717 val_f1=0.9262
+Epoch 031 | train_loss=0.14027 train_auc=0.9870 | val_loss=0.20838 val_auc=0.9719 val_f1=0.9265
+Epoch 032 | train_loss=0.13638 train_auc=0.9876 | val_loss=0.21143 val_auc=0.9716 val_f1=0.9215
+Epoch 033 | train_loss=0.13763 train_auc=0.9871 | val_loss=0.22962 val_auc=0.9686 val_f1=0.9180
+Epoch 034 | train_loss=0.13007 train_auc=0.9888 | val_loss=0.21880 val_auc=0.9700 val_f1=0.9239
+Epoch 035 | train_loss=0.12703 train_auc=0.9892 | val_loss=0.22922 val_auc=0.9695 val_f1=0.9192
+Epoch 036 | train_loss=0.12750 train_auc=0.9893 | val_loss=0.22508 val_auc=0.9696 val_f1=0.9244
+Epoch 037 | train_loss=0.12114 train_auc=0.9902 | val_loss=0.22277 val_auc=0.9702 val_f1=0.9221
+Epoch 038 | train_loss=0.12119 train_auc=0.9900 | val_loss=0.23011 val_auc=0.9690 val_f1=0.9202
+Epoch 039 | train_loss=0.11883 train_auc=0.9903 | val_loss=0.22268 val_auc=0.9706 val_f1=0.9216
+Epoch 040 | train_loss=0.11801 train_auc=0.9907 | val_loss=0.22457 val_auc=0.9700 val_f1=0.9249
+Epoch 041 | train_loss=0.11627 train_auc=0.9908 | val_loss=0.23019 val_auc=0.9682 val_f1=0.9190
+Epoch 042 | train_loss=0.11850 train_auc=0.9904 | val_loss=0.22432 val_auc=0.9696 val_f1=0.9235
+Epoch 043 | train_loss=0.11640 train_auc=0.9908 | val_loss=0.22606 val_auc=0.9693 val_f1=0.9192
+Epoch 044 | train_loss=0.11669 train_auc=0.9908 | val_loss=0.22190 val_auc=0.9706 val_f1=0.9244
+Epoch 045 | train_loss=0.11527 train_auc=0.9910 | val_loss=0.22204 val_auc=0.9698 val_f1=0.9207
+Epoch 046 | train_loss=0.11573 train_auc=0.9909 | val_loss=0.22224 val_auc=0.9696 val_f1=0.9204
+Epoch 047 | train_loss=0.11435 train_auc=0.9912 | val_loss=0.22449 val_auc=0.9696 val_f1=0.9259
+Epoch 048 | train_loss=0.11423 train_auc=0.9912 | val_loss=0.22393 val_auc=0.9703 val_f1=0.9224
+Epoch 049 | train_loss=0.11425 train_auc=0.9913 | val_loss=0.22523 val_auc=0.9698 val_f1=0.9215
+Epoch 050 | train_loss=0.11838 train_auc=0.9907 | val_loss=0.22723 val_auc=0.9697 val_f1=0.9221
+
+[test] threshold=0.4500 auc=0.9674 f1=0.9106
+[stage-out] /pool/condor/dir_1195171/jobout -> root://eosuser.cern.ch//eos/user/y/yeo/4l/runs/cross_v2/cross_aod_ee_es_eq1
+[stage-out] done

@@ -1,0 +1,30 @@
+[host] b9pgpun014.cern.ch
+[args] train_resnet_image_classifier.py --detector eb --weight-h5 /eos/user/y/yeo/4l/weights/categories/AOD_eq0/category_weights.h5 --compact /eos/user/y/yeo/4l/compact/AOD_eb_eq0.h5 --output-dir /eos/user/y/yeo/4l/runs/v6/image_aod_eb_eq0 --track-types GenTrk --model resnet50 --no-track-channels --epochs 50 --no-early-stopping --num-workers 8 --batch-size 16 --lr 1e-4
+[stage-in] /eos/user/y/yeo/4l/compact/AOD_eb_eq0.h5 -> /pool/condor/dir_346564/AOD_eb_eq0.h5
+[stage-in] /eos/user/y/yeo/4l/weights/categories/AOD_eq0/category_weights.h5 -> /pool/condor/dir_346564/weight_category_weights.h5
+[gpu] True 1
+[detector] eb
+[weight_h5] /pool/condor/dir_346564/weight_category_weights.h5
+[weight_key] EB_weight_split
+[output] /pool/condor/dir_346564/jobout
+[device] cuda
+[num_workers] requested=8 effective=8
+[torch_sharing_strategy] file_system
+[compact] /pool/condor/dir_346564/AOD_eb_eq0.h5
+[resume] loaded last.pt @epoch=49 best=0.9109 -> resuming at epoch 50
+
+[weight sums before training]
+train background=0.99999999 signal=1.00000000 total=1.99999999 | before_rebalance background=0.79927301 signal=0.79347634
+val   background=1.00000000 signal=1.00000000 total=2.00000000 | before_rebalance background=0.09952260 signal=0.11015458
+test  background=0.99999999 signal=1.00000000 total=1.99999999 | before_rebalance background=0.10120440 signal=0.09636909
+
+[start training]
+
+Epoch 050 | train_loss=0.291726 train_auc=0.9516 train_f1@0.5=0.8843 | val_loss=0.964802 val_auc=0.8904 val_f1@0.5=0.7977
+[resume] warning: failed to push last.pt to EOS
+
+[test summary]
+  threshold = 0.648000
+  test_auc  = 0.853532
+  test_f1   = 0.814670
+[stage-out] /pool/condor/dir_346564/jobout -> root://eosuser.cern.ch//eos/user/y/yeo/4l/runs/v6/image_aod_eb_eq0

@@ -1,0 +1,52 @@
+000 (17115982.005.000) 07/08 08:20:08 Job submitted from host: <188.185.114.121:9618?addrs=188.185.114.121-9618+[2001-1458-d00-a--100-273]-9618&alias=bigbird19.cern.ch&noUDP&sock=schedd_5103_cfe0>
+...
+040 (17115982.005.000) 07/08 08:40:02 Started transferring input files
+	Transferring to host: <188.185.92.49:9618?addrs=188.185.92.49-9618+[2001-1458-d00-6c--100-1fe]-9618&alias=b9g57n2594.cern.ch&noUDP&sock=slot1_1_17486_3800_166635>
+...
+040 (17115982.005.000) 07/08 08:40:02 Finished transferring input files
+...
+001 (17115982.005.000) 07/08 08:40:02 Job executing on host: <188.185.92.49:9618?addrs=188.185.92.49-9618+[2001-1458-d00-6c--100-1fe]-9618&alias=b9g57n2594.cern.ch&noUDP&sock=startd_16369_59d8>
+	SlotName: slot1_1@b9g57n2594.cern.ch
+	AvailableGPUs = { GPUs_GPU_f9650dc5 }
+	CondorScratchDir = "/pool/condor/dir_3487570"
+	Cpus = 8
+	Disk = 8389632
+	GPUs = 1
+	GPUs_GPU_f9650dc5 = [ Id = "GPU-f9650dc5"; ClockMhz = 1410.0; Capability = 8.0; CoresPerCU = 64; DeviceName = "NVIDIA A100-PCIE-40GB"; DeviceUuid = "f9650dc5-3e28-19ee-e3e7-01f95cfb3164"; ECCEnabled = true; ComputeUnits = 108; DriverVersion = 13.0; DevicePciBusId = "0000:06:00.0"; GlobalMemoryMb = 40441; MaxSupportedVersion = 13000 ]
+	Memory = 24000
+...
+006 (17115982.005.000) 07/08 08:40:15 Image size of job updated: 223380
+	219  -  MemoryUsage of job (MB)
+	223380  -  ResidentSetSize of job (KB)
+...
+006 (17115982.005.000) 07/08 08:45:15 Image size of job updated: 2104760
+	2056  -  MemoryUsage of job (MB)
+	2104760  -  ResidentSetSize of job (KB)
+...
+006 (17115982.005.000) 07/08 08:49:42 Image size of job updated: 2360928
+	2056  -  MemoryUsage of job (MB)
+	2104784  -  ResidentSetSize of job (KB)
+...
+040 (17115982.005.000) 07/08 08:49:42 Started transferring output files
+...
+040 (17115982.005.000) 07/08 08:49:42 Finished transferring output files
+...
+005 (17115982.005.000) 07/08 08:49:42 Job terminated.
+	(1) Normal termination (return value 0)
+		Usr 0 00:28:04, Sys 0 00:05:02  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+		Usr 0 00:28:04, Sys 0 00:05:02  -  Total Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Local Usage
+	7893  -  Run Bytes Sent By Job
+	184975  -  Run Bytes Received By Job
+	7893  -  Total Bytes Sent By Job
+	184975  -  Total Bytes Received By Job
+	Partitionable Resources :    Usage  Request Allocated Assigned
+	   Cpus                 :     3.65        8         8 
+	   Disk (KB)            : 93008     8388608   8389632 
+	   GPUs                 :     0.13        1         1 "GPU-f9650dc5"
+	   GpusMemory (MB)      :  1226                       
+	   Memory (MB)          :  2056       24000     24000 
+	   TimeExecute (s)      :   580                       
+	   TimeSlotBusy (s)     :   582                       
+...

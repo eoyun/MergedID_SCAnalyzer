@@ -1,0 +1,31 @@
+/pool/condor/dir_3823908/track_point_transformer.py:257: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=depth)
+Traceback (most recent call last):
+  File "/pool/condor/dir_3823908/train_point_transformer_track_classifier.py", line 503, in <module>
+    main()
+    ~~~~^^
+  File "/pool/condor/dir_3823908/train_point_transformer_track_classifier.py", line 378, in main
+    run_point_transformer_epoch(model, train_loader, device, optimizer=optimizer, scaler=scaler)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/pool/condor/dir_3823908/track_point_transformer.py", line 311, in run_point_transformer_epoch
+    for batch in loader:
+                 ^^^^^^
+  File "/cvmfs/sft.cern.ch/lcg/views/LCG_109_cuda/x86_64-el9-gcc13-opt/lib/python3.13/site-packages/torch/utils/data/dataloader.py", line 741, in __next__
+    data = self._next_data()
+  File "/cvmfs/sft.cern.ch/lcg/views/LCG_109_cuda/x86_64-el9-gcc13-opt/lib/python3.13/site-packages/torch/utils/data/dataloader.py", line 801, in _next_data
+    data = self._dataset_fetcher.fetch(index)  # may raise StopIteration
+  File "/cvmfs/sft.cern.ch/lcg/views/LCG_109_cuda/x86_64-el9-gcc13-opt/lib/python3.13/site-packages/torch/utils/data/_utils/fetch.py", line 54, in fetch
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+            ~~~~~~~~~~~~^^^^^
+  File "/pool/condor/dir_3823908/track_point_transformer.py", line 204, in __getitem__
+    raw = self._ensure_open(file_idx)
+  File "/pool/condor/dir_3823908/track_point_transformer.py", line 196, in _ensure_open
+    handle = h5py.File(self.file_entries[file_idx].raw_path, "r")
+  File "/cvmfs/sft.cern.ch/lcg/views/LCG_109_cuda/x86_64-el9-gcc13-opt/lib/python3.13/site-packages/h5py/_hl/files.py", line 564, in __init__
+    fid = make_fid(name, mode, userblock_size, fapl, fcpl, swmr=swmr)
+  File "/cvmfs/sft.cern.ch/lcg/views/LCG_109_cuda/x86_64-el9-gcc13-opt/lib/python3.13/site-packages/h5py/_hl/files.py", line 238, in make_fid
+    fid = h5f.open(name, flags, fapl=fapl)
+  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
+  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
+  File "h5py/h5f.pyx", line 102, in h5py.h5f.open
+OSError: [Errno 45] Unable to synchronously open file (unable to open file: name = '/eos/user/y/yeo/4l/data/MiniAOD/signal/signal_996.h5', errno = 45, error message = 'Level 2 not synchronized', flags = 0, o_flags = 0)

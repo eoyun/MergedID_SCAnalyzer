@@ -1,0 +1,31 @@
+[host] b9g57n3665.cern.ch
+[args] train_resnet_image_classifier.py --detector ee --weight-h5 /eos/user/y/yeo/4l/weights/categories/AOD_eq0/category_weights.h5 --compact /eos/user/y/yeo/4l/compact/AOD_ee_eq0.h5 --output-dir /eos/user/y/yeo/4l/runs/v6/image_aod_ee_noes_eq0 --track-types GenTrk --model resnet50 --no-track-channels --epochs 50 --no-early-stopping --num-workers 8 --batch-size 16 --lr 1e-4 --no-es
+[stage-in] /eos/user/y/yeo/4l/compact/AOD_ee_eq0.h5 -> /pool/condor/dir_85233/AOD_ee_eq0.h5
+[stage-in] /eos/user/y/yeo/4l/weights/categories/AOD_eq0/category_weights.h5 -> /pool/condor/dir_85233/weight_category_weights.h5
+[gpu] True 1
+[detector] ee
+[weight_h5] /pool/condor/dir_85233/weight_category_weights.h5
+[weight_key] EE_weight_split
+[output] /pool/condor/dir_85233/jobout
+[device] cuda
+[num_workers] requested=8 effective=8
+[torch_sharing_strategy] file_system
+[compact] /pool/condor/dir_85233/AOD_ee_eq0.h5
+[resume] loaded last.pt @epoch=48 best=0.7339 -> resuming at epoch 49
+
+[weight sums before training]
+train background=1.00000000 signal=1.00000000 total=2.00000000 | before_rebalance background=0.81035376 signal=0.79738309
+val   background=0.99999999 signal=0.99999999 total=1.99999999 | before_rebalance background=0.09874646 signal=0.10148044
+test  background=1.00000001 signal=1.00000000 total=2.00000000 | before_rebalance background=0.09089978 signal=0.10113648
+
+[start training]
+
+Epoch 049 | train_loss=0.443546 train_auc=0.8939 train_f1@0.5=0.8016 | val_loss=0.990260 val_auc=0.7229 val_f1@0.5=0.6770
+Epoch 050 | train_loss=0.433713 train_auc=0.8974 train_f1@0.5=0.8105 | val_loss=1.012196 val_auc=0.7218 val_f1@0.5=0.6792
+
+[test summary]
+  threshold = 0.300000
+  test_auc  = 0.771286
+  test_f1   = 0.750369
+[stage-out] /pool/condor/dir_85233/jobout -> root://eosuser.cern.ch//eos/user/y/yeo/4l/runs/v6/image_aod_ee_noes_eq0
+[stage-out] done

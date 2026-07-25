@@ -1,0 +1,33 @@
+[host] b9g57n3665.cern.ch
+[args] train_resnet_image_classifier.py --detector ee --weight-h5 /eos/user/y/yeo/4l/weights/categories/MiniAOD_eq0/category_weights.h5 --compact /eos/user/y/yeo/4l/compact/MiniAOD_ee_eq0.h5 --output-dir /eos/user/y/yeo/4l/runs/v6/image_mini_ee_es_eq0 --track-types Lost,PF,GSF --model resnet50 --no-track-channels --epochs 50 --no-early-stopping --num-workers 8 --batch-size 16 --lr 1e-4
+[stage-in] /eos/user/y/yeo/4l/compact/MiniAOD_ee_eq0.h5 -> /pool/condor/dir_92024/MiniAOD_ee_eq0.h5
+[stage-in] /eos/user/y/yeo/4l/weights/categories/MiniAOD_eq0/category_weights.h5 -> /pool/condor/dir_92024/weight_category_weights.h5
+[gpu] True 1
+[detector] ee
+[weight_h5] /pool/condor/dir_92024/weight_category_weights.h5
+[weight_key] EE_weight_split
+[output] /pool/condor/dir_92024/jobout
+[device] cuda
+[num_workers] requested=8 effective=8
+[torch_sharing_strategy] file_system
+[compact] /pool/condor/dir_92024/MiniAOD_ee_eq0.h5
+[resume] loaded last.pt @epoch=46 best=0.8225 -> resuming at epoch 47
+
+[weight sums before training]
+train background=1.00000000 signal=1.00000000 total=2.00000000 | before_rebalance background=0.78926840 signal=0.79716868
+val   background=1.00000000 signal=1.00000000 total=2.00000000 | before_rebalance background=0.11569145 signal=0.09274510
+test  background=1.00000000 signal=1.00000000 total=2.00000000 | before_rebalance background=0.09504014 signal=0.11008622
+
+[start training]
+
+Epoch 047 | train_loss=0.556528 train_auc=0.8596 train_f1@0.5=0.7842 | val_loss=0.728962 val_auc=0.8156 val_f1@0.5=0.7356
+Epoch 048 | train_loss=0.568835 train_auc=0.8578 train_f1@0.5=0.7837 | val_loss=0.723725 val_auc=0.8168 val_f1@0.5=0.7634
+Epoch 049 | train_loss=0.553187 train_auc=0.8611 train_f1@0.5=0.7891 | val_loss=0.706118 val_auc=0.8183 val_f1@0.5=0.7472
+Epoch 050 | train_loss=0.548521 train_auc=0.8615 train_f1@0.5=0.7858 | val_loss=0.701411 val_auc=0.8205 val_f1@0.5=0.7305
+
+[test summary]
+  threshold = 0.150000
+  test_auc  = 0.760901
+  test_f1   = 0.742876
+[stage-out] /pool/condor/dir_92024/jobout -> root://eosuser.cern.ch//eos/user/y/yeo/4l/runs/v6/image_mini_ee_es_eq0
+[stage-out] done

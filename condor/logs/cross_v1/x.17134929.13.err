@@ -1,0 +1,8 @@
+/pool/condor/dir_316017/train_fusion_cross_attention.py:149: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.trk_encoder = nn.TransformerEncoder(enc_layer, track_depth)
+Run: [ERROR] Server responded with an error: [3021] Unable to get quota space - quota not defined or exhausted /eos/user/y/yeo/4l/runs/cross_v1/cross_mini_ee_es_eq0/best_model.pt; Disk quota exceeded (destination)
+
+[xrdcp] best_model.pt attempt 1 failed; retrying
+Run: [ERROR] Server responded with an error: [3021] Unable to get quota space - quota not defined or exhausted /eos/user/y/yeo/4l/runs/cross_v1/cross_mini_ee_es_eq0/best_model.pt; Disk quota exceeded (destination)
+
+[xrdcp] best_model.pt attempt 2 failed; retrying

@@ -1,0 +1,30 @@
+[launch] Tue Jul 21 07:46:36 PM CEST 2026 host=lxplus903.cern.ch
+[slim] 13395 files, 12 workers
+  progress 500/13395  {'ok': 498, 'skip': 2, 'fail': 0}
+  progress 1000/13395  {'ok': 998, 'skip': 2, 'fail': 0}
+  progress 1500/13395  {'ok': 1498, 'skip': 2, 'fail': 0}
+  progress 2000/13395  {'ok': 1998, 'skip': 2, 'fail': 0}
+  progress 2500/13395  {'ok': 2498, 'skip': 2, 'fail': 0}
+  progress 3000/13395  {'ok': 2998, 'skip': 2, 'fail': 0}
+  progress 3500/13395  {'ok': 3498, 'skip': 2, 'fail': 0}
+  progress 4000/13395  {'ok': 3996, 'skip': 4, 'fail': 0}
+  progress 4500/13395  {'ok': 4496, 'skip': 4, 'fail': 0}
+  progress 5000/13395  {'ok': 4996, 'skip': 4, 'fail': 0}
+  progress 5500/13395  {'ok': 5496, 'skip': 4, 'fail': 0}
+  progress 6000/13395  {'ok': 5996, 'skip': 4, 'fail': 0}
+  progress 6500/13395  {'ok': 6496, 'skip': 4, 'fail': 0}
+  progress 7000/13395  {'ok': 6996, 'skip': 4, 'fail': 0}
+  progress 7500/13395  {'ok': 7496, 'skip': 4, 'fail': 0}
+  progress 8000/13395  {'ok': 7996, 'skip': 4, 'fail': 0}
+  progress 8500/13395  {'ok': 8494, 'skip': 6, 'fail': 0}
+  progress 9000/13395  {'ok': 8994, 'skip': 6, 'fail': 0}
+  progress 9500/13395  {'ok': 9494, 'skip': 6, 'fail': 0}
+  progress 10000/13395  {'ok': 9992, 'skip': 8, 'fail': 0}
+  progress 10500/13395  {'ok': 10492, 'skip': 8, 'fail': 0}
+  progress 11000/13395  {'ok': 10990, 'skip': 10, 'fail': 0}
+  progress 11500/13395  {'ok': 11490, 'skip': 10, 'fail': 0}
+  progress 12000/13395  {'ok': 11988, 'skip': 12, 'fail': 0}
+  progress 12500/13395  {'ok': 12488, 'skip': 12, 'fail': 0}
+  progress 13000/13395  {'ok': 12988, 'skip': 12, 'fail': 0}
+[slim] done: {'ok': 13383, 'skip': 12, 'fail': 0}
+[done] Tue Jul 21 09:25:21 PM CEST 2026

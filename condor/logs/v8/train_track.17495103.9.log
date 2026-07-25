@@ -1,0 +1,96 @@
+000 (17495103.009.000) 07/22 05:14:29 Job submitted from host: <188.185.114.121:9618?addrs=188.185.114.121-9618+[2001-1458-d00-a--100-273]-9618&alias=bigbird19.cern.ch&noUDP&sock=schedd_5837_4664>
+...
+040 (17495103.009.000) 07/22 06:07:41 Started transferring input files
+	Transferring to host: <188.185.93.218:9618?addrs=188.185.93.218-9618+[2001-1458-d00-6c--100-34c]-9618&alias=b9g57n0991.cern.ch&noUDP&sock=slot1_1_4680_3bb7_5229>
+...
+040 (17495103.009.000) 07/22 06:07:41 Finished transferring input files
+...
+001 (17495103.009.000) 07/22 06:07:41 Job executing on host: <188.185.93.218:9618?addrs=188.185.93.218-9618+[2001-1458-d00-6c--100-34c]-9618&alias=b9g57n0991.cern.ch&noUDP&sock=startd_4270_717c>
+	SlotName: slot1_1@b9g57n0991.cern.ch
+	AvailableGPUs = { GPUs_GPU_481212f1 }
+	CondorScratchDir = "/pool/condor/dir_1263887"
+	Cpus = 8
+	Disk = 8389631
+	GPUs = 1
+	GPUs_GPU_481212f1 = [ Id = "GPU-481212f1"; ClockMhz = 1410.0; Capability = 8.0; CoresPerCU = 64; DeviceName = "NVIDIA A100-PCIE-40GB"; DeviceUuid = "481212f1-d5bc-e456-f450-346df9467bda"; ECCEnabled = true; ComputeUnits = 108; NvidiaDriver = "610.43.02"; DriverVersion = 13.3; DevicePciBusId = "0000:06:00.0"; GlobalMemoryMb = 40465; MaxSupportedVersion = 13030 ]
+	Memory = 24000
+...
+006 (17495103.009.000) 07/22 06:07:49 Image size of job updated: 164404
+	161  -  MemoryUsage of job (MB)
+	164404  -  ResidentSetSize of job (KB)
+...
+006 (17495103.009.000) 07/22 06:12:49 Image size of job updated: 2832276
+	2766  -  MemoryUsage of job (MB)
+	2832276  -  ResidentSetSize of job (KB)
+...
+006 (17495103.009.000) 07/22 06:17:50 Image size of job updated: 3197396
+	3123  -  MemoryUsage of job (MB)
+	3197396  -  ResidentSetSize of job (KB)
+...
+006 (17495103.009.000) 07/22 06:22:50 Image size of job updated: 3488260
+	3407  -  MemoryUsage of job (MB)
+	3488260  -  ResidentSetSize of job (KB)
+...
+006 (17495103.009.000) 07/22 06:27:51 Image size of job updated: 3757392
+	3670  -  MemoryUsage of job (MB)
+	3757392  -  ResidentSetSize of job (KB)
+...
+006 (17495103.009.000) 07/22 06:32:52 Image size of job updated: 4090104
+	3995  -  MemoryUsage of job (MB)
+	4090104  -  ResidentSetSize of job (KB)
+...
+006 (17495103.009.000) 07/22 06:37:52 Image size of job updated: 4426176
+	4286  -  MemoryUsage of job (MB)
+	4388808  -  ResidentSetSize of job (KB)
+...
+006 (17495103.009.000) 07/22 06:42:53 Image size of job updated: 4721976
+	4612  -  MemoryUsage of job (MB)
+	4721976  -  ResidentSetSize of job (KB)
+...
+006 (17495103.009.000) 07/22 06:47:54 Image size of job updated: 5018232
+	4901  -  MemoryUsage of job (MB)
+	5018232  -  ResidentSetSize of job (KB)
+...
+006 (17495103.009.000) 07/22 06:52:54 Image size of job updated: 5262508
+	5140  -  MemoryUsage of job (MB)
+	5262508  -  ResidentSetSize of job (KB)
+...
+006 (17495103.009.000) 07/22 06:57:55 Image size of job updated: 5602000
+	5471  -  MemoryUsage of job (MB)
+	5602000  -  ResidentSetSize of job (KB)
+...
+006 (17495103.009.000) 07/22 07:02:55 Image size of job updated: 5893052
+	5755  -  MemoryUsage of job (MB)
+	5893052  -  ResidentSetSize of job (KB)
+...
+006 (17495103.009.000) 07/22 07:07:55 Image size of job updated: 6185408
+	6041  -  MemoryUsage of job (MB)
+	6185408  -  ResidentSetSize of job (KB)
+...
+006 (17495103.009.000) 07/22 07:12:51 Image size of job updated: 6473052
+	6041  -  MemoryUsage of job (MB)
+	6185408  -  ResidentSetSize of job (KB)
+...
+040 (17495103.009.000) 07/22 07:12:51 Started transferring output files
+...
+040 (17495103.009.000) 07/22 07:12:51 Finished transferring output files
+...
+004 (17495103.009.000) 07/22 07:12:51 Job was evicted. Code 1009 Subcode 0
+	(0) CPU times
+		Usr 0 07:41:38, Sys 0 00:41:53  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+	1745  -  Run Bytes Sent By Job
+	188559  -  Run Bytes Received By Job
+	Reason: Claim deactivated
+	Partitionable Resources :     Usage  Request Allocated Assigned
+	   Cpus                 :      8.08        8         8 
+	   Disk (KB)            : 799714     8388608   8389631 
+	   GPUs                 :      0.15        1         1 "GPU-481212f1"
+	   GpusMemory (MB)      :   1103                       
+	   Memory (MB)          :   6041       24000     24000 
+	   TimeExecute (s)      :   3910                       
+	   TimeSlotBusy (s)     :   3910                       
+...
+009 (17495103.009.000) 07/22 07:12:51 Job was aborted.
+	via condor_rm (by user yeo)
+...

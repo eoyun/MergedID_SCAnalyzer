@@ -1,0 +1,3 @@
+[host] b9g57n4080.cern.ch
+[args] train_resnet_image_classifier.py --detector ee --weight-h5 /eos/user/y/yeo/4l/weights/categories/MiniAOD_eq0/category_weights.h5 --output-dir /eos/user/y/yeo/4l/runs/v2/image_mini_ee_noes_eq0 --track-types Lost,PF,GSF --model resnet50 --epochs 100 --batch-size 16 --lr 1e-4 --no-es
+[gpu] True 1

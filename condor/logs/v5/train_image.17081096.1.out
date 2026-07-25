@@ -1,0 +1,11 @@
+[host] b9pgpun001.cern.ch
+[args] train_resnet_image_classifier.py --detector ee --weight-h5 /eos/user/y/yeo/4l/weights/categories/AOD_all/category_weights.h5 --compact /eos/user/y/yeo/4l/compact/AOD_ee_all.h5 --output-dir /eos/user/y/yeo/4l/runs/v5/image_aod_ee_es_all --track-types GenTrk --model resnet50 --epochs 20 --num-workers 8 --batch-size 16 --lr 1e-4
+[stage-in] /eos/user/y/yeo/4l/compact/AOD_ee_all.h5 -> /pool/condor/dir_2305472/AOD_ee_all.h5
+[gpu] True 1
+[detector] ee
+[weight_h5] /eos/home-y/yeo/4l/weights/categories/AOD_all/category_weights.h5
+[weight_key] EE_weight_split
+[output] /pool/condor/dir_2305472/jobout
+[device] cuda
+[num_workers] requested=8 effective=8
+[torch_sharing_strategy] file_system

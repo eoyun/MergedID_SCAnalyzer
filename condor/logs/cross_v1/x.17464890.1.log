@@ -1,0 +1,152 @@
+000 (17464890.001.000) 07/16 10:48:30 Job submitted from host: <188.185.114.121:9618?addrs=188.185.114.121-9618+[2001-1458-d00-a--100-273]-9618&alias=bigbird19.cern.ch&noUDP&sock=schedd_5837_4664>
+...
+040 (17464890.001.000) 07/16 11:47:14 Started transferring input files
+	Transferring to host: <188.185.190.104:9618?addrs=188.185.190.104-9618+[2001-1458-d03-b--100-22f]-9618&alias=b9pgpun501.cern.ch&noUDP&sock=slot1_2_7187_a43d_1300>
+...
+040 (17464890.001.000) 07/16 11:47:14 Finished transferring input files
+...
+001 (17464890.001.000) 07/16 11:47:14 Job executing on host: <188.185.190.104:9618?addrs=188.185.190.104-9618+[2001-1458-d03-b--100-22f]-9618&alias=b9pgpun501.cern.ch&noUDP&sock=startd_6621_08a4>
+	SlotName: slot1_2@b9pgpun501.cern.ch
+	AvailableGPUs = { GPUs_GPU_29d335f4 }
+	CondorScratchDir = "/pool/condor/dir_2709187"
+	Cpus = 8
+	Disk = 8391610
+	GPUs = 1
+	GPUs_GPU_29d335f4 = [ Id = "GPU-29d335f4"; ClockMhz = 1785.0; Capability = 9.0; CoresPerCU = 128; DeviceName = "NVIDIA H100 NVL"; DeviceUuid = "29d335f4-82a4-5335-6e31-1a784066a300"; ECCEnabled = true; ComputeUnits = 132; NvidiaDriver = "610.43.02"; DriverVersion = 13.3; DevicePciBusId = "0000:07:00.0"; GlobalMemoryMb = 95312; MaxSupportedVersion = 13030 ]
+	Memory = 24000
+...
+006 (17464890.001.000) 07/16 11:47:23 Image size of job updated: 221560
+	217  -  MemoryUsage of job (MB)
+	221560  -  ResidentSetSize of job (KB)
+...
+006 (17464890.001.000) 07/16 11:52:24 Image size of job updated: 4612224
+	4505  -  MemoryUsage of job (MB)
+	4612224  -  ResidentSetSize of job (KB)
+...
+006 (17464890.001.000) 07/16 11:57:24 Image size of job updated: 4824288
+	4712  -  MemoryUsage of job (MB)
+	4824288  -  ResidentSetSize of job (KB)
+...
+006 (17464890.001.000) 07/16 12:02:24 Image size of job updated: 5046984
+	4916  -  MemoryUsage of job (MB)
+	5033012  -  ResidentSetSize of job (KB)
+...
+006 (17464890.001.000) 07/16 12:07:25 Image size of job updated: 5251500
+	5129  -  MemoryUsage of job (MB)
+	5251500  -  ResidentSetSize of job (KB)
+...
+006 (17464890.001.000) 07/16 12:12:25 Image size of job updated: 5487248
+	5345  -  MemoryUsage of job (MB)
+	5473176  -  ResidentSetSize of job (KB)
+...
+006 (17464890.001.000) 07/16 12:16:11 Image size of job updated: 5713340
+	5361  -  MemoryUsage of job (MB)
+	5489560  -  ResidentSetSize of job (KB)
+...
+040 (17464890.001.000) 07/16 12:16:11 Started transferring output files
+...
+040 (17464890.001.000) 07/16 12:16:11 Finished transferring output files
+...
+004 (17464890.001.000) 07/16 12:16:11 Job was evicted.
+	(0) Job terminated and was requeued
+		Usr 0 01:03:49, Sys 0 00:14:17  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+	3123  -  Run Bytes Sent By Job
+	206660  -  Run Bytes Received By Job
+	(1) Normal termination (return value 1)
+	The job attribute OnExitRemove expression 'NumJobCompletions > JobMaxRetries || ExitCode =?= 0' evaluated to FALSE
+...
+040 (17464890.001.000) 07/16 12:40:48 Started transferring input files
+	Transferring to host: <188.185.190.104:9618?addrs=188.185.190.104-9618+[2001-1458-d03-b--100-22f]-9618&alias=b9pgpun501.cern.ch&noUDP&sock=slot1_2_7187_a43d_1330>
+...
+040 (17464890.001.000) 07/16 12:40:48 Finished transferring input files
+...
+001 (17464890.001.000) 07/16 12:40:48 Job executing on host: <188.185.190.104:9618?addrs=188.185.190.104-9618+[2001-1458-d03-b--100-22f]-9618&alias=b9pgpun501.cern.ch&noUDP&sock=startd_6621_08a4>
+	SlotName: slot1_2@b9pgpun501.cern.ch
+	AvailableGPUs = { GPUs_GPU_29d335f4 }
+	CondorScratchDir = "/pool/condor/dir_2735469"
+	Cpus = 8
+	Disk = 8391699
+	GPUs = 1
+	GPUs_GPU_29d335f4 = [ Id = "GPU-29d335f4"; ClockMhz = 1785.0; Capability = 9.0; CoresPerCU = 128; DeviceName = "NVIDIA H100 NVL"; DeviceUuid = "29d335f4-82a4-5335-6e31-1a784066a300"; ECCEnabled = true; ComputeUnits = 132; NvidiaDriver = "610.43.02"; DriverVersion = 13.3; DevicePciBusId = "0000:07:00.0"; GlobalMemoryMb = 95312; MaxSupportedVersion = 13030 ]
+	Memory = 24000
+...
+040 (17464890.001.000) 07/16 13:12:20 Started transferring output files
+...
+040 (17464890.001.000) 07/16 13:12:20 Finished transferring output files
+...
+004 (17464890.001.000) 07/16 13:12:20 Job was evicted.
+	(0) Job terminated and was requeued
+		Usr 0 01:03:59, Sys 0 00:15:33  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+	3123  -  Run Bytes Sent By Job
+	206660  -  Run Bytes Received By Job
+	(1) Normal termination (return value 1)
+	The job attribute OnExitRemove expression 'NumJobCompletions > JobMaxRetries || ExitCode =?= 0' evaluated to FALSE
+...
+040 (17464890.001.000) 07/16 13:27:56 Started transferring input files
+	Transferring to host: <188.185.190.104:9618?addrs=188.185.190.104-9618+[2001-1458-d03-b--100-22f]-9618&alias=b9pgpun501.cern.ch&noUDP&sock=slot1_2_7187_a43d_1356>
+...
+040 (17464890.001.000) 07/16 13:27:56 Finished transferring input files
+...
+001 (17464890.001.000) 07/16 13:27:56 Job executing on host: <188.185.190.104:9618?addrs=188.185.190.104-9618+[2001-1458-d03-b--100-22f]-9618&alias=b9pgpun501.cern.ch&noUDP&sock=startd_6621_08a4>
+	SlotName: slot1_2@b9pgpun501.cern.ch
+	AvailableGPUs = { GPUs_GPU_29d335f4 }
+	CondorScratchDir = "/pool/condor/dir_2760167"
+	Cpus = 8
+	Disk = 8391610
+	GPUs = 1
+	GPUs_GPU_29d335f4 = [ Id = "GPU-29d335f4"; ClockMhz = 1785.0; Capability = 9.0; CoresPerCU = 128; DeviceName = "NVIDIA H100 NVL"; DeviceUuid = "29d335f4-82a4-5335-6e31-1a784066a300"; ECCEnabled = true; ComputeUnits = 132; NvidiaDriver = "610.43.02"; DriverVersion = 13.3; DevicePciBusId = "0000:07:00.0"; GlobalMemoryMb = 95312; MaxSupportedVersion = 13030 ]
+	Memory = 24000
+...
+040 (17464890.001.000) 07/16 13:56:37 Started transferring output files
+...
+040 (17464890.001.000) 07/16 13:56:37 Finished transferring output files
+...
+004 (17464890.001.000) 07/16 13:56:37 Job was evicted.
+	(0) Job terminated and was requeued
+		Usr 0 01:03:35, Sys 0 00:14:24  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+	3123  -  Run Bytes Sent By Job
+	206660  -  Run Bytes Received By Job
+	(1) Normal termination (return value 1)
+	The job attribute OnExitRemove expression 'NumJobCompletions > JobMaxRetries || ExitCode =?= 0' evaluated to FALSE
+...
+040 (17464890.001.000) 07/16 13:57:02 Started transferring input files
+	Transferring to host: <188.185.190.104:9618?addrs=188.185.190.104-9618+[2001-1458-d03-b--100-22f]-9618&alias=b9pgpun501.cern.ch&noUDP&sock=slot1_2_7187_a43d_1369>
+...
+040 (17464890.001.000) 07/16 13:57:02 Finished transferring input files
+...
+001 (17464890.001.000) 07/16 13:57:02 Job executing on host: <188.185.190.104:9618?addrs=188.185.190.104-9618+[2001-1458-d03-b--100-22f]-9618&alias=b9pgpun501.cern.ch&noUDP&sock=startd_6621_08a4>
+	SlotName: slot1_2@b9pgpun501.cern.ch
+	AvailableGPUs = { GPUs_GPU_29d335f4 }
+	CondorScratchDir = "/pool/condor/dir_2762204"
+	Cpus = 8
+	Disk = 8391610
+	GPUs = 1
+	GPUs_GPU_29d335f4 = [ Id = "GPU-29d335f4"; ClockMhz = 1785.0; Capability = 9.0; CoresPerCU = 128; DeviceName = "NVIDIA H100 NVL"; DeviceUuid = "29d335f4-82a4-5335-6e31-1a784066a300"; ECCEnabled = true; ComputeUnits = 132; NvidiaDriver = "610.43.02"; DriverVersion = 13.3; DevicePciBusId = "0000:07:00.0"; GlobalMemoryMb = 95312; MaxSupportedVersion = 13030 ]
+	Memory = 24000
+...
+040 (17464890.001.000) 07/16 14:26:08 Started transferring output files
+...
+040 (17464890.001.000) 07/16 14:26:08 Finished transferring output files
+...
+005 (17464890.001.000) 07/16 14:26:09 Job terminated.
+	(1) Normal termination (return value 1)
+		Usr 0 01:03:54, Sys 0 00:14:24  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+		Usr 0 04:15:17, Sys 0 00:58:38  -  Total Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Local Usage
+	3123  -  Run Bytes Sent By Job
+	206660  -  Run Bytes Received By Job
+	12492  -  Total Bytes Sent By Job
+	826640  -  Total Bytes Received By Job
+	Partitionable Resources :      Usage  Request Allocated Assigned
+	   Cpus                 :       2.85        8         8 
+	   Disk (KB)            : 1364617     8388608   8391610 
+	   GPUs                 :       0.61        1         1 "GPU-29d335f4"
+	   GpusMemory (MB)      :    3296                       
+	   Memory (MB)          :    7325       24000     24000 
+	   TimeExecute (s)      :    1746                       
+	   TimeSlotBusy (s)     :    1746                       
+...

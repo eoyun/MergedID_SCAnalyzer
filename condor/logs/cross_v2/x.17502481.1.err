@@ -1,0 +1,10 @@
+/pool/condor/dir_2553278/train_fusion_cross_attention.py:150: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.trk_encoder = nn.TransformerEncoder(enc_layer, track_depth)
+/cvmfs/sft.cern.ch/lcg/views/LCG_109_cuda/x86_64-el9-gcc13-opt/lib/python3.13/site-packages/numpy/lib/_function_base_impl.py:107: RuntimeWarning: overflow encountered in cast
+  get_virtual_index=lambda n, quantiles: (n - 1) * quantiles,
+/cvmfs/sft.cern.ch/lcg/views/LCG_109_cuda/x86_64-el9-gcc13-opt/lib/python3.13/site-packages/numpy/lib/_function_base_impl.py:4750: RuntimeWarning: overflow encountered in cast
+  indexes_above_bounds = virtual_indexes >= valid_values_count - 1
+/cvmfs/sft.cern.ch/lcg/views/LCG_109_cuda/x86_64-el9-gcc13-opt/lib/python3.13/site-packages/numpy/lib/_function_base_impl.py:4655: RuntimeWarning: invalid value encountered in multiply
+  lerp_interpolation = asanyarray(add(a, diff_b_a * t, out=out))
+/cvmfs/sft.cern.ch/lcg/views/LCG_109_cuda/x86_64-el9-gcc13-opt/lib/python3.13/site-packages/numpy/lib/_function_base_impl.py:4656: RuntimeWarning: invalid value encountered in scalar multiply
+  subtract(b, diff_b_a * (1 - t), out=lerp_interpolation, where=t >= 0.5,

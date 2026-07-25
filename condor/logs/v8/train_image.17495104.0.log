@@ -1,0 +1,56 @@
+000 (17495104.000.000) 07/22 05:14:29 Job submitted from host: <188.185.114.121:9618?addrs=188.185.114.121-9618+[2001-1458-d00-a--100-273]-9618&alias=bigbird19.cern.ch&noUDP&sock=schedd_5837_4664>
+...
+040 (17495104.000.000) 07/22 06:59:44 Started transferring input files
+	Transferring to host: <188.185.92.130:9618?addrs=188.185.92.130-9618+[2001-1458-d00-6c--100-3d4]-9618&alias=b9g57n6407.cern.ch&noUDP&sock=slot1_1_5996_796d_5250>
+...
+040 (17495104.000.000) 07/22 06:59:44 Finished transferring input files
+...
+001 (17495104.000.000) 07/22 06:59:44 Job executing on host: <188.185.92.130:9618?addrs=188.185.92.130-9618+[2001-1458-d00-6c--100-3d4]-9618&alias=b9g57n6407.cern.ch&noUDP&sock=startd_5951_7830>
+	SlotName: slot1_1@b9g57n6407.cern.ch
+	AvailableGPUs = { GPUs_GPU_47e13020 }
+	CondorScratchDir = "/pool/condor/dir_1233346"
+	Cpus = 8
+	Disk = 8389632
+	GPUs = 1
+	GPUs_GPU_47e13020 = [ Id = "GPU-47e13020"; ClockMhz = 1410.0; Capability = 8.0; CoresPerCU = 64; DeviceName = "NVIDIA A100-PCIE-40GB"; DeviceUuid = "47e13020-0bf2-ad62-b596-87133bf5bb68"; ECCEnabled = true; ComputeUnits = 108; NvidiaDriver = "610.43.02"; DriverVersion = 13.3; DevicePciBusId = "0000:06:00.0"; GlobalMemoryMb = 40465; MaxSupportedVersion = 13030 ]
+	Memory = 24000
+...
+006 (17495104.000.000) 07/22 06:59:52 Image size of job updated: 69972
+	39  -  MemoryUsage of job (MB)
+	39180  -  ResidentSetSize of job (KB)
+...
+006 (17495104.000.000) 07/22 07:04:52 Image size of job updated: 2517660
+	2459  -  MemoryUsage of job (MB)
+	2517660  -  ResidentSetSize of job (KB)
+...
+006 (17495104.000.000) 07/22 07:09:53 Image size of job updated: 2713140
+	2650  -  MemoryUsage of job (MB)
+	2713140  -  ResidentSetSize of job (KB)
+...
+006 (17495104.000.000) 07/22 07:12:51 Image size of job updated: 2771356
+	2650  -  MemoryUsage of job (MB)
+	2713168  -  ResidentSetSize of job (KB)
+...
+040 (17495104.000.000) 07/22 07:12:51 Started transferring output files
+...
+040 (17495104.000.000) 07/22 07:12:51 Finished transferring output files
+...
+004 (17495104.000.000) 07/22 07:12:51 Job was evicted. Code 1009 Subcode 0
+	(0) CPU times
+		Usr 0 00:12:46, Sys 0 00:11:08  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+	1405  -  Run Bytes Sent By Job
+	188559  -  Run Bytes Received By Job
+	Reason: Claim deactivated
+	Partitionable Resources :      Usage  Request Allocated Assigned
+	   Cpus                 :       1.87        8         8 
+	   Disk (KB)            : 1175139     8388608   8389632 
+	   GPUs                 :       0.89        1         1 "GPU-47e13020"
+	   GpusMemory (MB)      :    5481                       
+	   Memory (MB)          :    2650       24000     24000 
+	   TimeExecute (s)      :     787                       
+	   TimeSlotBusy (s)     :     787                       
+...
+009 (17495104.000.000) 07/22 07:12:51 Job was aborted.
+	via condor_rm (by user yeo)
+...

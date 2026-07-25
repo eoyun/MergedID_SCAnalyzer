@@ -1,0 +1,11 @@
+[host] b9pgpun003.cern.ch
+[args] train_point_transformer_track_classifier.py --detector eb --weight-h5 /eos/user/y/yeo/4l/weights/categories/MiniAOD_all/category_weights.h5 --compact /eos/user/y/yeo/4l/compact/MiniAOD_eb_all.h5 --output-dir /eos/user/y/yeo/4l/runs/v5/track_mini_eb_all --track-types Lost,PF,GSF --epochs 20 --num-workers 8 --batch-size 64 --lr 1e-4 --max-points 16 --embed-dim 128 --depth 4 --num-heads 4 --mlp-ratio 4.0 --dropout 0.1
+[stage-in] /eos/user/y/yeo/4l/compact/MiniAOD_eb_all.h5 -> /pool/condor/dir_762175/MiniAOD_eb_all.h5
+[gpu] True 1
+[detector] eb
+[weight_h5] /eos/home-y/yeo/4l/weights/categories/MiniAOD_all/category_weights.h5
+[weight_key] EB_weight_split
+[output] /pool/condor/dir_762175/jobout
+[device] cuda
+[num_workers] requested=8 effective=8
+[torch_sharing_strategy] file_system

@@ -1,0 +1,7 @@
+[launch] Thu Jul 23 10:38:52 AM CEST 2026 host=lxplus904.cern.ch
+[attempt 1] have 4/12 -> building remaining (Thu Jul 23 10:38:52 AM CEST 2026)
+=== AOD eb all -> /eos/user/y/yeo/4l/compact_pt50/AOD_eb_all.h5 (SKIP: exists) ===
+=== AOD eb eq0 -> /eos/user/y/yeo/4l/compact_pt50/AOD_eb_eq0.h5 (SKIP: exists) ===
+=== AOD eb eq1 -> /eos/user/y/yeo/4l/compact_pt50/AOD_eb_eq1.h5 (SKIP: exists) ===
+=== AOD ee all -> /eos/user/y/yeo/4l/compact_pt50/AOD_ee_all.h5 (SKIP: exists) ===
+=== AOD ee eq0 -> /eos/user/y/yeo/4l/compact_pt50/AOD_ee_eq0.h5 ===

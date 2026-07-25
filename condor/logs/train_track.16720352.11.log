@@ -1,0 +1,92 @@
+000 (16720352.011.000) 06/25 10:05:43 Job submitted from host: <188.185.114.121:9618?addrs=188.185.114.121-9618+[2001-1458-d00-a--100-273]-9618&alias=bigbird19.cern.ch&noUDP&sock=schedd_5103_cfe0>
+...
+040 (16720352.011.000) 06/25 10:28:54 Started transferring input files
+	Transferring to host: <188.184.195.94:9618?addrs=188.184.195.94-9618+[2001-1458-301-72--100-30]-9618&alias=b9g47n8731.cern.ch&noUDP&sock=slot1_1_667760_140b_112241>
+...
+040 (16720352.011.000) 06/25 10:28:54 Finished transferring input files
+...
+001 (16720352.011.000) 06/25 10:28:55 Job executing on host: <188.184.195.94:9618?addrs=188.184.195.94-9618+[2001-1458-301-72--100-30]-9618&alias=b9g47n8731.cern.ch&noUDP&sock=startd_13613_f6d5>
+	SlotName: slot1_1@b9g47n8731.cern.ch
+	AvailableGPUs = { GPUs_GPU_c4e6d068 }
+	CondorScratchDir = "/pool/condor/dir_3571382"
+	Cpus = 3
+	Disk = 8389108
+	GPUs = 1
+	GPUs_GPU_c4e6d068 = [ Id = "GPU-c4e6d068"; ClockMhz = 1597.0; Capability = 7.0; CoresPerCU = 64; DeviceName = "Tesla V100S-PCIE-32GB"; DeviceUuid = "c4e6d068-3d0c-fa9f-2659-d325e40f57e2"; ECCEnabled = true; ComputeUnits = 80; DriverVersion = 13.0; DevicePciBusId = "0000:07:00.0"; GlobalMemoryMb = 32494; MaxSupportedVersion = 13000 ]
+	Memory = 9000
+...
+006 (16720352.011.000) 06/25 10:29:08 Image size of job updated: 130108
+	128  -  MemoryUsage of job (MB)
+	130108  -  ResidentSetSize of job (KB)
+...
+006 (16720352.011.000) 06/25 10:34:08 Image size of job updated: 433932
+	424  -  MemoryUsage of job (MB)
+	433932  -  ResidentSetSize of job (KB)
+...
+006 (16720352.011.000) 06/25 10:39:09 Image size of job updated: 440148
+	430  -  MemoryUsage of job (MB)
+	440148  -  ResidentSetSize of job (KB)
+...
+006 (16720352.011.000) 06/25 10:44:10 Image size of job updated: 440468
+	431  -  MemoryUsage of job (MB)
+	440468  -  ResidentSetSize of job (KB)
+...
+006 (16720352.011.000) 06/25 10:49:10 Image size of job updated: 440644
+	431  -  MemoryUsage of job (MB)
+	440644  -  ResidentSetSize of job (KB)
+...
+006 (16720352.011.000) 06/25 10:54:10 Image size of job updated: 444836
+	435  -  MemoryUsage of job (MB)
+	444836  -  ResidentSetSize of job (KB)
+...
+006 (16720352.011.000) 06/25 10:59:11 Image size of job updated: 449640
+	440  -  MemoryUsage of job (MB)
+	449640  -  ResidentSetSize of job (KB)
+...
+006 (16720352.011.000) 06/25 11:04:12 Image size of job updated: 451784
+	442  -  MemoryUsage of job (MB)
+	451784  -  ResidentSetSize of job (KB)
+...
+006 (16720352.011.000) 06/25 11:09:12 Image size of job updated: 455500
+	445  -  MemoryUsage of job (MB)
+	455500  -  ResidentSetSize of job (KB)
+...
+006 (16720352.011.000) 06/25 11:14:12 Image size of job updated: 466580
+	456  -  MemoryUsage of job (MB)
+	466580  -  ResidentSetSize of job (KB)
+...
+006 (16720352.011.000) 06/25 11:19:13 Image size of job updated: 466660
+	456  -  MemoryUsage of job (MB)
+	466660  -  ResidentSetSize of job (KB)
+...
+006 (16720352.011.000) 06/25 11:24:14 Image size of job updated: 466700
+	456  -  MemoryUsage of job (MB)
+	466700  -  ResidentSetSize of job (KB)
+...
+006 (16720352.011.000) 06/25 11:26:24 Image size of job updated: 513960
+	456  -  MemoryUsage of job (MB)
+	466700  -  ResidentSetSize of job (KB)
+...
+040 (16720352.011.000) 06/25 11:26:24 Started transferring output files
+...
+040 (16720352.011.000) 06/25 11:26:24 Finished transferring output files
+...
+005 (16720352.011.000) 06/25 11:26:24 Job terminated.
+	(1) Normal termination (return value 1)
+		Usr 0 00:00:25, Sys 0 00:00:17  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+		Usr 0 00:00:25, Sys 0 00:00:17  -  Total Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Local Usage
+	13151  -  Run Bytes Sent By Job
+	128497  -  Run Bytes Received By Job
+	13151  -  Total Bytes Sent By Job
+	128497  -  Total Bytes Received By Job
+	Partitionable Resources :    Usage  Request Allocated Assigned
+	   Cpus                 :     0.01        3         3 
+	   Disk (KB)            :   298     8388608   8389108 
+	   GPUs                 :     0           1         1 "GPU-c4e6d068"
+	   GpusMemory (MB)      :   278                       
+	   Memory (MB)          :   456        9000      9000 
+	   TimeExecute (s)      :  3449                       
+	   TimeSlotBusy (s)     :  3451                       
+...

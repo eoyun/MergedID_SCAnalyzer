@@ -1,0 +1,115 @@
+000 (16720353.004.000) 06/25 10:05:45 Job submitted from host: <188.185.114.121:9618?addrs=188.185.114.121-9618+[2001-1458-d00-a--100-273]-9618&alias=bigbird19.cern.ch&noUDP&sock=schedd_5103_cfe0>
+...
+040 (16720353.004.000) 06/25 10:56:55 Started transferring input files
+	Transferring to host: <188.185.190.15:9618?addrs=188.185.190.15-9618+[2001-1458-d03-b--100-66]-9618&alias=b9pgpun208.cern.ch&noUDP&sock=slot1_1_3415532_0705_40898>
+...
+040 (16720353.004.000) 06/25 10:56:55 Finished transferring input files
+...
+001 (16720353.004.000) 06/25 10:56:56 Job executing on host: <188.185.190.15:9618?addrs=188.185.190.15-9618+[2001-1458-d03-b--100-66]-9618&alias=b9pgpun208.cern.ch&noUDP&sock=startd_2982_fb81>
+	SlotName: slot1_1@b9pgpun208.cern.ch
+	AvailableGPUs = { GPUs_MIG_5496d0dd_abc7_56f1_9151_bf217b25cd57 }
+	CondorScratchDir = "/pool/condor/dir_4010151"
+	Cpus = 3
+	Disk = 8389543
+	GPUs = 1
+	GPUs_MIG_5496d0dd_abc7_56f1_9151_bf217b25cd57 = [ Id = "MIG-5496d0dd-abc7-56f1-9151-bf217b25cd57"; DeviceName = "NVIDIA H100L-2-24C MIG 2g.24gb"; DeviceUuid = "MIG-5496d0dd-abc7-56f1-9151-bf217b25cd57"; ComputeUnits = 32; GlobalMemoryMb = 21547 ]
+	Memory = 9000
+...
+006 (16720353.004.000) 06/25 10:57:04 Image size of job updated: 88608
+	87  -  MemoryUsage of job (MB)
+	88608  -  ResidentSetSize of job (KB)
+...
+006 (16720353.004.000) 06/25 11:02:04 Image size of job updated: 506100
+	495  -  MemoryUsage of job (MB)
+	506100  -  ResidentSetSize of job (KB)
+...
+006 (16720353.004.000) 06/25 11:07:05 Image size of job updated: 511500
+	500  -  MemoryUsage of job (MB)
+	511500  -  ResidentSetSize of job (KB)
+...
+006 (16720353.004.000) 06/25 11:12:06 Image size of job updated: 515280
+	504  -  MemoryUsage of job (MB)
+	515280  -  ResidentSetSize of job (KB)
+...
+006 (16720353.004.000) 06/25 11:17:06 Image size of job updated: 516908
+	505  -  MemoryUsage of job (MB)
+	516908  -  ResidentSetSize of job (KB)
+...
+006 (16720353.004.000) 06/25 11:22:06 Image size of job updated: 517932
+	506  -  MemoryUsage of job (MB)
+	517932  -  ResidentSetSize of job (KB)
+...
+006 (16720353.004.000) 06/25 11:27:07 Image size of job updated: 521144
+	509  -  MemoryUsage of job (MB)
+	521144  -  ResidentSetSize of job (KB)
+...
+006 (16720353.004.000) 06/25 11:32:07 Image size of job updated: 525516
+	514  -  MemoryUsage of job (MB)
+	525516  -  ResidentSetSize of job (KB)
+...
+006 (16720353.004.000) 06/25 11:37:07 Image size of job updated: 529420
+	518  -  MemoryUsage of job (MB)
+	529420  -  ResidentSetSize of job (KB)
+...
+006 (16720353.004.000) 06/25 11:42:08 Image size of job updated: 533464
+	521  -  MemoryUsage of job (MB)
+	533464  -  ResidentSetSize of job (KB)
+...
+006 (16720353.004.000) 06/25 11:47:08 Image size of job updated: 536796
+	525  -  MemoryUsage of job (MB)
+	536796  -  ResidentSetSize of job (KB)
+...
+006 (16720353.004.000) 06/25 11:52:08 Image size of job updated: 541688
+	529  -  MemoryUsage of job (MB)
+	541688  -  ResidentSetSize of job (KB)
+...
+006 (16720353.004.000) 06/25 11:57:09 Image size of job updated: 545712
+	533  -  MemoryUsage of job (MB)
+	545712  -  ResidentSetSize of job (KB)
+...
+006 (16720353.004.000) 06/25 12:02:10 Image size of job updated: 550064
+	538  -  MemoryUsage of job (MB)
+	550064  -  ResidentSetSize of job (KB)
+...
+006 (16720353.004.000) 06/25 12:07:10 Image size of job updated: 555752
+	543  -  MemoryUsage of job (MB)
+	555752  -  ResidentSetSize of job (KB)
+...
+006 (16720353.004.000) 06/25 12:12:11 Image size of job updated: 573908
+	561  -  MemoryUsage of job (MB)
+	573908  -  ResidentSetSize of job (KB)
+...
+006 (16720353.004.000) 06/25 12:17:12 Image size of job updated: 579140
+	566  -  MemoryUsage of job (MB)
+	579140  -  ResidentSetSize of job (KB)
+...
+006 (16720353.004.000) 06/25 12:22:12 Image size of job updated: 583444
+	570  -  MemoryUsage of job (MB)
+	583444  -  ResidentSetSize of job (KB)
+...
+006 (16720353.004.000) 06/25 12:23:02 Image size of job updated: 586240
+	570  -  MemoryUsage of job (MB)
+	583444  -  ResidentSetSize of job (KB)
+...
+040 (16720353.004.000) 06/25 12:23:02 Started transferring output files
+...
+040 (16720353.004.000) 06/25 12:23:02 Finished transferring output files
+...
+004 (16720353.004.000) 06/25 12:23:02 Job was evicted. Code 1009 Subcode 0
+	(0) CPU times
+		Usr 0 00:00:20, Sys 0 00:00:12  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+	7279  -  Run Bytes Sent By Job
+	128497  -  Run Bytes Received By Job
+	Reason: Claim deactivated
+	Partitionable Resources :    Usage  Request Allocated Assigned
+	   Cpus                 :     0.00        3         3 
+	   Disk (KB)            :   214     8388608   8389543 
+	   GPUs                 :                 1         1 "MIG-5496d0dd-abc7-56f1-9151-bf217b25cd57"
+	   Memory (MB)          :   570        9000      9000 
+	   TimeExecute (s)      :  5166                       
+	   TimeSlotBusy (s)     :  5169                       
+...
+009 (16720353.004.000) 06/25 12:23:02 Job was aborted.
+	via condor_rm (by user yeo)
+...

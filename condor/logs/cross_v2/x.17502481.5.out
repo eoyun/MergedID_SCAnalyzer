@@ -1,0 +1,3 @@
+[host] b9g57n6415.cern.ch
+[args] train_fusion_cross_attention.py --detector ee --weight-h5 /eos/user/y/yeo/4l/weights/categories_pt50/AOD_eq0/category_weights.h5 --compact /eos/user/y/yeo/4l/compact_pt50/AOD_ee_eq0.h5 --output-dir /eos/user/y/yeo/4l/runs/cross_v2/cross_aod_ee_noes_eq0 --track-types GenTrk --backbone resnet18 --epochs 50 --no-early-stopping --batch-size 16 --lr 1e-4 --num-workers 8 --no-es
+[stage-in] /eos/user/y/yeo/4l/compact_pt50/AOD_ee_eq0.h5 -> /pool/condor/dir_1937799/AOD_ee_eq0.h5

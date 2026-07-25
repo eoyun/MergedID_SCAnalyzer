@@ -1,0 +1,14 @@
+[host] b9g57n7733.cern.ch
+[args] train_fusion_cross_attention.py --detector eb --weight-h5 /eos/user/y/yeo/4l/weights/categories/AOD_eq1/category_weights.h5 --compact /eos/user/y/yeo/4l/compact/AOD_eb_eq1.h5 --output-dir /eos/user/y/yeo/4l/runs/canary_xattn/xattn_aod_eb_eq1 --track-types GenTrk --backbone resnet18 --epochs 2 --batch-size 16 --lr 1e-4 --num-workers 4
+[stage-in] /eos/user/y/yeo/4l/compact/AOD_eb_eq1.h5 -> /pool/condor/dir_2429578/AOD_eb_eq1.h5
+[gpu] True 1
+[resume] no checkpoint on EOS; starting fresh
+
+[start training]
+
+Epoch 001 | train_loss=0.56992 train_auc=0.8565 | val_loss=0.50336 val_auc=0.9090 val_f1=0.8769
+Epoch 002 | train_loss=0.54973 train_auc=0.8722 | val_loss=0.39233 val_auc=0.9342 val_f1=0.8783
+
+[test] threshold=0.3060 auc=0.9200 f1=0.8508
+[stage-out] /pool/condor/dir_2429578/jobout -> root://eosuser.cern.ch//eos/user/y/yeo/4l/runs/canary_xattn/xattn_aod_eb_eq1
+[stage-out] done

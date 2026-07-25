@@ -1,0 +1,11 @@
+[host] b9pgpun501.cern.ch
+[args] train_resnet_image_classifier.py --detector eb --weight-h5 /eos/user/y/yeo/4l/weights/categories/MiniAOD_eq0/category_weights.h5 --compact /eos/user/y/yeo/4l/compact/MiniAOD_eb_eq0.h5 --output-dir /eos/user/y/yeo/4l/runs/v5/image_mini_eb_eq0 --track-types Lost,PF,GSF --model resnet50 --epochs 20 --num-workers 8 --batch-size 16 --lr 1e-4
+[stage-in] /eos/user/y/yeo/4l/compact/MiniAOD_eb_eq0.h5 -> /pool/condor/dir_405608/MiniAOD_eb_eq0.h5
+[gpu] True 1
+[detector] eb
+[weight_h5] /eos/home-y/yeo/4l/weights/categories/MiniAOD_eq0/category_weights.h5
+[weight_key] EB_weight_split
+[output] /pool/condor/dir_405608/jobout
+[device] cuda
+[num_workers] requested=8 effective=8
+[torch_sharing_strategy] file_system

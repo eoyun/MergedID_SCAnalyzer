@@ -1,0 +1,79 @@
+[host] b9g57n6574.cern.ch
+[args] train_resnet_image_classifier.py --detector ee --weight-h5 /eos/user/y/yeo/4l/weights/categories/AOD_eq1/category_weights.h5 --output-dir /eos/user/y/yeo/4l/runs/v2/image_aod_ee_noes_eq1 --track-types GenTrk --model resnet50 --epochs 100 --batch-size 16 --lr 1e-4 --no-es
+[gpu] True 1
+[detector] ee
+[weight_h5] /eos/home-y/yeo/4l/weights/categories/AOD_eq1/category_weights.h5
+[weight_key] EE_weight_split
+[output] /eos/home-y/yeo/4l/runs/v2/image_aod_ee_noes_eq1
+[device] cuda
+[num_workers] requested=0 effective=0
+[torch_sharing_strategy] file_system
+
+[train] objects=29412 weight_sum=2.000000
+  label counts: background=1921 signal=27491
+  label weight sums: background=1.000000 signal=1.000000
+  background           1921
+  signal_H2000_A10     2693
+  signal_H750_A10      5526
+  signal_H750_A2       638
+  signal_H750_A5       3327
+  signal_H2000_A2      104
+  signal_H2000_A5      897
+  signal_H250_A10      6161
+  signal_H250_A2       2989
+  signal_H250_A5       5156
+
+[val] objects=3659 weight_sum=2.000000
+  label counts: background=239 signal=3420
+  label weight sums: background=1.000000 signal=1.000000
+  background           239
+  signal_H2000_A10     319
+  signal_H750_A10      686
+  signal_H750_A2       80
+  signal_H750_A5       417
+  signal_H2000_A2      14
+  signal_H2000_A5      111
+  signal_H250_A10      774
+  signal_H250_A2       373
+  signal_H250_A5       646
+
+[test] objects=3687 weight_sum=2.000000
+  label counts: background=240 signal=3447
+  label weight sums: background=1.000000 signal=1.000000
+  background           240
+  signal_H2000_A10     305
+  signal_H750_A10      718
+  signal_H750_A2       90
+  signal_H750_A5       429
+  signal_H2000_A2      14
+  signal_H2000_A5      111
+  signal_H250_A10      775
+  signal_H250_A2       369
+  signal_H250_A5       636
+
+[weight sums before training]
+train background=0.99999999 signal=1.00000000 total=1.99999999 | before_rebalance background=0.82869823 signal=0.80853029
+val   background=1.00000000 signal=1.00000001 total=2.00000001 | before_rebalance background=0.08730292 signal=0.09544328
+test  background=1.00000000 signal=1.00000000 total=2.00000000 | before_rebalance background=0.08399885 signal=0.09602643
+
+[start training]
+
+Epoch 001 | train_loss=0.865908 train_auc=0.6361 train_f1@0.5=0.6809 | val_loss=0.596887 val_auc=0.7492 val_f1@0.5=0.7000
+Epoch 002 | train_loss=0.803621 train_auc=0.6929 train_f1@0.5=0.7140 | val_loss=0.576325 val_auc=0.8130 val_f1@0.5=0.7728
+Epoch 003 | train_loss=0.724065 train_auc=0.7379 train_f1@0.5=0.7079 | val_loss=0.893862 val_auc=0.8125 val_f1@0.5=0.7334
+Epoch 004 | train_loss=0.742021 train_auc=0.7564 train_f1@0.5=0.7502 | val_loss=0.536396 val_auc=0.8378 val_f1@0.5=0.7907
+Epoch 005 | train_loss=0.636140 train_auc=0.7960 train_f1@0.5=0.7610 | val_loss=0.559206 val_auc=0.8286 val_f1@0.5=0.7711
+Epoch 006 | train_loss=0.683823 train_auc=0.7685 train_f1@0.5=0.7426 | val_loss=0.516504 val_auc=0.8567 val_f1@0.5=0.8085
+Epoch 007 | train_loss=0.777277 train_auc=0.7429 train_f1@0.5=0.7539 | val_loss=0.421588 val_auc=0.9020 val_f1@0.5=0.7874
+Epoch 008 | train_loss=0.695208 train_auc=0.7807 train_f1@0.5=0.7530 | val_loss=0.453957 val_auc=0.8678 val_f1@0.5=0.7655
+Epoch 009 | train_loss=0.701199 train_auc=0.7820 train_f1@0.5=0.7624 | val_loss=0.645784 val_auc=0.8776 val_f1@0.5=0.7844
+Epoch 010 | train_loss=0.659010 train_auc=0.8103 train_f1@0.5=0.7743 | val_loss=0.471681 val_auc=0.8637 val_f1@0.5=0.7820
+Epoch 011 | train_loss=0.483970 train_auc=0.8807 train_f1@0.5=0.8153 | val_loss=0.513266 val_auc=0.8661 val_f1@0.5=0.8004
+Epoch 012 | train_loss=0.505960 train_auc=0.8774 train_f1@0.5=0.8344 | val_loss=0.559954 val_auc=0.8681 val_f1@0.5=0.8231
+
+[early stopping] epoch=12
+
+[test summary]
+  threshold = 0.344000
+  test_auc  = 0.900252
+  test_f1   = 0.799141

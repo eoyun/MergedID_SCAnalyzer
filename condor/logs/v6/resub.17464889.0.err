@@ -1,0 +1,10 @@
+Run: [ERROR] Server responded with an error: [3021] Unable to get quota space - quota not defined or exhausted /eos/user/y/yeo/4l/runs/v6/image_aod_eb_eq0/best_model.pt; Disk quota exceeded (destination)
+
+[xrdcp] best_model.pt attempt 1 failed; retrying
+Run: [ERROR] Server responded with an error: [3021] Unable to get quota space - quota not defined or exhausted /eos/user/y/yeo/4l/runs/v6/image_aod_eb_eq0/best_model.pt; Disk quota exceeded (destination)
+
+[xrdcp] best_model.pt attempt 2 failed; retrying
+Run: [ERROR] Server responded with an error: [3021] Unable to get quota space - quota not defined or exhausted /eos/user/y/yeo/4l/runs/v6/image_aod_eb_eq0/best_model.pt; Disk quota exceeded (destination)
+
+[xrdcp] best_model.pt attempt 3 failed; retrying
+[xrdcp] FAILED permanently: /pool/condor/dir_346564/jobout/best_model.pt

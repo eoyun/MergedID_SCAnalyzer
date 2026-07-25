@@ -1,0 +1,21 @@
+### v6 roc+score unweighted ###
+27
+### v6 eff unw target=0.10  ###
+27
+### v6 eff unw target=0.10 --basis test ###
+27
+### v6 eff unw target=0.05  ###
+27
+### v6 eff unw target=0.05 --basis test ###
+27
+### cross_v1 roc+score unweighted ###
+13
+### cross_v1 eff unw target=0.10  ###
+13
+### cross_v1 eff unw target=0.10 --basis test ###
+13
+### cross_v1 eff unw target=0.05  ###
+13
+### cross_v1 eff unw target=0.05 --basis test ###
+13
+ALL_DONE

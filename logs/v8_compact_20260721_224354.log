@@ -1,0 +1,27 @@
+[launch] Tue Jul 21 10:43:55 PM CEST 2026 host=lxplus903.cern.ch
+=== AOD eb all -> /eos/user/y/yeo/4l/compact_pt50/AOD_eb_all.h5 ===
+[compact] wrote 1368274 objects -> /eos/user/y/yeo/4l/compact_pt50/AOD_eb_all.h5
+=== AOD eb eq0 -> /eos/user/y/yeo/4l/compact_pt50/AOD_eb_eq0.h5 ===
+[compact] wrote 1154969 objects -> /eos/user/y/yeo/4l/compact_pt50/AOD_eb_eq0.h5
+=== AOD eb eq1 -> /eos/user/y/yeo/4l/compact_pt50/AOD_eb_eq1.h5 ===
+[compact] wrote 201446 objects -> /eos/user/y/yeo/4l/compact_pt50/AOD_eb_eq1.h5
+=== AOD ee all -> /eos/user/y/yeo/4l/compact_pt50/AOD_ee_all.h5 ===
+[compact] wrote 554817 objects -> /eos/user/y/yeo/4l/compact_pt50/AOD_ee_all.h5
+=== AOD ee eq0 -> /eos/user/y/yeo/4l/compact_pt50/AOD_ee_eq0.h5 ===
+[compact] wrote 512274 objects -> /eos/user/y/yeo/4l/compact_pt50/AOD_ee_eq0.h5
+=== AOD ee eq1 -> /eos/user/y/yeo/4l/compact_pt50/AOD_ee_eq1.h5 ===
+[compact] wrote 37626 objects -> /eos/user/y/yeo/4l/compact_pt50/AOD_ee_eq1.h5
+=== MiniAOD eb all -> /eos/user/y/yeo/4l/compact_pt50/MiniAOD_eb_all.h5 ===
+[compact] wrote 1369858 objects -> /eos/user/y/yeo/4l/compact_pt50/MiniAOD_eb_all.h5
+=== MiniAOD eb eq0 -> /eos/user/y/yeo/4l/compact_pt50/MiniAOD_eb_eq0.h5 ===
+[compact] wrote 1176937 objects -> /eos/user/y/yeo/4l/compact_pt50/MiniAOD_eb_eq0.h5
+=== MiniAOD eb eq1 -> /eos/user/y/yeo/4l/compact_pt50/MiniAOD_eb_eq1.h5 ===
+[compact] wrote 183593 objects -> /eos/user/y/yeo/4l/compact_pt50/MiniAOD_eb_eq1.h5
+=== MiniAOD ee all -> /eos/user/y/yeo/4l/compact_pt50/MiniAOD_ee_all.h5 ===
+[compact] wrote 554015 objects -> /eos/user/y/yeo/4l/compact_pt50/MiniAOD_ee_all.h5
+=== MiniAOD ee eq0 -> /eos/user/y/yeo/4l/compact_pt50/MiniAOD_ee_eq0.h5 ===
+[compact] wrote 513909 objects -> /eos/user/y/yeo/4l/compact_pt50/MiniAOD_ee_eq0.h5
+=== MiniAOD ee eq1 -> /eos/user/y/yeo/4l/compact_pt50/MiniAOD_ee_eq1.h5 ===
+[compact] wrote 35189 objects -> /eos/user/y/yeo/4l/compact_pt50/MiniAOD_ee_eq1.h5
+done.
+[done] Wed Jul 22 03:36:19 AM CEST 2026

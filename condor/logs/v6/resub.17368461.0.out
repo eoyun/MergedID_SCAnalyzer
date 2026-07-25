@@ -1,0 +1,51 @@
+[host] b9g57n3665.cern.ch
+[args] train_resnet_image_classifier.py --detector eb --weight-h5 /eos/user/y/yeo/4l/weights/categories/MiniAOD_all/category_weights.h5 --compact /eos/user/y/yeo/4l/compact/MiniAOD_eb_all.h5 --output-dir /eos/user/y/yeo/4l/runs/v6/image_mini_eb_all --track-types Lost,PF,GSF --model resnet50 --no-track-channels --epochs 50 --no-early-stopping --num-workers 8 --batch-size 16 --lr 1e-4
+[stage-in] /eos/user/y/yeo/4l/compact/MiniAOD_eb_all.h5 -> /pool/condor/dir_322540/MiniAOD_eb_all.h5
+[stage-in] /eos/user/y/yeo/4l/weights/categories/MiniAOD_all/category_weights.h5 -> /pool/condor/dir_322540/weight_category_weights.h5
+[gpu] True 1
+[detector] eb
+[weight_h5] /pool/condor/dir_322540/weight_category_weights.h5
+[weight_key] EB_weight_split
+[output] /pool/condor/dir_322540/jobout
+[device] cuda
+[num_workers] requested=8 effective=8
+[torch_sharing_strategy] file_system
+[compact] /pool/condor/dir_322540/MiniAOD_eb_all.h5
+[resume] loaded last.pt @epoch=38 best=0.9479 -> resuming at epoch 39
+
+[weight sums before training]
+train background=1.00000000 signal=1.00000000 total=2.00000000 | before_rebalance background=0.81819248 signal=0.80848867
+val   background=1.00000001 signal=1.00000000 total=2.00000001 | before_rebalance background=0.08137418 signal=0.09227165
+test  background=1.00000001 signal=1.00000001 total=2.00000002 | before_rebalance background=0.10043335 signal=0.09923968
+
+[start training]
+
+Epoch 039 | train_loss=0.114816 train_auc=0.9879 train_f1@0.5=0.9584 | val_loss=0.444065 val_auc=0.9320 val_f1@0.5=0.8866
+[resume] warning: failed to push last.pt to EOS
+Epoch 040 | train_loss=0.111773 train_auc=0.9879 train_f1@0.5=0.9653 | val_loss=0.453421 val_auc=0.9299 val_f1@0.5=0.8886
+[resume] warning: failed to push last.pt to EOS
+Epoch 041 | train_loss=0.111529 train_auc=0.9883 train_f1@0.5=0.9655 | val_loss=0.440231 val_auc=0.9310 val_f1@0.5=0.8851
+[resume] warning: failed to push last.pt to EOS
+Epoch 042 | train_loss=0.111312 train_auc=0.9883 train_f1@0.5=0.9653 | val_loss=0.454325 val_auc=0.9305 val_f1@0.5=0.8843
+[resume] warning: failed to push last.pt to EOS
+Epoch 043 | train_loss=0.109528 train_auc=0.9883 train_f1@0.5=0.9663 | val_loss=0.439587 val_auc=0.9311 val_f1@0.5=0.8879
+[resume] warning: failed to push last.pt to EOS
+Epoch 044 | train_loss=0.112017 train_auc=0.9881 train_f1@0.5=0.9667 | val_loss=0.453141 val_auc=0.9303 val_f1@0.5=0.8849
+[resume] warning: failed to push last.pt to EOS
+Epoch 045 | train_loss=0.114149 train_auc=0.9878 train_f1@0.5=0.9650 | val_loss=0.448037 val_auc=0.9312 val_f1@0.5=0.8878
+Epoch 046 | train_loss=0.112192 train_auc=0.9882 train_f1@0.5=0.9652 | val_loss=0.450235 val_auc=0.9298 val_f1@0.5=0.8903
+[resume] warning: failed to push last.pt to EOS
+Epoch 047 | train_loss=0.113219 train_auc=0.9881 train_f1@0.5=0.9663 | val_loss=0.451849 val_auc=0.9295 val_f1@0.5=0.8840
+[resume] warning: failed to push last.pt to EOS
+Epoch 048 | train_loss=0.113232 train_auc=0.9878 train_f1@0.5=0.9663 | val_loss=0.449191 val_auc=0.9303 val_f1@0.5=0.8880
+[resume] warning: failed to push last.pt to EOS
+Epoch 049 | train_loss=0.111620 train_auc=0.9882 train_f1@0.5=0.9652 | val_loss=0.451013 val_auc=0.9303 val_f1@0.5=0.8842
+[resume] warning: failed to push last.pt to EOS
+Epoch 050 | train_loss=0.110435 train_auc=0.9885 train_f1@0.5=0.9659 | val_loss=0.452558 val_auc=0.9296 val_f1@0.5=0.8893
+
+[test summary]
+  threshold = 0.552000
+  test_auc  = 0.907772
+  test_f1   = 0.855017
+[stage-out] /pool/condor/dir_322540/jobout -> root://eosuser.cern.ch//eos/user/y/yeo/4l/runs/v6/image_mini_eb_all
+[stage-out] done

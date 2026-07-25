@@ -1,0 +1,15 @@
+[launch] Tue Jul  7 05:24:50 AM CEST 2026 host=lxplus902.cern.ch
+=== MiniAOD eb all -> /eos/user/y/yeo/4l/compact/MiniAOD_eb_all.h5 ===
+[compact] wrote 1348350 objects -> /eos/user/y/yeo/4l/compact/MiniAOD_eb_all.h5
+=== MiniAOD eb eq0 -> /eos/user/y/yeo/4l/compact/MiniAOD_eb_eq0.h5 ===
+[compact] wrote 1157930 objects -> /eos/user/y/yeo/4l/compact/MiniAOD_eb_eq0.h5
+=== MiniAOD eb eq1 -> /eos/user/y/yeo/4l/compact/MiniAOD_eb_eq1.h5 ===
+[compact] wrote 181043 objects -> /eos/user/y/yeo/4l/compact/MiniAOD_eb_eq1.h5
+=== MiniAOD ee all -> /eos/user/y/yeo/4l/compact/MiniAOD_ee_all.h5 ===
+[compact] wrote 570261 objects -> /eos/user/y/yeo/4l/compact/MiniAOD_ee_all.h5
+=== MiniAOD ee eq0 -> /eos/user/y/yeo/4l/compact/MiniAOD_ee_eq0.h5 ===
+[compact] wrote 530518 objects -> /eos/user/y/yeo/4l/compact/MiniAOD_ee_eq0.h5
+=== MiniAOD ee eq1 -> /eos/user/y/yeo/4l/compact/MiniAOD_ee_eq1.h5 ===
+[compact] wrote 34661 objects -> /eos/user/y/yeo/4l/compact/MiniAOD_ee_eq1.h5
+done.
+[done] Tue Jul  7 07:53:05 AM CEST 2026

@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/pool/condor/dir_759583/train_point_transformer_track_classifier.py", line 518, in <module>
+    main()
+    ~~~~^^
+  File "/pool/condor/dir_759583/train_point_transformer_track_classifier.py", line 218, in main
+    from pipeline.compact_manifest import load_compact_manifest
+ModuleNotFoundError: No module named 'pipeline'
+[python] failed rc=1; not staging out

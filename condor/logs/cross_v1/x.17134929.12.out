@@ -1,0 +1,21 @@
+[host] b9g57n0003.cern.ch
+[args] train_fusion_cross_attention.py --detector eb --weight-h5 /eos/user/y/yeo/4l/weights/categories/MiniAOD_eq0/category_weights.h5 --compact /eos/user/y/yeo/4l/compact/MiniAOD_eb_eq0.h5 --output-dir /eos/user/y/yeo/4l/runs/cross_v1/cross_mini_eb_eq0 --track-types Lost,PF,GSF --backbone resnet18 --epochs 50 --no-early-stopping --batch-size 16 --lr 1e-4 --num-workers 8
+[stage-in] /eos/user/y/yeo/4l/compact/MiniAOD_eb_eq0.h5 -> /pool/condor/dir_422175/MiniAOD_eb_eq0.h5
+[stage-in] /eos/user/y/yeo/4l/weights/categories/MiniAOD_eq0/category_weights.h5 -> /pool/condor/dir_422175/weight_category_weights.h5
+[gpu] True 1
+[resume] @epoch=45 best=0.9516 -> start 46
+
+[start training]
+
+Epoch 046 | train_loss=0.36715 train_auc=0.9412 | val_loss=0.29890 val_auc=0.9497 val_f1=0.8739
+[resume] warning: failed to push last.pt to EOS
+Epoch 047 | train_loss=0.35873 train_auc=0.9426 | val_loss=0.29359 val_auc=0.9498 val_f1=0.8741
+[resume] warning: failed to push last.pt to EOS
+Epoch 048 | train_loss=0.37254 train_auc=0.9409 | val_loss=0.30697 val_auc=0.9498 val_f1=0.8731
+[resume] warning: failed to push last.pt to EOS
+Epoch 049 | train_loss=0.36754 train_auc=0.9418 | val_loss=0.30197 val_auc=0.9499 val_f1=0.8740
+Epoch 050 | train_loss=0.35929 train_auc=0.9424 | val_loss=0.29878 val_auc=0.9498 val_f1=0.8739
+
+[test] threshold=0.8620 auc=0.9258 f1=0.8727
+[stage-out] /pool/condor/dir_422175/jobout -> root://eosuser.cern.ch//eos/user/y/yeo/4l/runs/cross_v1/cross_mini_eb_eq0
+[stage-out] done

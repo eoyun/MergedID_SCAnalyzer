@@ -379,12 +379,19 @@ def compute_efficiency_by_pt(y_true, y_score, weights, pt, threshold, pt_edges):
     return results
 
 
-def save_efficiency_plot(rows, output_path: Path, threshold: float):
+def save_efficiency_plot(rows, output_path: Path, threshold: float, min_denom=0):
     plt.figure(figsize=(8, 6))
     for class_name, color in [("signal", "tab:blue"), ("background", "tab:orange")]:
         subset = [r for r in rows if r["class_name"] == class_name]
         x, y, xerr, yerr_lo, yerr_hi = [], [], [], [], []
         for row in subset:
+            # drop low-statistics bins (denom < min_denom): unweighted high-pT bins
+            # can have only a few objects -> spiky 0/0.5/1 efficiency. min_denom=0
+            # keeps every bin (weighted plots unchanged).
+            if min_denom and row.get("denom", 0) < min_denom:
+                continue
+            if not np.isfinite(row["efficiency"]):
+                continue
             hi = np.inf if row["pt_high"] == "inf" else float(row["pt_high"])
             lo = row["pt_low"]
             x.append(lo if np.isinf(hi) else 0.5 * (lo + hi))
@@ -420,13 +427,15 @@ def threshold_for_bkg_eff_unw(y_true, y_score, target):
     """Unweighted threshold giving background efficiency ~= target (object-level):
     the (1-target) quantile of the background score distribution."""
     bkg = np.asarray(y_score)[np.asarray(y_true) == 0]
+    bkg = bkg[np.isfinite(bkg)]  # drop nan/inf (e.g. track model on empty point clouds)
     if bkg.size == 0:
         return 0.5
     return float(np.quantile(bkg, 1.0 - target))
 
 
 def save_unweighted_test_plots(output_dir, val_true, val_score, test_true, test_score,
-                               test_pt, pt_edges, fake_rate_targets=(0.025, 0.05, 0.10)):
+                               test_pt, pt_edges, fake_rate_targets=(0.025, 0.05, 0.10),
+                               min_denom=20):
     """Additive unweighted test views, written next to the weighted ones every run:
       roc_test_unw.png, score_distribution_test_unw.png (area=1, y='a.u.'),
       efficiency_vs_pt_test_bkg{2p5,05,10}_unw.png at fixed background fake-rate
@@ -435,6 +444,13 @@ def save_unweighted_test_plots(output_dir, val_true, val_score, test_true, test_
     output_dir = Path(output_dir)
     val_true = np.asarray(val_true); val_score = np.asarray(val_score)
     test_true = np.asarray(test_true); test_score = np.asarray(test_score)
+    test_pt = np.asarray(test_pt)
+    # Drop non-finite scores (e.g. track transformer emits nan for empty point
+    # clouds on hasADD==0 objects); a single nan poisons np.quantile / roc.
+    vfin = np.isfinite(val_score)
+    val_true, val_score = val_true[vfin], val_score[vfin]
+    tfin = np.isfinite(test_score)
+    test_true, test_score, test_pt = test_true[tfin], test_score[tfin], test_pt[tfin]
     ones = np.ones_like(test_score, dtype=np.float64)
     save_roc_plot(test_true, test_score, ones, output_dir / "roc_test_unw.png")
     save_score_distribution(test_true, test_score, ones,

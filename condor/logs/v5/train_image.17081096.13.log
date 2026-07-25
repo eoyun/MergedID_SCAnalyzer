@@ -1,0 +1,51 @@
+000 (17081096.013.000) 07/02 20:54:38 Job submitted from host: <188.185.114.121:9618?addrs=188.185.114.121-9618+[2001-1458-d00-a--100-273]-9618&alias=bigbird19.cern.ch&noUDP&sock=schedd_5103_cfe0>
+...
+040 (17081096.013.000) 07/03 01:02:52 Started transferring input files
+	Transferring to host: <188.185.190.104:9618?addrs=188.185.190.104-9618+[2001-1458-d03-b--100-22f]-9618&alias=b9pgpun501.cern.ch&noUDP&sock=slot1_2_278654_b37c_90352>
+...
+001 (17081096.013.000) 07/03 01:04:00 Job executing on host: <188.185.190.104:9618?addrs=188.185.190.104-9618+[2001-1458-d03-b--100-22f]-9618&alias=b9pgpun501.cern.ch&noUDP&sock=startd_240657_4373>
+	SlotName: slot1_2@b9pgpun501.cern.ch
+	AvailableGPUs = { GPUs_GPU_29d335f4 }
+	CondorScratchDir = "/pool/condor/dir_414401"
+	Cpus = 8
+	Disk = 8390413
+	GPUs = 1
+	GPUs_GPU_29d335f4 = [ Id = "GPU-29d335f4"; ClockMhz = 1785.0; Capability = 9.0; CoresPerCU = 128; DeviceName = "NVIDIA H100 NVL"; DeviceUuid = "29d335f4-82a4-5335-6e31-1a784066a300"; ECCEnabled = true; ComputeUnits = 132; DriverVersion = 13.0; DevicePciBusId = "0000:07:00.0"; GlobalMemoryMb = 95319; MaxSupportedVersion = 13000 ]
+	Memory = 24000
+...
+040 (17081096.013.000) 07/03 01:04:00 Finished transferring input files
+...
+006 (17081096.013.000) 07/03 01:04:26 Image size of job updated: 223488
+	219  -  MemoryUsage of job (MB)
+	223488  -  ResidentSetSize of job (KB)
+...
+040 (17081096.013.000) 07/03 01:05:24 Started transferring output files
+...
+040 (17081096.013.000) 07/03 01:05:38 Finished transferring output files
+...
+021 (17081096.013.000) 07/03 01:06:30 Error from starter on slot1_2@b9pgpun501.cern.ch:
+	STARTER at 188.185.190.104 failed to send file(s) to <188.185.114.121:9618>; SHADOW at 188.185.114.121 - |Error: writing to file /afs/cern.ch/user/y/yeo/4l/26.06.20/MergedID_SCAnalyzer/MiniAOD_ee_eq0.h5: (errno 122) Disk quota exceeded
+	Code 12 Subcode 122
+...
+004 (17081096.013.000) 07/03 01:06:45 Job was evicted. Code 12 Subcode 122
+	(0) CPU times
+		Usr 0 00:00:07, Sys 0 00:00:04  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+	0  -  Run Bytes Sent By Job
+	132275  -  Run Bytes Received By Job
+	Reason: Transfer output files failure at access point bigbird19 while receiving files from execution point slot1_2@b9pgpun501.cern.ch. Details: writing to file /afs/cern.ch/user/y/yeo/4l/26.06.20/MergedID_SCAnalyzer/MiniAOD_ee_eq0.h5: (errno 122) Disk quota exceeded
+	Partitionable Resources :    Usage  Request Allocated Assigned
+	   Cpus                 :                 8         8 
+	   Disk (KB)            :   580114  8388608   8390413 
+	   GPUs                 :                 1         1 "GPU-29d335f4"
+	   Memory (MB)          :      219    24000     24000 
+	   TimeExecute (s)      :       67                    
+	   TimeSlotBusy (s)     :      245                    
+...
+012 (17081096.013.000) 07/03 01:06:58 Job was held.
+	Transfer output files failure at access point bigbird19 while receiving files from execution point slot1_2@b9pgpun501.cern.ch. Details: writing to file /afs/cern.ch/user/y/yeo/4l/26.06.20/MergedID_SCAnalyzer/MiniAOD_ee_eq0.h5: (errno 122) Disk quota exceeded
+	Code 12 Subcode 122
+...
+009 (17081096.013.000) 07/03 05:26:56 Job was aborted.
+	via condor_rm (by user yeo)
+...

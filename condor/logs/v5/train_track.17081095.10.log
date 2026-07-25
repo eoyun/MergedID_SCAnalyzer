@@ -1,0 +1,691 @@
+000 (17081095.010.000) 07/02 20:54:36 Job submitted from host: <188.185.114.121:9618?addrs=188.185.114.121-9618+[2001-1458-d00-a--100-273]-9618&alias=bigbird19.cern.ch&noUDP&sock=schedd_5103_cfe0>
+...
+040 (17081095.010.000) 07/02 22:07:52 Started transferring input files
+	Transferring to host: <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=slot1_1_4898_d580_134790>
+...
+040 (17081095.010.000) 07/02 22:07:52 Finished transferring input files
+...
+001 (17081095.010.000) 07/02 22:07:53 Job executing on host: <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=startd_4853_5533>
+	SlotName: slot1_1@b9g57n0005.cern.ch
+	AvailableGPUs = { GPUs_GPU_f7b29eb4 }
+	CondorScratchDir = "/pool/condor/dir_2152606"
+	Cpus = 8
+	Disk = 8390211
+	GPUs = 1
+	GPUs_GPU_f7b29eb4 = [ Id = "GPU-f7b29eb4"; ClockMhz = 1410.0; Capability = 8.0; CoresPerCU = 64; DeviceName = "NVIDIA A100-PCIE-40GB"; DeviceUuid = "f7b29eb4-a8a4-2aa2-9117-94b506dacb04"; ECCEnabled = true; ComputeUnits = 108; DriverVersion = 13.0; DevicePciBusId = "0000:06:00.0"; GlobalMemoryMb = 40441; MaxSupportedVersion = 13000 ]
+	Memory = 24000
+...
+006 (17081095.010.000) 07/02 22:08:06 Image size of job updated: 221360
+	217  -  MemoryUsage of job (MB)
+	221360  -  ResidentSetSize of job (KB)
+...
+006 (17081095.010.000) 07/02 22:08:36 Image size of job updated: 391268
+	217  -  MemoryUsage of job (MB)
+	221360  -  ResidentSetSize of job (KB)
+...
+040 (17081095.010.000) 07/02 22:08:38 Started transferring output files
+...
+040 (17081095.010.000) 07/02 22:09:02 Finished transferring output files
+...
+022 (17081095.010.000) 07/02 22:09:02 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n0005.cern.ch <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=startd_4853_5533>
+...
+023 (17081095.010.000) 07/02 22:09:08 Job reconnected to slot1_1@b9g57n0005.cern.ch
+    startd address: <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=startd_4853_5533>
+    starter address: <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=slot1_1_4898_d580_134790>
+...
+022 (17081095.010.000) 07/02 22:09:13 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n0005.cern.ch <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=startd_4853_5533>
+...
+023 (17081095.010.000) 07/02 22:09:17 Job reconnected to slot1_1@b9g57n0005.cern.ch
+    startd address: <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=startd_4853_5533>
+    starter address: <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=slot1_1_4898_d580_134790>
+...
+022 (17081095.010.000) 07/02 22:09:22 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n0005.cern.ch <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=startd_4853_5533>
+...
+023 (17081095.010.000) 07/02 22:09:32 Job reconnected to slot1_1@b9g57n0005.cern.ch
+    startd address: <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=startd_4853_5533>
+    starter address: <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=slot1_1_4898_d580_134790>
+...
+022 (17081095.010.000) 07/02 22:09:37 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n0005.cern.ch <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=startd_4853_5533>
+...
+023 (17081095.010.000) 07/02 22:09:48 Job reconnected to slot1_1@b9g57n0005.cern.ch
+    startd address: <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=startd_4853_5533>
+    starter address: <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=slot1_1_4898_d580_134790>
+...
+021 (17081095.010.000) 07/02 22:09:53 Error from starter on slot1_1@b9g57n0005.cern.ch:
+	Repeated attempts to transfer output failed for unknown reasons
+...
+004 (17081095.010.000) 07/02 22:09:54 Job was evicted. Code 1007 Subcode 0
+	(0) CPU times
+		Usr 0 00:00:13, Sys 0 00:00:16  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+	0  -  Run Bytes Sent By Job
+	132275  -  Run Bytes Received By Job
+	Reason: Error from slot1_1@b9g57n0005.cern.ch: Repeated attempts to transfer output failed for unknown reasons
+	Partitionable Resources :    Usage  Request Allocated Assigned
+	   Cpus                 :        0        8         8 
+	   Disk (KB)            :   580201  8388608   8390211 
+	   GPUs                 :        0        1         1 "GPU-f7b29eb4"
+	   Memory (MB)          :      217    24000     24000 
+	   TimeExecute (s)      :       43                    
+	   TimeSlotBusy (s)     :      122                    
+...
+040 (17081095.010.000) 07/02 22:21:13 Started transferring input files
+	Transferring to host: <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=slot1_1_4898_d580_134798>
+...
+040 (17081095.010.000) 07/02 22:21:13 Finished transferring input files
+...
+001 (17081095.010.000) 07/02 22:21:14 Job executing on host: <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=startd_4853_5533>
+	SlotName: slot1_1@b9g57n0005.cern.ch
+	AvailableGPUs = { GPUs_GPU_f7b29eb4 }
+	CondorScratchDir = "/pool/condor/dir_2153813"
+	Cpus = 8
+	Disk = 8388751
+	GPUs = 1
+	GPUs_GPU_f7b29eb4 = [ Id = "GPU-f7b29eb4"; ClockMhz = 1410.0; Capability = 8.0; CoresPerCU = 64; DeviceName = "NVIDIA A100-PCIE-40GB"; DeviceUuid = "f7b29eb4-a8a4-2aa2-9117-94b506dacb04"; ECCEnabled = true; ComputeUnits = 108; DriverVersion = 13.0; DevicePciBusId = "0000:06:00.0"; GlobalMemoryMb = 40441; MaxSupportedVersion = 13000 ]
+	Memory = 24000
+...
+040 (17081095.010.000) 07/02 22:21:58 Started transferring output files
+...
+040 (17081095.010.000) 07/02 22:22:21 Finished transferring output files
+...
+022 (17081095.010.000) 07/02 22:22:21 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n0005.cern.ch <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=startd_4853_5533>
+...
+023 (17081095.010.000) 07/02 22:22:26 Job reconnected to slot1_1@b9g57n0005.cern.ch
+    startd address: <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=startd_4853_5533>
+    starter address: <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=slot1_1_4898_d580_134798>
+...
+022 (17081095.010.000) 07/02 22:22:32 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n0005.cern.ch <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=startd_4853_5533>
+...
+023 (17081095.010.000) 07/02 22:22:33 Job reconnected to slot1_1@b9g57n0005.cern.ch
+    startd address: <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=startd_4853_5533>
+    starter address: <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=slot1_1_4898_d580_134798>
+...
+022 (17081095.010.000) 07/02 22:22:38 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n0005.cern.ch <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=startd_4853_5533>
+...
+023 (17081095.010.000) 07/02 22:22:39 Job reconnected to slot1_1@b9g57n0005.cern.ch
+    startd address: <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=startd_4853_5533>
+    starter address: <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=slot1_1_4898_d580_134798>
+...
+022 (17081095.010.000) 07/02 22:22:44 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n0005.cern.ch <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=startd_4853_5533>
+...
+023 (17081095.010.000) 07/02 22:22:44 Job reconnected to slot1_1@b9g57n0005.cern.ch
+    startd address: <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=startd_4853_5533>
+    starter address: <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=slot1_1_4898_d580_134798>
+...
+021 (17081095.010.000) 07/02 22:22:49 Error from starter on slot1_1@b9g57n0005.cern.ch:
+	Repeated attempts to transfer output failed for unknown reasons
+...
+004 (17081095.010.000) 07/02 22:22:49 Job was evicted. Code 1007 Subcode 0
+	(0) CPU times
+		Usr 0 00:00:13, Sys 0 00:00:14  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+	0  -  Run Bytes Sent By Job
+	132275  -  Run Bytes Received By Job
+	Reason: Error from slot1_1@b9g57n0005.cern.ch: Repeated attempts to transfer output failed for unknown reasons
+	Partitionable Resources :    Usage  Request Allocated Assigned
+	   Cpus                 :        0        8         8 
+	   Disk (KB)            :   580203  8388608   8388751 
+	   GPUs                 :        0        1         1 "GPU-f7b29eb4"
+	   Memory (MB)          :      220    24000     24000 
+	   TimeExecute (s)      :       44                    
+	   TimeSlotBusy (s)     :       96                    
+...
+040 (17081095.010.000) 07/02 22:26:31 Started transferring input files
+	Transferring to host: <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=slot1_1_8965_6746_14765>
+...
+040 (17081095.010.000) 07/02 22:26:32 Finished transferring input files
+...
+001 (17081095.010.000) 07/02 22:26:33 Job executing on host: <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=startd_8919_4547>
+	SlotName: slot1_1@b9g57n4080.cern.ch
+	AvailableGPUs = { GPUs_GPU_a841436e }
+	CondorScratchDir = "/pool/condor/dir_1404813"
+	Cpus = 8
+	Disk = 8389631
+	GPUs = 1
+	GPUs_GPU_a841436e = [ Id = "GPU-a841436e"; ClockMhz = 1410.0; Capability = 8.0; CoresPerCU = 64; DeviceName = "NVIDIA A100-PCIE-40GB"; DeviceUuid = "a841436e-1cae-5da0-0a02-7b844fb8ca33"; ECCEnabled = true; ComputeUnits = 108; DriverVersion = 13.0; DevicePciBusId = "0000:06:00.0"; GlobalMemoryMb = 40441; MaxSupportedVersion = 13000 ]
+	Memory = 24000
+...
+040 (17081095.010.000) 07/02 22:27:31 Started transferring output files
+...
+040 (17081095.010.000) 07/02 22:27:56 Finished transferring output files
+...
+022 (17081095.010.000) 07/02 22:27:56 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n4080.cern.ch <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=startd_8919_4547>
+...
+023 (17081095.010.000) 07/02 22:28:01 Job reconnected to slot1_1@b9g57n4080.cern.ch
+    startd address: <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=startd_8919_4547>
+    starter address: <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=slot1_1_8965_6746_14765>
+...
+022 (17081095.010.000) 07/02 22:28:06 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n4080.cern.ch <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=startd_8919_4547>
+...
+023 (17081095.010.000) 07/02 22:28:07 Job reconnected to slot1_1@b9g57n4080.cern.ch
+    startd address: <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=startd_8919_4547>
+    starter address: <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=slot1_1_8965_6746_14765>
+...
+022 (17081095.010.000) 07/02 22:28:12 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n4080.cern.ch <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=startd_8919_4547>
+...
+023 (17081095.010.000) 07/02 22:28:12 Job reconnected to slot1_1@b9g57n4080.cern.ch
+    startd address: <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=startd_8919_4547>
+    starter address: <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=slot1_1_8965_6746_14765>
+...
+022 (17081095.010.000) 07/02 22:28:17 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n4080.cern.ch <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=startd_8919_4547>
+...
+023 (17081095.010.000) 07/02 22:28:17 Job reconnected to slot1_1@b9g57n4080.cern.ch
+    startd address: <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=startd_8919_4547>
+    starter address: <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=slot1_1_8965_6746_14765>
+...
+021 (17081095.010.000) 07/02 22:28:22 Error from starter on slot1_1@b9g57n4080.cern.ch:
+	Repeated attempts to transfer output failed for unknown reasons
+...
+004 (17081095.010.000) 07/02 22:28:22 Job was evicted. Code 1007 Subcode 0
+	(0) CPU times
+		Usr 0 00:00:13, Sys 0 00:00:22  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+	0  -  Run Bytes Sent By Job
+	132275  -  Run Bytes Received By Job
+	Reason: Error from slot1_1@b9g57n4080.cern.ch: Repeated attempts to transfer output failed for unknown reasons
+	Partitionable Resources :    Usage  Request Allocated Assigned
+	   Cpus                 :        0        8         8 
+	   Disk (KB)            :   580203  8388608   8389631 
+	   GPUs                 :        0        1         1 "GPU-a841436e"
+	   Memory (MB)          :      220    24000     24000 
+	   TimeExecute (s)      :       59                    
+	   TimeSlotBusy (s)     :      111                    
+...
+040 (17081095.010.000) 07/02 22:30:29 Started transferring input files
+	Transferring to host: <188.185.92.166:9618?addrs=188.185.92.166-9618+[2001-1458-d00-6c--100-410]-9618&alias=b9g57n0004.cern.ch&noUDP&sock=slot1_1_8498_5c13_143071>
+...
+040 (17081095.010.000) 07/02 22:30:29 Finished transferring input files
+...
+001 (17081095.010.000) 07/02 22:30:30 Job executing on host: <188.185.92.166:9618?addrs=188.185.92.166-9618+[2001-1458-d00-6c--100-410]-9618&alias=b9g57n0004.cern.ch&noUDP&sock=startd_8042_b8b8>
+	SlotName: slot1_1@b9g57n0004.cern.ch
+	AvailableGPUs = { GPUs_GPU_ba6c27ee }
+	CondorScratchDir = "/pool/condor/dir_3610149"
+	Cpus = 8
+	Disk = 8389622
+	GPUs = 1
+	GPUs_GPU_ba6c27ee = [ Id = "GPU-ba6c27ee"; ClockMhz = 1410.0; Capability = 8.0; CoresPerCU = 64; DeviceName = "NVIDIA A100-PCIE-40GB"; DeviceUuid = "ba6c27ee-83b9-8c1a-8580-9009ce83a62d"; ECCEnabled = true; ComputeUnits = 108; DriverVersion = 13.0; DevicePciBusId = "0000:06:00.0"; GlobalMemoryMb = 40441; MaxSupportedVersion = 13000 ]
+	Memory = 24000
+...
+040 (17081095.010.000) 07/02 22:31:29 Started transferring output files
+...
+040 (17081095.010.000) 07/02 22:31:55 Finished transferring output files
+...
+022 (17081095.010.000) 07/02 22:31:55 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n0004.cern.ch <188.185.92.166:9618?addrs=188.185.92.166-9618+[2001-1458-d00-6c--100-410]-9618&alias=b9g57n0004.cern.ch&noUDP&sock=startd_8042_b8b8>
+...
+023 (17081095.010.000) 07/02 22:32:01 Job reconnected to slot1_1@b9g57n0004.cern.ch
+    startd address: <188.185.92.166:9618?addrs=188.185.92.166-9618+[2001-1458-d00-6c--100-410]-9618&alias=b9g57n0004.cern.ch&noUDP&sock=startd_8042_b8b8>
+    starter address: <188.185.92.166:9618?addrs=188.185.92.166-9618+[2001-1458-d00-6c--100-410]-9618&alias=b9g57n0004.cern.ch&noUDP&sock=slot1_1_8498_5c13_143071>
+...
+022 (17081095.010.000) 07/02 22:32:06 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n0004.cern.ch <188.185.92.166:9618?addrs=188.185.92.166-9618+[2001-1458-d00-6c--100-410]-9618&alias=b9g57n0004.cern.ch&noUDP&sock=startd_8042_b8b8>
+...
+023 (17081095.010.000) 07/02 22:32:07 Job reconnected to slot1_1@b9g57n0004.cern.ch
+    startd address: <188.185.92.166:9618?addrs=188.185.92.166-9618+[2001-1458-d00-6c--100-410]-9618&alias=b9g57n0004.cern.ch&noUDP&sock=startd_8042_b8b8>
+    starter address: <188.185.92.166:9618?addrs=188.185.92.166-9618+[2001-1458-d00-6c--100-410]-9618&alias=b9g57n0004.cern.ch&noUDP&sock=slot1_1_8498_5c13_143071>
+...
+022 (17081095.010.000) 07/02 22:32:12 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n0004.cern.ch <188.185.92.166:9618?addrs=188.185.92.166-9618+[2001-1458-d00-6c--100-410]-9618&alias=b9g57n0004.cern.ch&noUDP&sock=startd_8042_b8b8>
+...
+023 (17081095.010.000) 07/02 22:32:13 Job reconnected to slot1_1@b9g57n0004.cern.ch
+    startd address: <188.185.92.166:9618?addrs=188.185.92.166-9618+[2001-1458-d00-6c--100-410]-9618&alias=b9g57n0004.cern.ch&noUDP&sock=startd_8042_b8b8>
+    starter address: <188.185.92.166:9618?addrs=188.185.92.166-9618+[2001-1458-d00-6c--100-410]-9618&alias=b9g57n0004.cern.ch&noUDP&sock=slot1_1_8498_5c13_143071>
+...
+022 (17081095.010.000) 07/02 22:32:18 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n0004.cern.ch <188.185.92.166:9618?addrs=188.185.92.166-9618+[2001-1458-d00-6c--100-410]-9618&alias=b9g57n0004.cern.ch&noUDP&sock=startd_8042_b8b8>
+...
+023 (17081095.010.000) 07/02 22:32:18 Job reconnected to slot1_1@b9g57n0004.cern.ch
+    startd address: <188.185.92.166:9618?addrs=188.185.92.166-9618+[2001-1458-d00-6c--100-410]-9618&alias=b9g57n0004.cern.ch&noUDP&sock=startd_8042_b8b8>
+    starter address: <188.185.92.166:9618?addrs=188.185.92.166-9618+[2001-1458-d00-6c--100-410]-9618&alias=b9g57n0004.cern.ch&noUDP&sock=slot1_1_8498_5c13_143071>
+...
+021 (17081095.010.000) 07/02 22:32:24 Error from starter on slot1_1@b9g57n0004.cern.ch:
+	Repeated attempts to transfer output failed for unknown reasons
+...
+004 (17081095.010.000) 07/02 22:32:24 Job was evicted. Code 1007 Subcode 0
+	(0) CPU times
+		Usr 0 00:00:13, Sys 0 00:00:22  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+	0  -  Run Bytes Sent By Job
+	132275  -  Run Bytes Received By Job
+	Reason: Error from slot1_1@b9g57n0004.cern.ch: Repeated attempts to transfer output failed for unknown reasons
+	Partitionable Resources :    Usage  Request Allocated Assigned
+	   Cpus                 :        0        8         8 
+	   Disk (KB)            :   580203  8388608   8389622 
+	   GPUs                 :        0        1         1 "GPU-ba6c27ee"
+	   Memory (MB)          :      220    24000     24000 
+	   TimeExecute (s)      :       59                    
+	   TimeSlotBusy (s)     :      117                    
+...
+040 (17081095.010.000) 07/02 22:33:44 Started transferring input files
+	Transferring to host: <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=slot1_1_4898_d580_134803>
+...
+001 (17081095.010.000) 07/02 22:33:48 Job executing on host: <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=startd_4853_5533>
+	SlotName: slot1_1@b9g57n0005.cern.ch
+	AvailableGPUs = { GPUs_GPU_f7b29eb4 }
+	CondorScratchDir = "/pool/condor/dir_2155208"
+	Cpus = 8
+	Disk = 8389630
+	GPUs = 1
+	GPUs_GPU_f7b29eb4 = [ Id = "GPU-f7b29eb4"; ClockMhz = 1410.0; Capability = 8.0; CoresPerCU = 64; DeviceName = "NVIDIA A100-PCIE-40GB"; DeviceUuid = "f7b29eb4-a8a4-2aa2-9117-94b506dacb04"; ECCEnabled = true; ComputeUnits = 108; DriverVersion = 13.0; DevicePciBusId = "0000:06:00.0"; GlobalMemoryMb = 40441; MaxSupportedVersion = 13000 ]
+	Memory = 24000
+...
+040 (17081095.010.000) 07/02 22:33:48 Finished transferring input files
+...
+006 (17081095.010.000) 07/02 22:34:33 Image size of job updated: 406524
+	220  -  MemoryUsage of job (MB)
+	225000  -  ResidentSetSize of job (KB)
+...
+040 (17081095.010.000) 07/02 22:34:34 Started transferring output files
+...
+040 (17081095.010.000) 07/02 22:34:56 Finished transferring output files
+...
+022 (17081095.010.000) 07/02 22:34:56 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n0005.cern.ch <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=startd_4853_5533>
+...
+023 (17081095.010.000) 07/02 22:35:01 Job reconnected to slot1_1@b9g57n0005.cern.ch
+    startd address: <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=startd_4853_5533>
+    starter address: <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=slot1_1_4898_d580_134803>
+...
+022 (17081095.010.000) 07/02 22:35:06 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n0005.cern.ch <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=startd_4853_5533>
+...
+023 (17081095.010.000) 07/02 22:35:11 Job reconnected to slot1_1@b9g57n0005.cern.ch
+    startd address: <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=startd_4853_5533>
+    starter address: <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=slot1_1_4898_d580_134803>
+...
+022 (17081095.010.000) 07/02 22:35:16 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n0005.cern.ch <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=startd_4853_5533>
+...
+023 (17081095.010.000) 07/02 22:35:21 Job reconnected to slot1_1@b9g57n0005.cern.ch
+    startd address: <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=startd_4853_5533>
+    starter address: <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=slot1_1_4898_d580_134803>
+...
+022 (17081095.010.000) 07/02 22:35:26 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n0005.cern.ch <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=startd_4853_5533>
+...
+023 (17081095.010.000) 07/02 22:35:30 Job reconnected to slot1_1@b9g57n0005.cern.ch
+    startd address: <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=startd_4853_5533>
+    starter address: <188.185.93.9:9618?addrs=188.185.93.9-9618+[2001-1458-d00-6c--100-1d4]-9618&alias=b9g57n0005.cern.ch&noUDP&sock=slot1_1_4898_d580_134803>
+...
+021 (17081095.010.000) 07/02 22:35:35 Error from starter on slot1_1@b9g57n0005.cern.ch:
+	Repeated attempts to transfer output failed for unknown reasons
+...
+004 (17081095.010.000) 07/02 22:35:35 Job was evicted. Code 1007 Subcode 0
+	(0) CPU times
+		Usr 0 00:00:13, Sys 0 00:00:16  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+	0  -  Run Bytes Sent By Job
+	132275  -  Run Bytes Received By Job
+	Reason: Error from slot1_1@b9g57n0005.cern.ch: Repeated attempts to transfer output failed for unknown reasons
+	Partitionable Resources :    Usage  Request Allocated Assigned
+	   Cpus                 :        0        8         8 
+	   Disk (KB)            :   580194  8388608   8389630 
+	   GPUs                 :        0        1         1 "GPU-f7b29eb4"
+	   Memory (MB)          :      220    24000     24000 
+	   TimeExecute (s)      :       46                    
+	   TimeSlotBusy (s)     :      112                    
+...
+040 (17081095.010.000) 07/02 22:40:57 Started transferring input files
+	Transferring to host: <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=slot1_1_8965_6746_14775>
+...
+040 (17081095.010.000) 07/02 22:40:57 Finished transferring input files
+...
+001 (17081095.010.000) 07/02 22:40:58 Job executing on host: <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=startd_8919_4547>
+	SlotName: slot1_1@b9g57n4080.cern.ch
+	AvailableGPUs = { GPUs_GPU_a841436e }
+	CondorScratchDir = "/pool/condor/dir_1407377"
+	Cpus = 8
+	Disk = 8389620
+	GPUs = 1
+	GPUs_GPU_a841436e = [ Id = "GPU-a841436e"; ClockMhz = 1410.0; Capability = 8.0; CoresPerCU = 64; DeviceName = "NVIDIA A100-PCIE-40GB"; DeviceUuid = "a841436e-1cae-5da0-0a02-7b844fb8ca33"; ECCEnabled = true; ComputeUnits = 108; DriverVersion = 13.0; DevicePciBusId = "0000:06:00.0"; GlobalMemoryMb = 40441; MaxSupportedVersion = 13000 ]
+	Memory = 24000
+...
+040 (17081095.010.000) 07/02 22:41:48 Started transferring output files
+...
+040 (17081095.010.000) 07/02 22:42:17 Finished transferring output files
+...
+022 (17081095.010.000) 07/02 22:42:17 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n4080.cern.ch <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=startd_8919_4547>
+...
+023 (17081095.010.000) 07/02 22:42:22 Job reconnected to slot1_1@b9g57n4080.cern.ch
+    startd address: <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=startd_8919_4547>
+    starter address: <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=slot1_1_8965_6746_14775>
+...
+022 (17081095.010.000) 07/02 22:42:27 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n4080.cern.ch <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=startd_8919_4547>
+...
+023 (17081095.010.000) 07/02 22:42:27 Job reconnected to slot1_1@b9g57n4080.cern.ch
+    startd address: <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=startd_8919_4547>
+    starter address: <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=slot1_1_8965_6746_14775>
+...
+022 (17081095.010.000) 07/02 22:42:32 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n4080.cern.ch <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=startd_8919_4547>
+...
+023 (17081095.010.000) 07/02 22:42:32 Job reconnected to slot1_1@b9g57n4080.cern.ch
+    startd address: <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=startd_8919_4547>
+    starter address: <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=slot1_1_8965_6746_14775>
+...
+022 (17081095.010.000) 07/02 22:42:37 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n4080.cern.ch <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=startd_8919_4547>
+...
+023 (17081095.010.000) 07/02 22:42:38 Job reconnected to slot1_1@b9g57n4080.cern.ch
+    startd address: <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=startd_8919_4547>
+    starter address: <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=slot1_1_8965_6746_14775>
+...
+021 (17081095.010.000) 07/02 22:42:44 Error from starter on slot1_1@b9g57n4080.cern.ch:
+	Repeated attempts to transfer output failed for unknown reasons
+...
+004 (17081095.010.000) 07/02 22:42:44 Job was evicted. Code 1007 Subcode 0
+	(0) CPU times
+		Usr 0 00:00:12, Sys 0 00:00:18  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+	0  -  Run Bytes Sent By Job
+	132275  -  Run Bytes Received By Job
+	Reason: Error from slot1_1@b9g57n4080.cern.ch: Repeated attempts to transfer output failed for unknown reasons
+	Partitionable Resources :    Usage  Request Allocated Assigned
+	   Cpus                 :        0        8         8 
+	   Disk (KB)            :   580203  8388608   8389620 
+	   GPUs                 :        0        1         1 "GPU-a841436e"
+	   Memory (MB)          :      220    24000     24000 
+	   TimeExecute (s)      :       50                    
+	   TimeSlotBusy (s)     :      107                    
+...
+040 (17081095.010.000) 07/02 22:49:21 Started transferring input files
+	Transferring to host: <188.185.93.206:9618?addrs=188.185.93.206-9618+[2001-1458-d00-6c--100-374]-9618&alias=b9g57n0002.cern.ch&noUDP&sock=slot1_1_8915_2c84_143100>
+...
+040 (17081095.010.000) 07/02 22:49:21 Finished transferring input files
+...
+001 (17081095.010.000) 07/02 22:49:22 Job executing on host: <188.185.93.206:9618?addrs=188.185.93.206-9618+[2001-1458-d00-6c--100-374]-9618&alias=b9g57n0002.cern.ch&noUDP&sock=startd_8870_a923>
+	SlotName: slot1_1@b9g57n0002.cern.ch
+	AvailableGPUs = { GPUs_GPU_4ca02207 }
+	CondorScratchDir = "/pool/condor/dir_3381262"
+	Cpus = 8
+	Disk = 8389633
+	GPUs = 1
+	GPUs_GPU_4ca02207 = [ Id = "GPU-4ca02207"; ClockMhz = 1410.0; Capability = 8.0; CoresPerCU = 64; DeviceName = "NVIDIA A100-PCIE-40GB"; DeviceUuid = "4ca02207-8182-9204-3632-c61ce0e64416"; ECCEnabled = true; ComputeUnits = 108; DriverVersion = 13.0; DevicePciBusId = "0000:06:00.0"; GlobalMemoryMb = 40441; MaxSupportedVersion = 13000 ]
+	Memory = 24000
+...
+040 (17081095.010.000) 07/02 22:50:32 Started transferring output files
+...
+040 (17081095.010.000) 07/02 22:50:55 Finished transferring output files
+...
+022 (17081095.010.000) 07/02 22:50:55 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n0002.cern.ch <188.185.93.206:9618?addrs=188.185.93.206-9618+[2001-1458-d00-6c--100-374]-9618&alias=b9g57n0002.cern.ch&noUDP&sock=startd_8870_a923>
+...
+023 (17081095.010.000) 07/02 22:51:00 Job reconnected to slot1_1@b9g57n0002.cern.ch
+    startd address: <188.185.93.206:9618?addrs=188.185.93.206-9618+[2001-1458-d00-6c--100-374]-9618&alias=b9g57n0002.cern.ch&noUDP&sock=startd_8870_a923>
+    starter address: <188.185.93.206:9618?addrs=188.185.93.206-9618+[2001-1458-d00-6c--100-374]-9618&alias=b9g57n0002.cern.ch&noUDP&sock=slot1_1_8915_2c84_143100>
+...
+022 (17081095.010.000) 07/02 22:51:05 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n0002.cern.ch <188.185.93.206:9618?addrs=188.185.93.206-9618+[2001-1458-d00-6c--100-374]-9618&alias=b9g57n0002.cern.ch&noUDP&sock=startd_8870_a923>
+...
+023 (17081095.010.000) 07/02 22:51:06 Job reconnected to slot1_1@b9g57n0002.cern.ch
+    startd address: <188.185.93.206:9618?addrs=188.185.93.206-9618+[2001-1458-d00-6c--100-374]-9618&alias=b9g57n0002.cern.ch&noUDP&sock=startd_8870_a923>
+    starter address: <188.185.93.206:9618?addrs=188.185.93.206-9618+[2001-1458-d00-6c--100-374]-9618&alias=b9g57n0002.cern.ch&noUDP&sock=slot1_1_8915_2c84_143100>
+...
+022 (17081095.010.000) 07/02 22:51:11 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n0002.cern.ch <188.185.93.206:9618?addrs=188.185.93.206-9618+[2001-1458-d00-6c--100-374]-9618&alias=b9g57n0002.cern.ch&noUDP&sock=startd_8870_a923>
+...
+023 (17081095.010.000) 07/02 22:51:11 Job reconnected to slot1_1@b9g57n0002.cern.ch
+    startd address: <188.185.93.206:9618?addrs=188.185.93.206-9618+[2001-1458-d00-6c--100-374]-9618&alias=b9g57n0002.cern.ch&noUDP&sock=startd_8870_a923>
+    starter address: <188.185.93.206:9618?addrs=188.185.93.206-9618+[2001-1458-d00-6c--100-374]-9618&alias=b9g57n0002.cern.ch&noUDP&sock=slot1_1_8915_2c84_143100>
+...
+022 (17081095.010.000) 07/02 22:51:16 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n0002.cern.ch <188.185.93.206:9618?addrs=188.185.93.206-9618+[2001-1458-d00-6c--100-374]-9618&alias=b9g57n0002.cern.ch&noUDP&sock=startd_8870_a923>
+...
+023 (17081095.010.000) 07/02 22:51:16 Job reconnected to slot1_1@b9g57n0002.cern.ch
+    startd address: <188.185.93.206:9618?addrs=188.185.93.206-9618+[2001-1458-d00-6c--100-374]-9618&alias=b9g57n0002.cern.ch&noUDP&sock=startd_8870_a923>
+    starter address: <188.185.93.206:9618?addrs=188.185.93.206-9618+[2001-1458-d00-6c--100-374]-9618&alias=b9g57n0002.cern.ch&noUDP&sock=slot1_1_8915_2c84_143100>
+...
+021 (17081095.010.000) 07/02 22:51:22 Error from starter on slot1_1@b9g57n0002.cern.ch:
+	Repeated attempts to transfer output failed for unknown reasons
+...
+004 (17081095.010.000) 07/02 22:51:22 Job was evicted. Code 1007 Subcode 0
+	(0) CPU times
+		Usr 0 00:00:13, Sys 0 00:00:21  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+	0  -  Run Bytes Sent By Job
+	132275  -  Run Bytes Received By Job
+	Reason: Error from slot1_1@b9g57n0002.cern.ch: Repeated attempts to transfer output failed for unknown reasons
+	Partitionable Resources :     Usage  Request Allocated Assigned
+	   Cpus                 :      0.09        8         8 
+	   Disk (KB)            : 580204     8388608   8389633 
+	   GPUs                 :      0           1         1 "GPU-4ca02207"
+	   GpusMemory (MB)      :    522                       
+	   Memory (MB)          :    220       24000     24000 
+	   TimeExecute (s)      :     70                       
+	   TimeSlotBusy (s)     :    122                       
+...
+040 (17081095.010.000) 07/02 22:53:41 Started transferring input files
+	Transferring to host: <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=slot1_1_8965_6746_14781>
+...
+001 (17081095.010.000) 07/02 22:53:43 Job executing on host: <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=startd_8919_4547>
+	SlotName: slot1_1@b9g57n4080.cern.ch
+	AvailableGPUs = { GPUs_GPU_a841436e }
+	CondorScratchDir = "/pool/condor/dir_1409809"
+	Cpus = 8
+	Disk = 8389624
+	GPUs = 1
+	GPUs_GPU_a841436e = [ Id = "GPU-a841436e"; ClockMhz = 1410.0; Capability = 8.0; CoresPerCU = 64; DeviceName = "NVIDIA A100-PCIE-40GB"; DeviceUuid = "a841436e-1cae-5da0-0a02-7b844fb8ca33"; ECCEnabled = true; ComputeUnits = 108; DriverVersion = 13.0; DevicePciBusId = "0000:06:00.0"; GlobalMemoryMb = 40441; MaxSupportedVersion = 13000 ]
+	Memory = 24000
+...
+040 (17081095.010.000) 07/02 22:53:43 Finished transferring input files
+...
+040 (17081095.010.000) 07/02 22:54:44 Started transferring output files
+...
+040 (17081095.010.000) 07/02 22:55:06 Finished transferring output files
+...
+022 (17081095.010.000) 07/02 22:55:06 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n4080.cern.ch <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=startd_8919_4547>
+...
+023 (17081095.010.000) 07/02 22:55:12 Job reconnected to slot1_1@b9g57n4080.cern.ch
+    startd address: <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=startd_8919_4547>
+    starter address: <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=slot1_1_8965_6746_14781>
+...
+022 (17081095.010.000) 07/02 22:55:17 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n4080.cern.ch <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=startd_8919_4547>
+...
+023 (17081095.010.000) 07/02 22:55:18 Job reconnected to slot1_1@b9g57n4080.cern.ch
+    startd address: <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=startd_8919_4547>
+    starter address: <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=slot1_1_8965_6746_14781>
+...
+022 (17081095.010.000) 07/02 22:55:23 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n4080.cern.ch <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=startd_8919_4547>
+...
+023 (17081095.010.000) 07/02 22:55:23 Job reconnected to slot1_1@b9g57n4080.cern.ch
+    startd address: <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=startd_8919_4547>
+    starter address: <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=slot1_1_8965_6746_14781>
+...
+022 (17081095.010.000) 07/02 22:55:28 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_1@b9g57n4080.cern.ch <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=startd_8919_4547>
+...
+023 (17081095.010.000) 07/02 22:55:29 Job reconnected to slot1_1@b9g57n4080.cern.ch
+    startd address: <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=startd_8919_4547>
+    starter address: <188.185.92.184:9618?addrs=188.185.92.184-9618+[2001-1458-d00-6c--100-192]-9618&alias=b9g57n4080.cern.ch&noUDP&sock=slot1_1_8965_6746_14781>
+...
+021 (17081095.010.000) 07/02 22:55:34 Error from starter on slot1_1@b9g57n4080.cern.ch:
+	Repeated attempts to transfer output failed for unknown reasons
+...
+004 (17081095.010.000) 07/02 22:55:34 Job was evicted. Code 1007 Subcode 0
+	(0) CPU times
+		Usr 0 00:00:12, Sys 0 00:00:22  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+	0  -  Run Bytes Sent By Job
+	132275  -  Run Bytes Received By Job
+	Reason: Error from slot1_1@b9g57n4080.cern.ch: Repeated attempts to transfer output failed for unknown reasons
+	Partitionable Resources :     Usage  Request Allocated Assigned
+	   Cpus                 :      0.09        8         8 
+	   Disk (KB)            : 580194     8388608   8389624 
+	   GPUs                 :      0           1         1 "GPU-a841436e"
+	   GpusMemory (MB)      :    522                       
+	   Memory (MB)          :    220       24000     24000 
+	   TimeExecute (s)      :     60                       
+	   TimeSlotBusy (s)     :    113                       
+...
+040 (17081095.010.000) 07/02 23:00:30 Started transferring input files
+	Transferring to host: <188.185.238.12:9618?addrs=188.185.238.12-9618+[2001-1458-303-28--100-8]-9618&alias=b9pgpun001.cern.ch&noUDP&sock=slot1_4_3229370_0eb2_159666>
+...
+040 (17081095.010.000) 07/02 23:00:30 Finished transferring input files
+...
+001 (17081095.010.000) 07/02 23:00:31 Job executing on host: <188.185.238.12:9618?addrs=188.185.238.12-9618+[2001-1458-303-28--100-8]-9618&alias=b9pgpun001.cern.ch&noUDP&sock=startd_16419_a594>
+	SlotName: slot1_4@b9pgpun001.cern.ch
+	AvailableGPUs = { GPUs_GPU_b3592e1c }
+	CondorScratchDir = "/pool/condor/dir_2295359"
+	Cpus = 8
+	Disk = 8394607
+	GPUs = 1
+	GPUs_GPU_b3592e1c = [ Id = "GPU-b3592e1c"; ClockMhz = 1785.0; Capability = 9.0; CoresPerCU = 128; DeviceName = "NVIDIA H100 NVL"; DeviceUuid = "b3592e1c-94b7-d9d7-0d94-bdbd69c4d6f6"; ECCEnabled = true; ComputeUnits = 132; DriverVersion = 13.0; DevicePciBusId = "0000:AE:00.0"; GlobalMemoryMb = 95320; MaxSupportedVersion = 13000 ]
+	Memory = 24000
+...
+006 (17081095.010.000) 07/02 23:00:44 Image size of job updated: 425000
+	244  -  MemoryUsage of job (MB)
+	249792  -  ResidentSetSize of job (KB)
+...
+006 (17081095.010.000) 07/02 23:00:50 Image size of job updated: 425000
+	245  -  MemoryUsage of job (MB)
+	249908  -  ResidentSetSize of job (KB)
+...
+040 (17081095.010.000) 07/02 23:00:50 Started transferring output files
+...
+040 (17081095.010.000) 07/02 23:01:08 Finished transferring output files
+...
+022 (17081095.010.000) 07/02 23:01:08 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_4@b9pgpun001.cern.ch <188.185.238.12:9618?addrs=188.185.238.12-9618+[2001-1458-303-28--100-8]-9618&alias=b9pgpun001.cern.ch&noUDP&sock=startd_16419_a594>
+...
+023 (17081095.010.000) 07/02 23:01:13 Job reconnected to slot1_4@b9pgpun001.cern.ch
+    startd address: <188.185.238.12:9618?addrs=188.185.238.12-9618+[2001-1458-303-28--100-8]-9618&alias=b9pgpun001.cern.ch&noUDP&sock=startd_16419_a594>
+    starter address: <188.185.238.12:9618?addrs=188.185.238.12-9618+[2001-1458-303-28--100-8]-9618&alias=b9pgpun001.cern.ch&noUDP&sock=slot1_4_3229370_0eb2_159666>
+...
+022 (17081095.010.000) 07/02 23:01:18 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_4@b9pgpun001.cern.ch <188.185.238.12:9618?addrs=188.185.238.12-9618+[2001-1458-303-28--100-8]-9618&alias=b9pgpun001.cern.ch&noUDP&sock=startd_16419_a594>
+...
+023 (17081095.010.000) 07/02 23:01:19 Job reconnected to slot1_4@b9pgpun001.cern.ch
+    startd address: <188.185.238.12:9618?addrs=188.185.238.12-9618+[2001-1458-303-28--100-8]-9618&alias=b9pgpun001.cern.ch&noUDP&sock=startd_16419_a594>
+    starter address: <188.185.238.12:9618?addrs=188.185.238.12-9618+[2001-1458-303-28--100-8]-9618&alias=b9pgpun001.cern.ch&noUDP&sock=slot1_4_3229370_0eb2_159666>
+...
+022 (17081095.010.000) 07/02 23:01:24 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_4@b9pgpun001.cern.ch <188.185.238.12:9618?addrs=188.185.238.12-9618+[2001-1458-303-28--100-8]-9618&alias=b9pgpun001.cern.ch&noUDP&sock=startd_16419_a594>
+...
+023 (17081095.010.000) 07/02 23:01:24 Job reconnected to slot1_4@b9pgpun001.cern.ch
+    startd address: <188.185.238.12:9618?addrs=188.185.238.12-9618+[2001-1458-303-28--100-8]-9618&alias=b9pgpun001.cern.ch&noUDP&sock=startd_16419_a594>
+    starter address: <188.185.238.12:9618?addrs=188.185.238.12-9618+[2001-1458-303-28--100-8]-9618&alias=b9pgpun001.cern.ch&noUDP&sock=slot1_4_3229370_0eb2_159666>
+...
+022 (17081095.010.000) 07/02 23:01:29 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot1_4@b9pgpun001.cern.ch <188.185.238.12:9618?addrs=188.185.238.12-9618+[2001-1458-303-28--100-8]-9618&alias=b9pgpun001.cern.ch&noUDP&sock=startd_16419_a594>
+...
+023 (17081095.010.000) 07/02 23:01:29 Job reconnected to slot1_4@b9pgpun001.cern.ch
+    startd address: <188.185.238.12:9618?addrs=188.185.238.12-9618+[2001-1458-303-28--100-8]-9618&alias=b9pgpun001.cern.ch&noUDP&sock=startd_16419_a594>
+    starter address: <188.185.238.12:9618?addrs=188.185.238.12-9618+[2001-1458-303-28--100-8]-9618&alias=b9pgpun001.cern.ch&noUDP&sock=slot1_4_3229370_0eb2_159666>
+...
+021 (17081095.010.000) 07/02 23:01:35 Error from starter on slot1_4@b9pgpun001.cern.ch:
+	Repeated attempts to transfer output failed for unknown reasons
+...
+004 (17081095.010.000) 07/02 23:01:36 Job was evicted. Code 1007 Subcode 0
+	(0) CPU times
+		Usr 0 00:00:06, Sys 0 00:00:02  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+	0  -  Run Bytes Sent By Job
+	132275  -  Run Bytes Received By Job
+	Reason: Error from slot1_4@b9pgpun001.cern.ch: Repeated attempts to transfer output failed for unknown reasons
+	Partitionable Resources :     Usage  Request Allocated Assigned
+	   Cpus                 :      0.02        8         8 
+	   Disk (KB)            : 580204     8388608   8394607 
+	   GPUs                 :      0           1         1 "GPU-b3592e1c"
+	   GpusMemory (MB)      :    632                       
+	   Memory (MB)          :    245       24000     24000 
+	   TimeExecute (s)      :     19                       
+	   TimeSlotBusy (s)     :     65                       
+...
+040 (17081095.010.000) 07/02 23:02:31 Started transferring input files
+	Transferring to host: <188.185.93.206:9618?addrs=188.185.93.206-9618+[2001-1458-d00-6c--100-374]-9618&alias=b9g57n0002.cern.ch&noUDP&sock=slot1_1_8915_2c84_143109>
+...
+040 (17081095.010.000) 07/02 23:02:31 Finished transferring input files
+...
+001 (17081095.010.000) 07/02 23:02:32 Job executing on host: <188.185.93.206:9618?addrs=188.185.93.206-9618+[2001-1458-d00-6c--100-374]-9618&alias=b9g57n0002.cern.ch&noUDP&sock=startd_8870_a923>
+	SlotName: slot1_1@b9g57n0002.cern.ch
+	AvailableGPUs = { GPUs_GPU_4ca02207 }
+	CondorScratchDir = "/pool/condor/dir_3383440"
+	Cpus = 8
+	Disk = 8389634
+	GPUs = 1
+	GPUs_GPU_4ca02207 = [ Id = "GPU-4ca02207"; ClockMhz = 1410.0; Capability = 8.0; CoresPerCU = 64; DeviceName = "NVIDIA A100-PCIE-40GB"; DeviceUuid = "4ca02207-8182-9204-3632-c61ce0e64416"; ECCEnabled = true; ComputeUnits = 108; DriverVersion = 13.0; DevicePciBusId = "0000:06:00.0"; GlobalMemoryMb = 40441; MaxSupportedVersion = 13000 ]
+	Memory = 24000
+...
+040 (17081095.010.000) 07/02 23:04:41 Started transferring output files
+...
+040 (17081095.010.000) 07/02 23:05:01 Finished transferring output files
+...
+021 (17081095.010.000) 07/02 23:05:01 Error from starter on slot1_1@b9g57n0002.cern.ch:
+	STARTER at 188.185.93.206 failed to send file(s) to <188.185.114.121:9618>; SHADOW at 188.185.114.121 - |Error: writing to file /afs/cern.ch/user/y/yeo/4l/26.06.20/MergedID_SCAnalyzer/MiniAOD_ee_eq0.h5: (errno 122) Disk quota exceeded
+	Code 12 Subcode 122
+...
+004 (17081095.010.000) 07/02 23:05:01 Job was evicted. Code 12 Subcode 122
+	(0) CPU times
+		Usr 0 00:00:13, Sys 0 00:00:17  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+	0  -  Run Bytes Sent By Job
+	132275  -  Run Bytes Received By Job
+	Reason: Transfer output files failure at access point bigbird19 while receiving files from execution point slot1_1@b9g57n0002.cern.ch. Details: writing to file /afs/cern.ch/user/y/yeo/4l/26.06.20/MergedID_SCAnalyzer/MiniAOD_ee_eq0.h5: (errno 122) Disk quota exceeded
+	Partitionable Resources :    Usage  Request Allocated Assigned
+	   Cpus                 :        0        8         8 
+	   Disk (KB)            :   580204  8388608   8389634 
+	   GPUs                 :        0        1         1 "GPU-4ca02207"
+	   Memory (MB)          :      245    24000     24000 
+	   TimeExecute (s)      :      129                    
+	   TimeSlotBusy (s)     :      150                    
+...
+012 (17081095.010.000) 07/02 23:05:01 Job was held.
+	Transfer output files failure at access point bigbird19 while receiving files from execution point slot1_1@b9g57n0002.cern.ch. Details: writing to file /afs/cern.ch/user/y/yeo/4l/26.06.20/MergedID_SCAnalyzer/MiniAOD_ee_eq0.h5: (errno 122) Disk quota exceeded
+	Code 12 Subcode 122
+...
+009 (17081095.010.000) 07/03 05:26:56 Job was aborted.
+	via condor_rm (by user yeo)
+...

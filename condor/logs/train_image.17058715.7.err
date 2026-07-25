@@ -1,0 +1,25 @@
+Traceback (most recent call last):
+  File "/cvmfs/sft.cern.ch/lcg/releases/Python/3.13.11-41c2c/x86_64-el9-gcc13-opt/lib/python3.13/pathlib/_local.py", line 722, in mkdir
+    os.mkdir(self, mode)
+    ~~~~~~~~^^^^^^^^^^^^
+OSError: [Errno 45] Level 2 not synchronized: '/eos/user/y/yeo/4l/runs/v3/image_aod_ee_es_eq1'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/pool/condor/dir_2855643/train_resnet_image_classifier.py", line 1147, in <module>
+    main()
+    ~~~~^^
+  File "/pool/condor/dir_2855643/train_resnet_image_classifier.py", line 870, in main
+    output_dir.mkdir(parents=True, exist_ok=True)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cvmfs/sft.cern.ch/lcg/releases/Python/3.13.11-41c2c/x86_64-el9-gcc13-opt/lib/python3.13/pathlib/_local.py", line 731, in mkdir
+    if not exist_ok or not self.is_dir():
+                           ~~~~~~~~~~~^^
+  File "/cvmfs/sft.cern.ch/lcg/releases/Python/3.13.11-41c2c/x86_64-el9-gcc13-opt/lib/python3.13/pathlib/_abc.py", line 465, in is_dir
+    return S_ISDIR(self.stat(follow_symlinks=follow_symlinks).st_mode)
+                   ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cvmfs/sft.cern.ch/lcg/releases/Python/3.13.11-41c2c/x86_64-el9-gcc13-opt/lib/python3.13/pathlib/_local.py", line 515, in stat
+    return os.stat(self, follow_symlinks=follow_symlinks)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [Errno 45] Level 2 not synchronized: '/eos/user/y/yeo/4l/runs/v3/image_aod_ee_es_eq1'

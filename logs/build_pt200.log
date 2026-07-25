@@ -1,0 +1,197 @@
+=========== [Fri Jul 24 08:08:23 AM CEST 2026] STEP 1/2: weights (pt-min 200) -> /eos/user/y/yeo/4l/weights/categories_pt200 ===========
+=== AOD all -> /eos/user/y/yeo/4l/weights/categories_pt200/AOD_all/category_weights.h5 ===
+[scan] files=250
+[scan] files=500
+[scan] files=750
+[scan] files=1000
+[scan] files=1250
+[scan] files=1500
+[scan] files=1750
+[scan] files=2000
+[scan] files=2250
+[scan] files=2500
+[scan] files=2750
+[scan] files=3000
+[scan] files=3250
+[scan] files=3500
+[scan] files=3750
+[scan] files=4000
+[scan] files=4250
+[scan] files=4500
+[scan] files=4750
+[scan] files=5000
+[scan] files=5250
+[scan] files=5500
+[scan] files=5750
+[scan] files=6000
+[scan] files=6250
+[scan] files=6500
+[scan] files=6750
+[scan] files=7000
+[scan] files=7250
+[scan] files=7500
+[scan] files=7750
+[scan] files=8000
+[scan] files=8250
+[scan] files=8500
+[scan] files=8750
+[scan] files=9000
+[scan] files=9250
+[scan] files=9500
+[scan] files=9750
+[saved] /eos/user/y/yeo/4l/weights/categories_pt200/AOD_all/category_weights.h5
+=== AOD eq0 -> /eos/user/y/yeo/4l/weights/categories_pt200/AOD_eq0/category_weights.h5 ===
+[scan] files=250
+[scan] files=500
+[scan] files=750
+[scan] files=1000
+[scan] files=1250
+[scan] files=1500
+[scan] files=1750
+[scan] files=2000
+[scan] files=2250
+[scan] files=2500
+[scan] files=2750
+[scan] files=3000
+[scan] files=3250
+[scan] files=3500
+[scan] files=3750
+[scan] files=4000
+[scan] files=4250
+[scan] files=4500
+[scan] files=4750
+[scan] files=5000
+[scan] files=5250
+[scan] files=5500
+[scan] files=5750
+[scan] files=6000
+[scan] files=6250
+[scan] files=6500
+[scan] files=6750
+[scan] files=7000
+[scan] files=7250
+[scan] files=7500
+[scan] files=7750
+[scan] files=8000
+[scan] files=8250
+[scan] files=8500
+[scan] files=8750
+[scan] files=9000
+[scan] files=9250
+[scan] files=9500
+[scan] files=9750
+[saved] /eos/user/y/yeo/4l/weights/categories_pt200/AOD_eq0/category_weights.h5
+=== AOD eq1 -> /eos/user/y/yeo/4l/weights/categories_pt200/AOD_eq1/category_weights.h5 ===
+[scan] files=250
+[scan] files=500
+[scan] files=750
+[scan] files=1000
+[scan] files=1250
+[scan] files=1500
+[scan] files=1750
+[scan] files=2000
+[scan] files=2250
+[scan] files=2500
+[scan] files=2750
+[scan] files=3000
+[scan] files=3250
+[scan] files=3500
+[scan] files=3750
+[scan] files=4000
+[scan] files=4250
+[scan] files=4500
+[scan] files=4750
+[scan] files=5000
+[scan] files=5250
+[scan] files=5500
+[scan] files=5750
+[scan] files=6000
+[scan] files=6250
+[scan] files=6500
+[scan] files=6750
+[scan] files=7000
+[scan] files=7250
+[scan] files=7500
+[scan] files=7750
+[scan] files=8000
+[scan] files=8250
+[scan] files=8500
+[scan] files=8750
+[scan] files=9000
+[scan] files=9250
+[scan] files=9500
+[scan] files=9750
+[saved] /eos/user/y/yeo/4l/weights/categories_pt200/AOD_eq1/category_weights.h5
+=== MiniAOD all -> /eos/user/y/yeo/4l/weights/categories_pt200/MiniAOD_all/category_weights.h5 ===
+[scan] files=250
+[scan] files=500
+[scan] files=750
+[scan] files=1000
+[scan] files=1250
+[scan] files=1500
+[scan] files=1750
+[scan] files=2000
+[scan] files=2250
+[scan] files=2500
+[scan] files=2750
+[scan] files=3000
+[scan] files=3250
+[saved] /eos/user/y/yeo/4l/weights/categories_pt200/MiniAOD_all/category_weights.h5
+=== MiniAOD eq0 -> /eos/user/y/yeo/4l/weights/categories_pt200/MiniAOD_eq0/category_weights.h5 ===
+[scan] files=250
+[scan] files=500
+[scan] files=750
+[scan] files=1000
+[scan] files=1250
+[scan] files=1500
+[scan] files=1750
+[scan] files=2000
+[scan] files=2250
+[scan] files=2500
+[scan] files=2750
+[scan] files=3000
+[scan] files=3250
+[saved] /eos/user/y/yeo/4l/weights/categories_pt200/MiniAOD_eq0/category_weights.h5
+=== MiniAOD eq1 -> /eos/user/y/yeo/4l/weights/categories_pt200/MiniAOD_eq1/category_weights.h5 ===
+[scan] files=250
+[scan] files=500
+[scan] files=750
+[scan] files=1000
+[scan] files=1250
+[scan] files=1500
+[scan] files=1750
+[scan] files=2000
+[scan] files=2250
+[scan] files=2500
+[scan] files=2750
+[scan] files=3000
+[scan] files=3250
+[saved] /eos/user/y/yeo/4l/weights/categories_pt200/MiniAOD_eq1/category_weights.h5
+done.
+=========== [Fri Jul 24 09:43:42 AM CEST 2026] STEP 2/2: compacts -> /eos/user/y/yeo/4l/compact_pt200 ===========
+=== AOD eb all -> /eos/user/y/yeo/4l/compact_pt200/AOD_eb_all.h5 ===
+[compact] wrote 549287 objects -> /eos/user/y/yeo/4l/compact_pt200/AOD_eb_all.h5
+=== AOD eb eq0 -> /eos/user/y/yeo/4l/compact_pt200/AOD_eb_eq0.h5 ===
+[compact] wrote 417806 objects -> /eos/user/y/yeo/4l/compact_pt200/AOD_eb_eq0.h5
+=== AOD eb eq1 -> /eos/user/y/yeo/4l/compact_pt200/AOD_eb_eq1.h5 ===
+[compact] wrote 127234 objects -> /eos/user/y/yeo/4l/compact_pt200/AOD_eb_eq1.h5
+=== AOD ee all -> /eos/user/y/yeo/4l/compact_pt200/AOD_ee_all.h5 ===
+[compact] wrote 113509 objects -> /eos/user/y/yeo/4l/compact_pt200/AOD_ee_all.h5
+=== AOD ee eq0 -> /eos/user/y/yeo/4l/compact_pt200/AOD_ee_eq0.h5 ===
+[compact] wrote 93727 objects -> /eos/user/y/yeo/4l/compact_pt200/AOD_ee_eq0.h5
+=== AOD ee eq1 -> /eos/user/y/yeo/4l/compact_pt200/AOD_ee_eq1.h5 ===
+[compact] wrote 19271 objects -> /eos/user/y/yeo/4l/compact_pt200/AOD_ee_eq1.h5
+=== MiniAOD eb all -> /eos/user/y/yeo/4l/compact_pt200/MiniAOD_eb_all.h5 ===
+[compact] wrote 549302 objects -> /eos/user/y/yeo/4l/compact_pt200/MiniAOD_eb_all.h5
+=== MiniAOD eb eq0 -> /eos/user/y/yeo/4l/compact_pt200/MiniAOD_eb_eq0.h5 ===
+[compact] wrote 430918 objects -> /eos/user/y/yeo/4l/compact_pt200/MiniAOD_eb_eq0.h5
+=== MiniAOD eb eq1 -> /eos/user/y/yeo/4l/compact_pt200/MiniAOD_eb_eq1.h5 ===
+[compact] wrote 117043 objects -> /eos/user/y/yeo/4l/compact_pt200/MiniAOD_eb_eq1.h5
+=== MiniAOD ee all -> /eos/user/y/yeo/4l/compact_pt200/MiniAOD_ee_all.h5 ===
+[compact] wrote 113534 objects -> /eos/user/y/yeo/4l/compact_pt200/MiniAOD_ee_all.h5
+=== MiniAOD ee eq0 -> /eos/user/y/yeo/4l/compact_pt200/MiniAOD_ee_eq0.h5 ===
+[compact] wrote 94904 objects -> /eos/user/y/yeo/4l/compact_pt200/MiniAOD_ee_eq0.h5
+=== MiniAOD ee eq1 -> /eos/user/y/yeo/4l/compact_pt200/MiniAOD_ee_eq1.h5 ===
+[compact] wrote 18266 objects -> /eos/user/y/yeo/4l/compact_pt200/MiniAOD_ee_eq1.h5
+done.
+=========== [Fri Jul 24 11:13:42 AM CEST 2026] DONE ===========

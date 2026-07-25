@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/pool/condor/dir_405608/train_resnet_image_classifier.py", line 1159, in <module>
+    main()
+    ~~~~^^
+  File "/pool/condor/dir_405608/train_resnet_image_classifier.py", line 889, in main
+    from pipeline.compact_manifest import load_compact_manifest
+ModuleNotFoundError: No module named 'pipeline'
+[python] failed rc=1; not staging out

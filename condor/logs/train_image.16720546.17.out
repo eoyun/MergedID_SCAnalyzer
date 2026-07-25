@@ -1,0 +1,61 @@
+[host] b9g57n0002.cern.ch
+[args] train_resnet_image_classifier.py --detector ee --weight-h5 /eos/user/y/yeo/4l/weights/categories/MiniAOD_eq1/category_weights.h5 --output-dir /eos/user/y/yeo/4l/runs/v2/image_mini_ee_noes_eq1 --track-types Lost,PF,GSF --model resnet50 --epochs 100 --batch-size 16 --lr 1e-4 --no-es
+[gpu] True 1
+[detector] ee
+[weight_h5] /eos/home-y/yeo/4l/weights/categories/MiniAOD_eq1/category_weights.h5
+[weight_key] EE_weight_split
+[output] /eos/home-y/yeo/4l/runs/v2/image_mini_ee_noes_eq1
+[device] cuda
+[num_workers] requested=0 effective=0
+[torch_sharing_strategy] file_system
+
+[train] objects=27728 weight_sum=2.000000
+  label counts: background=803 signal=26925
+  label weight sums: background=1.000000 signal=1.000000
+  background           803
+  signal_H2000_A10     2611
+  signal_H750_A10      5454
+  signal_H750_A2       621
+  signal_H750_A5       3304
+  signal_H2000_A2      73
+  signal_H2000_A5      857
+  signal_H250_A10      5984
+  signal_H250_A2       2928
+  signal_H250_A5       5093
+
+[val] objects=3427 weight_sum=2.000000
+  label counts: background=102 signal=3325
+  label weight sums: background=1.000000 signal=1.000000
+  background           102
+  signal_H2000_A10     326
+  signal_H750_A10      657
+  signal_H750_A2       80
+  signal_H750_A5       397
+  signal_H2000_A2      9
+  signal_H2000_A5      108
+  signal_H250_A10      753
+  signal_H250_A2       365
+  signal_H250_A5       630
+
+[test] objects=3435 weight_sum=2.000000
+  label counts: background=102 signal=3333
+  label weight sums: background=1.000000 signal=1.000000
+  background           102
+  signal_H2000_A10     313
+  signal_H750_A10      664
+  signal_H750_A2       74
+  signal_H750_A5       413
+  signal_H2000_A2      9
+  signal_H2000_A5      107
+  signal_H250_A10      773
+  signal_H250_A2       374
+  signal_H250_A5       606
+
+[weight sums before training]
+train background=1.00000001 signal=1.00000000 total=2.00000001 | before_rebalance background=0.80095086 signal=0.79961464
+val   background=1.00000000 signal=1.00000000 total=2.00000000 | before_rebalance background=0.10814502 signal=0.09852817
+test  background=0.99999999 signal=1.00000000 total=2.00000000 | before_rebalance background=0.09090413 signal=0.10185719
+
+[start training]
+
+Epoch 001 | train_loss=0.719933 train_auc=0.7503 train_f1@0.5=0.6858 | val_loss=0.822312 val_auc=0.7480 val_f1@0.5=0.6868

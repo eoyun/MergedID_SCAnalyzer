@@ -1,0 +1,78 @@
+[host] b9g47n2106.cern.ch
+[args] train_point_transformer_track_classifier.py --detector eb --weight-h5 /eos/user/y/yeo/4l/weights/categories/MiniAOD_all/category_weights.h5 --output-dir /eos/user/y/yeo/4l/runs/v1/track_mini_eb_all --track-types Lost,PF,GSF --epochs 100 --batch-size 64 --lr 1e-4 --max-points 16 --embed-dim 128 --depth 4 --num-heads 4 --mlp-ratio 4.0 --dropout 0.1
+[gpu] True 1
+[detector] eb
+[weight_h5] /eos/home-y/yeo/4l/weights/categories/MiniAOD_all/category_weights.h5
+[weight_key] EB_weight_split
+[output] /eos/home-y/yeo/4l/runs/v1/track_mini_eb_all
+[device] cuda
+[num_workers] requested=0 effective=0
+[torch_sharing_strategy] file_system
+
+[train] objects=1078505 weight_sum=2.000000
+  label counts: background=648698 signal=429807
+  label weight sums: background=1.000000 signal=1.000000
+  background           648698
+  signal_H2000_A0p4    28281
+  signal_H2000_A10     34132
+  signal_H750_A0p4     24215
+  signal_H750_A10      42341
+  signal_H750_A1       24740
+  signal_H750_A2       25669
+  signal_H750_A5       33389
+  signal_H2000_A1      28541
+  signal_H2000_A2      28763
+  signal_H2000_A5      29234
+  signal_H250_A0p4     20251
+  signal_H250_A10      32556
+  signal_H250_A1       21561
+  signal_H250_A2       25468
+  signal_H250_A5       30666
+
+[val] objects=134885 weight_sum=2.000000
+  label counts: background=81208 signal=53677
+  label weight sums: background=1.000000 signal=1.000000
+  background           81208
+  signal_H2000_A0p4    3523
+  signal_H2000_A10     4331
+  signal_H750_A0p4     3025
+  signal_H750_A10      5350
+  signal_H750_A1       3073
+  signal_H750_A2       3196
+  signal_H750_A5       4128
+  signal_H2000_A1      3560
+  signal_H2000_A2      3567
+  signal_H2000_A5      3614
+  signal_H250_A0p4     2490
+  signal_H250_A10      4063
+  signal_H250_A1       2672
+  signal_H250_A2       3196
+  signal_H250_A5       3889
+
+[test] objects=134622 weight_sum=2.000000
+  label counts: background=80943 signal=53679
+  label weight sums: background=1.000000 signal=1.000000
+  background           80943
+  signal_H2000_A0p4    3559
+  signal_H2000_A10     4332
+  signal_H750_A0p4     3030
+  signal_H750_A10      5304
+  signal_H750_A1       3031
+  signal_H750_A2       3254
+  signal_H750_A5       4102
+  signal_H2000_A1      3556
+  signal_H2000_A2      3580
+  signal_H2000_A5      3645
+  signal_H250_A0p4     2530
+  signal_H250_A10      4099
+  signal_H250_A1       2670
+  signal_H250_A2       3175
+  signal_H250_A5       3812
+
+[weight sums before training]
+train background=1.00000000 signal=1.00000000 total=2.00000000 | before_rebalance background=0.77569082 signal=0.80709901
+val   background=0.99999999 signal=1.00000000 total=1.99999999 | before_rebalance background=0.09680913 signal=0.09689014
+test  background=1.00000000 signal=1.00000000 total=2.00000000 | before_rebalance background=0.12750005 signal=0.09601085
+
+[start training]
+

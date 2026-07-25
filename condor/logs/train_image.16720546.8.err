@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "/pool/condor/dir_3430519/train_resnet_image_classifier.py", line 1147, in <module>
+    main()
+    ~~~~^^
+  File "/pool/condor/dir_3430519/train_resnet_image_classifier.py", line 1114, in main
+    pt_edges = np.asarray(weight_h5.attrs["effective_pt_bin_edges"], dtype=np.float64)
+                          ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
+  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
+  File "/cvmfs/sft.cern.ch/lcg/views/LCG_109_cuda/x86_64-el9-gcc13-opt/lib/python3.13/site-packages/h5py/_hl/attrs.py", line 56, in __getitem__
+    attr = h5a.open(self._id, self._e(name))
+  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
+  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
+  File "h5py/h5a.pyx", line 80, in h5py.h5a.open
+KeyError: "Unable to synchronously open attribute (can't locate attribute: 'effective_pt_bin_edges')"

@@ -1,0 +1,33 @@
+[host] b9pgpun015.cern.ch
+[args] train_resnet_image_classifier.py --detector ee --weight-h5 /eos/user/y/yeo/4l/weights/categories/AOD_all/category_weights.h5 --compact /eos/user/y/yeo/4l/compact/AOD_ee_all.h5 --output-dir /eos/user/y/yeo/4l/runs/v6/image_aod_ee_noes_all --track-types GenTrk --model resnet50 --no-track-channels --epochs 50 --no-early-stopping --num-workers 8 --batch-size 16 --lr 1e-4 --no-es
+[stage-in] /eos/user/y/yeo/4l/compact/AOD_ee_all.h5 -> /pool/condor/dir_37410/AOD_ee_all.h5
+[stage-in] /eos/user/y/yeo/4l/weights/categories/AOD_all/category_weights.h5 -> /pool/condor/dir_37410/weight_category_weights.h5
+[gpu] True 1
+[detector] ee
+[weight_h5] /pool/condor/dir_37410/weight_category_weights.h5
+[weight_key] EE_weight_split
+[output] /pool/condor/dir_37410/jobout
+[device] cuda
+[num_workers] requested=8 effective=8
+[torch_sharing_strategy] file_system
+[compact] /pool/condor/dir_37410/AOD_ee_all.h5
+[resume] loaded last.pt @epoch=46 best=0.8527 -> resuming at epoch 47
+
+[weight sums before training]
+train background=1.00000000 signal=1.00000000 total=2.00000001 | before_rebalance background=0.78774480 signal=0.79189278
+val   background=1.00000000 signal=1.00000000 total=2.00000000 | before_rebalance background=0.09836537 signal=0.10691336
+test  background=1.00000000 signal=1.00000000 total=2.00000000 | before_rebalance background=0.11388982 signal=0.10119388
+
+[start training]
+
+Epoch 047 | train_loss=0.308829 train_auc=0.9451 train_f1@0.5=0.8834 | val_loss=0.694942 val_auc=0.8381 val_f1@0.5=0.7970
+Epoch 048 | train_loss=0.306199 train_auc=0.9462 train_f1@0.5=0.8685 | val_loss=0.709824 val_auc=0.8372 val_f1@0.5=0.7907
+Epoch 049 | train_loss=0.300810 train_auc=0.9475 train_f1@0.5=0.8702 | val_loss=0.692303 val_auc=0.8368 val_f1@0.5=0.7950
+Epoch 050 | train_loss=0.313983 train_auc=0.9439 train_f1@0.5=0.8651 | val_loss=0.697345 val_auc=0.8350 val_f1@0.5=0.7957
+
+[test summary]
+  threshold = 0.528000
+  test_auc  = 0.895143
+  test_f1   = 0.798991
+[stage-out] /pool/condor/dir_37410/jobout -> root://eosuser.cern.ch//eos/user/y/yeo/4l/runs/v6/image_aod_ee_noes_all
+[stage-out] done

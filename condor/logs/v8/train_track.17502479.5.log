@@ -1,0 +1,56 @@
+000 (17502479.005.000) 07/23 21:46:07 Job submitted from host: <188.185.114.121:9618?addrs=188.185.114.121-9618+[2001-1458-d00-a--100-273]-9618&alias=bigbird19.cern.ch&noUDP&sock=schedd_5810_c156>
+...
+040 (17502479.005.000) 07/23 23:19:52 Started transferring input files
+	Transferring to host: <188.185.92.187:9618?addrs=188.185.92.187-9618+[2001-1458-d00-6c--100-187]-9618&alias=b9g57n1627.cern.ch&noUDP&sock=slot1_1_22588_0a10_5375>
+...
+040 (17502479.005.000) 07/23 23:19:52 Finished transferring input files
+...
+001 (17502479.005.000) 07/23 23:19:52 Job executing on host: <188.185.92.187:9618?addrs=188.185.92.187-9618+[2001-1458-d00-6c--100-187]-9618&alias=b9g57n1627.cern.ch&noUDP&sock=startd_22182_95e0>
+	SlotName: slot1_1@b9g57n1627.cern.ch
+	AvailableGPUs = { GPUs_GPU_17f035a0 }
+	CondorScratchDir = "/pool/condor/dir_1167252"
+	Cpus = 8
+	Disk = 8389638
+	GPUs = 1
+	GPUs_GPU_17f035a0 = [ Id = "GPU-17f035a0"; ClockMhz = 1410.0; Capability = 8.0; CoresPerCU = 64; DeviceName = "NVIDIA A100-PCIE-40GB"; DeviceUuid = "17f035a0-2803-bbec-2357-4944e9cca222"; ECCEnabled = true; ComputeUnits = 108; NvidiaDriver = "610.43.02"; DriverVersion = 13.3; DevicePciBusId = "0000:06:00.0"; GlobalMemoryMb = 40465; MaxSupportedVersion = 13030 ]
+	Memory = 24000
+...
+006 (17502479.005.000) 07/23 23:20:00 Image size of job updated: 210736
+	206  -  MemoryUsage of job (MB)
+	210736  -  ResidentSetSize of job (KB)
+...
+006 (17502479.005.000) 07/23 23:25:00 Image size of job updated: 2156928
+	2107  -  MemoryUsage of job (MB)
+	2156928  -  ResidentSetSize of job (KB)
+...
+006 (17502479.005.000) 07/23 23:30:01 Image size of job updated: 2283980
+	2231  -  MemoryUsage of job (MB)
+	2283980  -  ResidentSetSize of job (KB)
+...
+006 (17502479.005.000) 07/23 23:34:35 Image size of job updated: 2511880
+	2231  -  MemoryUsage of job (MB)
+	2283984  -  ResidentSetSize of job (KB)
+...
+040 (17502479.005.000) 07/23 23:34:35 Started transferring output files
+...
+040 (17502479.005.000) 07/23 23:34:35 Finished transferring output files
+...
+005 (17502479.005.000) 07/23 23:34:36 Job terminated.
+	(1) Normal termination (return value 0)
+		Usr 0 00:39:17, Sys 0 00:07:20  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+		Usr 0 00:39:17, Sys 0 00:07:20  -  Total Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Local Usage
+	8031  -  Run Bytes Sent By Job
+	191150  -  Run Bytes Received By Job
+	8031  -  Total Bytes Sent By Job
+	191150  -  Total Bytes Received By Job
+	Partitionable Resources :     Usage  Request Allocated Assigned
+	   Cpus                 :      3.83        8         8 
+	   Disk (KB)            : 355405     8388608   8389638 
+	   GPUs                 :      0.18        1         1 "GPU-17f035a0"
+	   GpusMemory (MB)      :   1123                       
+	   Memory (MB)          :   2231       24000     24000 
+	   TimeExecute (s)      :    883                       
+	   TimeSlotBusy (s)     :    884                       
+...

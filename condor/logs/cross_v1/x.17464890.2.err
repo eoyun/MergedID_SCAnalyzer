@@ -1,0 +1,42 @@
+/pool/condor/dir_273493/train_fusion_cross_attention.py:149: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.trk_encoder = nn.TransformerEncoder(enc_layer, track_depth)
+Traceback (most recent call last):
+  File "/pool/condor/dir_273493/train_fusion_cross_attention.py", line 446, in <module>
+    main()
+    ~~~~^^
+  File "/pool/condor/dir_273493/train_fusion_cross_attention.py", line 370, in main
+    tr = run_epoch(model, train_loader, device, optimizer, scaler)
+  File "/pool/condor/dir_273493/train_fusion_cross_attention.py", line 243, in run_epoch
+    pack["auc"] = safe_roc_auc(pack["label"], pack["score"], pack["weight"])
+                  ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/pool/condor/dir_273493/train_resnet_image_classifier.py", line 298, in safe_roc_auc
+    return float(roc_auc_score(y_true, y_score, sample_weight=sample_weight))
+                 ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/cvmfs/sft.cern.ch/lcg/views/LCG_109_cuda/x86_64-el9-gcc13-opt/lib/python3.13/site-packages/sklearn/utils/_param_validation.py", line 218, in wrapper
+    return func(*args, **kwargs)
+  File "/cvmfs/sft.cern.ch/lcg/views/LCG_109_cuda/x86_64-el9-gcc13-opt/lib/python3.13/site-packages/sklearn/metrics/_ranking.py", line 683, in roc_auc_score
+    y_score = check_array(y_score, ensure_2d=False)
+  File "/cvmfs/sft.cern.ch/lcg/views/LCG_109_cuda/x86_64-el9-gcc13-opt/lib/python3.13/site-packages/sklearn/utils/validation.py", line 1074, in check_array
+    _assert_all_finite(
+    ~~~~~~~~~~~~~~~~~~^
+        array,
+        ^^^^^^
+    ...<2 lines>...
+        allow_nan=ensure_all_finite == "allow-nan",
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/cvmfs/sft.cern.ch/lcg/views/LCG_109_cuda/x86_64-el9-gcc13-opt/lib/python3.13/site-packages/sklearn/utils/validation.py", line 133, in _assert_all_finite
+    _assert_all_finite_element_wise(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        X,
+        ^^
+    ...<4 lines>...
+        input_name=input_name,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/cvmfs/sft.cern.ch/lcg/views/LCG_109_cuda/x86_64-el9-gcc13-opt/lib/python3.13/site-packages/sklearn/utils/validation.py", line 182, in _assert_all_finite_element_wise
+    raise ValueError(msg_err)
+ValueError: Input contains NaN.
+[python] failed rc=1; not staging out

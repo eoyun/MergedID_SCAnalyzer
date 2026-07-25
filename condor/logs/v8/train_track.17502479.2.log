@@ -1,0 +1,92 @@
+000 (17502479.002.000) 07/23 21:46:07 Job submitted from host: <188.185.114.121:9618?addrs=188.185.114.121-9618+[2001-1458-d00-a--100-273]-9618&alias=bigbird19.cern.ch&noUDP&sock=schedd_5810_c156>
+...
+040 (17502479.002.000) 07/23 23:17:25 Started transferring input files
+	Transferring to host: <188.185.93.105:9618?addrs=188.185.93.105-9618+[2001-1458-d00-6c--100-172]-9618&alias=b9g57n4705.cern.ch&noUDP&sock=slot1_1_23413_5391_4485>
+...
+040 (17502479.002.000) 07/23 23:17:26 Finished transferring input files
+...
+001 (17502479.002.000) 07/23 23:17:26 Job executing on host: <188.185.93.105:9618?addrs=188.185.93.105-9618+[2001-1458-d00-6c--100-172]-9618&alias=b9g57n4705.cern.ch&noUDP&sock=startd_23369_c4cb>
+	SlotName: slot1_1@b9g57n4705.cern.ch
+	AvailableGPUs = { GPUs_GPU_4cb0c17c }
+	CondorScratchDir = "/pool/condor/dir_1204769"
+	Cpus = 8
+	Disk = 8389623
+	GPUs = 1
+	GPUs_GPU_4cb0c17c = [ Id = "GPU-4cb0c17c"; ClockMhz = 1410.0; Capability = 8.0; CoresPerCU = 64; DeviceName = "NVIDIA A100-PCIE-40GB"; DeviceUuid = "4cb0c17c-e986-12c3-223f-a139394373ed"; ECCEnabled = true; ComputeUnits = 108; NvidiaDriver = "610.43.02"; DriverVersion = 13.3; DevicePciBusId = "0000:06:00.0"; GlobalMemoryMb = 40465; MaxSupportedVersion = 13030 ]
+	Memory = 24000
+...
+006 (17502479.002.000) 07/23 23:17:34 Image size of job updated: 201552
+	197  -  MemoryUsage of job (MB)
+	201552  -  ResidentSetSize of job (KB)
+...
+006 (17502479.002.000) 07/23 23:22:34 Image size of job updated: 2453408
+	2396  -  MemoryUsage of job (MB)
+	2453408  -  ResidentSetSize of job (KB)
+...
+006 (17502479.002.000) 07/23 23:27:35 Image size of job updated: 2581452
+	2521  -  MemoryUsage of job (MB)
+	2581452  -  ResidentSetSize of job (KB)
+...
+006 (17502479.002.000) 07/23 23:32:36 Image size of job updated: 2707400
+	2644  -  MemoryUsage of job (MB)
+	2707400  -  ResidentSetSize of job (KB)
+...
+006 (17502479.002.000) 07/23 23:37:36 Image size of job updated: 2838328
+	2772  -  MemoryUsage of job (MB)
+	2838328  -  ResidentSetSize of job (KB)
+...
+006 (17502479.002.000) 07/23 23:42:37 Image size of job updated: 2969696
+	2901  -  MemoryUsage of job (MB)
+	2969696  -  ResidentSetSize of job (KB)
+...
+006 (17502479.002.000) 07/23 23:47:37 Image size of job updated: 3101904
+	3030  -  MemoryUsage of job (MB)
+	3101904  -  ResidentSetSize of job (KB)
+...
+006 (17502479.002.000) 07/23 23:52:37 Image size of job updated: 3234020
+	3159  -  MemoryUsage of job (MB)
+	3234020  -  ResidentSetSize of job (KB)
+...
+006 (17502479.002.000) 07/23 23:57:38 Image size of job updated: 3369208
+	3291  -  MemoryUsage of job (MB)
+	3369208  -  ResidentSetSize of job (KB)
+...
+006 (17502479.002.000) 07/24 00:02:38 Image size of job updated: 3501556
+	3420  -  MemoryUsage of job (MB)
+	3501556  -  ResidentSetSize of job (KB)
+...
+006 (17502479.002.000) 07/24 00:07:38 Image size of job updated: 3636292
+	3552  -  MemoryUsage of job (MB)
+	3636292  -  ResidentSetSize of job (KB)
+...
+006 (17502479.002.000) 07/24 00:12:39 Image size of job updated: 3766704
+	3679  -  MemoryUsage of job (MB)
+	3766704  -  ResidentSetSize of job (KB)
+...
+006 (17502479.002.000) 07/24 00:17:39 Image size of job updated: 4298980
+	4170  -  MemoryUsage of job (MB)
+	4269628  -  ResidentSetSize of job (KB)
+...
+040 (17502479.002.000) 07/24 00:19:36 Started transferring output files
+...
+040 (17502479.002.000) 07/24 00:19:36 Finished transferring output files
+...
+005 (17502479.002.000) 07/24 00:19:37 Job terminated.
+	(1) Normal termination (return value 0)
+		Usr 0 03:26:56, Sys 0 00:38:44  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+		Usr 0 03:26:56, Sys 0 00:38:44  -  Total Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Local Usage
+	8031  -  Run Bytes Sent By Job
+	191150  -  Run Bytes Received By Job
+	8031  -  Total Bytes Sent By Job
+	191150  -  Total Bytes Received By Job
+	Partitionable Resources :     Usage  Request Allocated Assigned
+	   Cpus                 :      4.78        8         8 
+	   Disk (KB)            : 466324     8388608   8389623 
+	   GPUs                 :      0.19        1         1 "GPU-4cb0c17c"
+	   GpusMemory (MB)      :   1103                       
+	   Memory (MB)          :   4170       24000     24000 
+	   TimeExecute (s)      :   3730                       
+	   TimeSlotBusy (s)     :   3732                       
+...
