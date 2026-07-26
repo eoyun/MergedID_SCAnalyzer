@@ -14,7 +14,6 @@ import numpy as np
 import torch
 import torch.optim as optim
 from sklearn.metrics import f1_score
-from torch.amp import GradScaler
 from torch.utils.data import DataLoader
 
 from track_point_transformer import (
@@ -333,7 +332,6 @@ def main():
         dropout=args.dropout,
     ).to(device)
     optimizer = optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-    scaler = GradScaler("cuda", enabled=(device.type == "cuda"))
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(
         optimizer,
         mode="max",
@@ -423,7 +421,7 @@ def main():
     print("\n[start training]\n")
     for epoch in range(start_epoch, args.epochs + 1):
         train_pack = attach_metrics(
-            run_point_transformer_epoch(model, train_loader, device, optimizer=optimizer, scaler=scaler)
+            run_point_transformer_epoch(model, train_loader, device, optimizer=optimizer)
         )
         val_pack = attach_metrics(
             run_point_transformer_epoch(model, val_loader, device, optimizer=None, scaler=None)

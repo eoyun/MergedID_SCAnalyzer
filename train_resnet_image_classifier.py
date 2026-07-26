@@ -21,7 +21,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from sklearn.metrics import auc, f1_score, roc_auc_score, roc_curve
-from torch.amp import GradScaler, autocast
+# fp32 training (no AMP). Enable TF32 on Ampere+ for fp32-range, NaN-safe speed
+# (bf16-like matmul throughput without fp16's 65504 overflow -> the old NaN crash).
+torch.backends.cuda.matmul.allow_tf32 = True
+torch.backends.cudnn.allow_tf32 = True
 from torch.utils.data import DataLoader, Dataset
 from torchvision.models import resnet18, resnet34, resnet50
 
@@ -309,6 +312,15 @@ def weighted_bce_loss(logits, targets, sample_weights):
 
 
 def safe_roc_auc(y_true, y_score, sample_weight):
+    # Drop non-finite scores (track/cross model emits nan for empty point clouds
+    # on hasADD==0 objects). Without this, roc_auc_score raises "Input contains
+    # NaN" and crashes the per-epoch monitor -> the whole job dies mid-training.
+    y_true = np.asarray(y_true); y_score = np.asarray(y_score)
+    finite = np.isfinite(y_score)
+    if not finite.all():
+        y_true = y_true[finite]; y_score = y_score[finite]
+        if sample_weight is not None:
+            sample_weight = np.asarray(sample_weight)[finite]
     if len(np.unique(y_true)) < 2:
         return float("nan")
     return float(roc_auc_score(y_true, y_score, sample_weight=sample_weight))
@@ -468,6 +480,10 @@ def save_unweighted_test_plots(output_dir, val_true, val_score, test_true, test_
 
 
 def save_roc_plot(y_true, y_score, weights, output_path: Path):
+    y_true = np.asarray(y_true); y_score = np.asarray(y_score); weights = np.asarray(weights)
+    finite = np.isfinite(y_score)  # guard against nan scores (empty point clouds)
+    if not finite.all():
+        y_true, y_score, weights = y_true[finite], y_score[finite], weights[finite]
     fpr, tpr, _ = roc_curve(y_true, y_score, sample_weight=weights)
     roc_auc = auc(fpr, tpr)
     plt.figure(figsize=(6, 6))
@@ -680,14 +696,11 @@ def run_one_epoch(model, loader, device, optimizer=None, scaler=None):
             optimizer.zero_grad(set_to_none=True)
 
         with torch.set_grad_enabled(is_train):
-            with autocast("cuda", enabled=(device.type == "cuda")):
-                logits = model(images).squeeze(1)
-                loss, loss_num, loss_den = weighted_bce_loss(logits, labels, weights)
-
+            logits = model(images).squeeze(1)
+            loss, loss_num, loss_den = weighted_bce_loss(logits, labels, weights)
             if is_train:
-                scaler.scale(loss).backward()
-                scaler.step(optimizer)
-                scaler.update()
+                loss.backward()
+                optimizer.step()
 
         loss_num_total += float(loss_num.detach().cpu().item())
         loss_den_total += float(loss_den.detach().cpu().item())
@@ -1104,7 +1117,6 @@ def main():
     in_channels = image_in_channels(detector, track_types, include_es, include_track)
     model = build_resnet(args.model, in_channels=in_channels).to(device)
     optimizer = optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-    scaler = GradScaler("cuda", enabled=(device.type == "cuda"))
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(
         optimizer,
         mode="max",
@@ -1190,7 +1202,7 @@ def main():
 
     print("\n[start training]\n")
     for epoch in range(start_epoch, args.epochs + 1):
-        train_pack = run_one_epoch(model, train_loader, device, optimizer=optimizer, scaler=scaler)
+        train_pack = run_one_epoch(model, train_loader, device, optimizer=optimizer)
         val_pack = run_one_epoch(model, val_loader, device, optimizer=None, scaler=None)
 
         history["train_loss"].append(train_pack["loss"])

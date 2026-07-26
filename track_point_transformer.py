@@ -7,7 +7,9 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.amp import autocast
+# fp32 training (no AMP); TF32 on Ampere+ for fp32-range, NaN-safe speed.
+torch.backends.cuda.matmul.allow_tf32 = True
+torch.backends.cudnn.allow_tf32 = True
 from torch.utils.data import Dataset
 
 TRACK_TYPES = ("GSF", "PF", "Lost")          # default (MiniAOD) track collections
@@ -318,14 +320,11 @@ def run_point_transformer_epoch(model, loader, device, optimizer=None, scaler=No
             optimizer.zero_grad(set_to_none=True)
 
         with torch.set_grad_enabled(is_train):
-            with autocast("cuda", enabled=(device.type == "cuda")):
-                logits = model(points, mask).squeeze(1)
-                loss, loss_num, loss_den = weighted_bce_loss(logits, labels, weights)
-
+            logits = model(points, mask).squeeze(1)
+            loss, loss_num, loss_den = weighted_bce_loss(logits, labels, weights)
             if is_train:
-                scaler.scale(loss).backward()
-                scaler.step(optimizer)
-                scaler.update()
+                loss.backward()
+                optimizer.step()
 
         loss_num_total += float(loss_num.detach().cpu().item())
         loss_den_total += float(loss_den.detach().cpu().item())

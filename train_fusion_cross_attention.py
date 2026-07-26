@@ -25,7 +25,9 @@ from pathlib import Path
 import numpy as np
 import torch
 import torch.nn as nn
-from torch.amp import autocast, GradScaler
+# fp32 training (no AMP); TF32 on Ampere+ for fp32-range, NaN-safe speed.
+torch.backends.cuda.matmul.allow_tf32 = True
+torch.backends.cudnn.allow_tf32 = True
 from torch.utils.data import Dataset, DataLoader
 
 from train_resnet_image_classifier import (
@@ -217,13 +219,11 @@ def run_epoch(model, loader, device, optimizer=None, scaler=None):
         if is_train:
             optimizer.zero_grad(set_to_none=True)
         with torch.set_grad_enabled(is_train):
-            with autocast("cuda", enabled=(device.type == "cuda")):
-                logits = model(image, points, mask).squeeze(1)
-                loss, loss_num, loss_den = weighted_bce_loss(logits, y, w)
+            logits = model(image, points, mask).squeeze(1)
+            loss, loss_num, loss_den = weighted_bce_loss(logits, y, w)
             if is_train:
-                scaler.scale(loss).backward()
-                scaler.step(optimizer)
-                scaler.update()
+                loss.backward()
+                optimizer.step()
         num_tot += float(loss_num.detach().cpu())
         den_tot += float(loss_den.detach().cpu())
         scores.append(torch.sigmoid(logits).detach().cpu().numpy())
@@ -329,7 +329,6 @@ def main():
         depth=args.depth, track_depth=args.track_depth, dropout=args.dropout,
     ).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-    scaler = GradScaler("cuda", enabled=(device.type == "cuda"))
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer, mode="max", factor=0.5, patience=max(1, args.patience // 2))
 
@@ -368,7 +367,7 @@ def main():
 
     print("\n[start training]\n")
     for epoch in range(start_epoch, args.epochs + 1):
-        tr = run_epoch(model, train_loader, device, optimizer, scaler)
+        tr = run_epoch(model, train_loader, device, optimizer)
         va = run_epoch(model, val_loader, device)
         for k, src in (("loss", "loss"), ("auc", "auc"), ("f1@0.5", "f1@0.5")):
             history[f"train_{k}"].append(tr[src])
