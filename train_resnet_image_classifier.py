@@ -25,7 +25,7 @@ from sklearn.metrics import auc, f1_score, roc_auc_score, roc_curve
 # (bf16-like matmul throughput without fp16's 65504 overflow -> the old NaN crash).
 torch.backends.cuda.matmul.allow_tf32 = True
 torch.backends.cudnn.allow_tf32 = True
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader, Dataset, ConcatDataset
 from torchvision.models import resnet18, resnet34, resnet50
 
 DEFAULT_MAX_OPEN_RAW_FILES = 32
@@ -156,6 +156,14 @@ def parse_args():
         help="EOS output dir to push/pull last.pt+best_model.pt for eviction-safe "
              "resume (set by run_job.sh). If unset, no EOS checkpoint I/O.",
     )
+    parser.add_argument(
+        "--eval-only", action="store_true",
+        help="Skip training: load best_model.pt from --output-dir (staged via "
+             "--resume-eos-dir), score the ENTIRE --compact as one sample, and write "
+             "unweighted ROC/score/efficiency plots suffixed with --eval-suffix.",
+    )
+    parser.add_argument("--eval-suffix", default="_20GeV_sample",
+                        help="Filename suffix for --eval-only outputs.")
     return parser.parse_args()
 
 
@@ -476,6 +484,35 @@ def save_unweighted_test_plots(output_dir, val_true, val_score, test_true, test_
                 else f"{pct:g}".replace(".", "p"))
         save_efficiency_plot(rows, output_dir / f"efficiency_vs_pt_test_bkg{ptag}_unw.png", thr)
         with (output_dir / f"efficiency_vs_pt_test_bkg{ptag}_unw.json").open("w") as fh:
+            json.dump(rows, fh, indent=2)
+
+
+def save_eval_sample_plots(output_dir, y_true, y_score, pt, pt_edges,
+                           suffix="_20GeV_sample",
+                           fake_rate_targets=(0.025, 0.05, 0.10), min_denom=20):
+    """Unweighted ROC / score-distribution / efficiency-vs-pT for a standalone
+    EVALUATION sample (e.g. the pT>=20 GeV low-cut sample). Unlike the training-time
+    save_unweighted_test_plots, the fake-rate working-point threshold is chosen on
+    THIS sample's own background (self-contained eval). Filenames get `suffix` so
+    they never collide with the training plots."""
+    output_dir = Path(output_dir)
+    y_true = np.asarray(y_true); y_score = np.asarray(y_score); pt = np.asarray(pt)
+    fin = np.isfinite(y_score)
+    y_true, y_score, pt = y_true[fin], y_score[fin], pt[fin]
+    ones = np.ones_like(y_score, dtype=np.float64)
+    save_roc_plot(y_true, y_score, ones, output_dir / f"roc_test_unw{suffix}.png")
+    save_score_distribution(y_true, y_score, ones,
+                            output_dir / f"score_distribution_test_unw{suffix}.png",
+                            normalize=True, ylabel="a.u.")
+    for tgt in fake_rate_targets:
+        thr = threshold_for_bkg_eff_unw(y_true, y_score, tgt)  # threshold on this sample's bkg
+        rows = compute_efficiency_by_pt(y_true, y_score, ones, pt, thr, pt_edges)
+        pct = tgt * 100.0
+        ptag = (f"{int(round(pct)):02d}" if abs(pct - round(pct)) < 1e-9
+                else f"{pct:g}".replace(".", "p"))
+        save_efficiency_plot(rows, output_dir / f"efficiency_vs_pt_test_bkg{ptag}_unw{suffix}.png",
+                             thr, min_denom=min_denom)
+        with (output_dir / f"efficiency_vs_pt_test_bkg{ptag}_unw{suffix}.json").open("w") as fh:
             json.dump(rows, fh, indent=2)
 
 
@@ -1137,6 +1174,28 @@ def main():
     epochs_no_improve = 0
     best_model_path = output_dir / "best_model.pt"
     last_model_path = output_dir / "last.pt"
+
+    # ---- eval-only: score the whole eval compact with the trained model ----
+    if args.eval_only:
+        if args.resume_eos_dir:
+            from pipeline import resume as _resume
+            _resume.stage_in(args.resume_eos_dir, output_dir, ["best_model.pt"])
+        ck = torch.load(best_model_path, map_location=device)
+        model.load_state_dict(ck["model_state_dict"])
+        best_model_path.unlink(missing_ok=True)  # don't re-stage the 280MB ckpt out
+        eval_loader = DataLoader(
+            ConcatDataset([train_dataset, val_dataset, test_dataset]),
+            shuffle=False, **loader_common_kwargs)
+        pack = run_one_epoch(model, eval_loader, device, optimizer=None)
+        with h5py.File(args.compact, "r") as cf:
+            pt_edges = np.asarray(cf.attrs["effective_pt_bin_edges"], dtype=np.float64)
+        save_eval_sample_plots(output_dir, pack["label"], pack["score"], pack["pt"],
+                               pt_edges, suffix=args.eval_suffix)
+        print(f"[eval-only] scored {len(pack['score'])} objects "
+              f"(sig={int((pack['label']==1).sum())}, bkg={int((pack['label']==0).sum())}), "
+              f"AUC={safe_roc_auc(pack['label'], pack['score'], pack['weight']):.4f}; "
+              f"wrote *{args.eval_suffix}.png/json to {output_dir}")
+        return
 
     # ---- eviction-safe resume: pull rolling checkpoint from EOS if present ----
     start_epoch = 1

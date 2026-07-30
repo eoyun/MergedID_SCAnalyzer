@@ -28,7 +28,7 @@ import torch.nn as nn
 # fp32 training (no AMP); TF32 on Ampere+ for fp32-range, NaN-safe speed.
 torch.backends.cuda.matmul.allow_tf32 = True
 torch.backends.cudnn.allow_tf32 = True
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset, DataLoader, ConcatDataset
 
 from train_resnet_image_classifier import (
     build_resnet,
@@ -42,6 +42,7 @@ from train_resnet_image_classifier import (
     save_roc_plot,
     save_score_distribution,
     save_unweighted_test_plots,
+    save_eval_sample_plots,
     save_history_plot,
     set_seed,
 )
@@ -287,6 +288,10 @@ def parse_args():
     p.add_argument("--threshold-mode", choices=("max-f1", "youden"), default="max-f1")
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--resume-eos-dir", default=None)
+    p.add_argument("--eval-only", action="store_true",
+                   help="Skip training: load best_model.pt (staged via --resume-eos-dir), "
+                        "score the ENTIRE --compact, write plots suffixed --eval-suffix.")
+    p.add_argument("--eval-suffix", default="_20GeV_sample")
     return p.parse_args()
 
 
@@ -338,6 +343,42 @@ def main():
     epochs_no_improve = 0
     best_model_path = output_dir / "best_model.pt"
     last_model_path = output_dir / "last.pt"
+
+    # ---- eval-only: score the whole eval compact with the trained model ----
+    if args.eval_only:
+        import h5py
+        if args.resume_eos_dir:
+            from pipeline import resume as _resume
+            _resume.stage_in(args.resume_eos_dir, output_dir, ["best_model.pt"])
+        ck = torch.load(best_model_path, map_location=device)
+        model.load_state_dict(ck["model_state_dict"])
+        best_model_path.unlink(missing_ok=True)  # don't re-stage the ckpt out
+
+        def _combined(split):
+            img_ds = DetectorObjectDataset(detector, file_entries, split_manifests[split],
+                                           track_types=track_types, include_es=include_es,
+                                           include_track=False)
+            trk_ds = TrackPointCloudDataset(detector=detector, file_entries=file_entries,
+                                            manifest=split_manifests[split],
+                                            max_points=args.max_points, track_types=track_types)
+            return CombinedDataset(img_ds, trk_ds)
+        kw = dict(batch_size=args.batch_size, num_workers=args.num_workers,
+                  collate_fn=collate_combined, pin_memory=(device.type == "cuda"))
+        if args.num_workers > 0:
+            kw["persistent_workers"] = True
+        eval_loader = DataLoader(
+            ConcatDataset([_combined("train"), _combined("val"), _combined("test")]),
+            shuffle=False, **kw)
+        pack = run_epoch(model, eval_loader, device)
+        with h5py.File(args.compact, "r") as cf:
+            pt_edges = np.asarray(cf.attrs["effective_pt_bin_edges"], dtype=np.float64)
+        save_eval_sample_plots(output_dir, pack["label"], pack["score"], pack["pt"],
+                               pt_edges, suffix=args.eval_suffix)
+        print(f"[eval-only] scored {len(pack['score'])} objects "
+              f"(sig={int((pack['label']==1).sum())}, bkg={int((pack['label']==0).sum())}), "
+              f"AUC={safe_roc_auc(pack['label'], pack['score'], pack['weight']):.4f}; "
+              f"wrote *{args.eval_suffix}.png/json to {output_dir}")
+        return
 
     start_epoch = 1
     if args.resume_eos_dir:

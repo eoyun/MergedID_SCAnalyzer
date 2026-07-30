@@ -14,7 +14,7 @@ import numpy as np
 import torch
 import torch.optim as optim
 from sklearn.metrics import f1_score
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, ConcatDataset
 
 from track_point_transformer import (
     POINT_FEATURE_DIM,
@@ -46,6 +46,7 @@ from train_resnet_image_classifier import (
     save_roc_plot,
     save_score_distribution,
     save_unweighted_test_plots,
+    save_eval_sample_plots,
     set_seed,
     summarize_manifest,
 )
@@ -183,6 +184,13 @@ def parse_args():
         default=12,
         help="Per-sample event cap when --debug is enabled.",
     )
+    parser.add_argument(
+        "--eval-only", action="store_true",
+        help="Skip training: load best_model.pt (staged via --resume-eos-dir), score "
+             "the ENTIRE --compact, and write unweighted plots suffixed --eval-suffix.",
+    )
+    parser.add_argument("--eval-suffix", default="_20GeV_sample",
+                        help="Filename suffix for --eval-only outputs.")
     return parser.parse_args()
 
 
@@ -352,6 +360,28 @@ def main():
     epochs_no_improve = 0
     best_model_path = output_dir / "best_model.pt"
     last_model_path = output_dir / "last.pt"
+
+    # ---- eval-only: score the whole eval compact with the trained model ----
+    if args.eval_only:
+        if args.resume_eos_dir:
+            from pipeline import resume as _resume
+            _resume.stage_in(args.resume_eos_dir, output_dir, ["best_model.pt"])
+        ck = torch.load(best_model_path, map_location=device)
+        model.load_state_dict(ck["model_state_dict"])
+        best_model_path.unlink(missing_ok=True)  # don't re-stage the ckpt out
+        eval_loader = DataLoader(
+            ConcatDataset([train_dataset, val_dataset, test_dataset]),
+            shuffle=False, **loader_common_kwargs)
+        pack = run_point_transformer_epoch(model, eval_loader, device, optimizer=None)
+        with h5py.File(args.compact, "r") as cf:
+            pt_edges = np.asarray(cf.attrs["effective_pt_bin_edges"], dtype=np.float64)
+        save_eval_sample_plots(output_dir, pack["label"], pack["score"], pack["pt"],
+                               pt_edges, suffix=args.eval_suffix)
+        print(f"[eval-only] scored {len(pack['score'])} objects "
+              f"(sig={int((pack['label']==1).sum())}, bkg={int((pack['label']==0).sum())}), "
+              f"AUC={safe_roc_auc(pack['label'], pack['score'], pack['weight']):.4f}; "
+              f"wrote *{args.eval_suffix}.png/json to {output_dir}")
+        return
 
     # ---- eviction-safe resume: pull rolling checkpoint from EOS if present ----
     start_epoch = 1
