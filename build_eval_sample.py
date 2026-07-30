@@ -25,6 +25,8 @@ from build_event_level_weights import (
     PT_BIN_EDGES_WITH_OVERFLOW,
     derive_event_pt,
     scan_file_metadata,
+    robust_h5_open,
+    SkippableFileError,
 )
 from build_category_weights import (
     DETECTORS,
@@ -69,17 +71,21 @@ def _eligible_masks(file_infos, detector, hasadd_mode, is_background, pt_min,
     for info in file_infos:
         if (info.sample_id == "background") != is_background:
             continue
-        with h5py.File(info.path, "r") as raw:
-            elig = hasadd_object_mask(np.asarray(raw[ha_key][:]), hasadd_mode)
-            if is_background:
-                if pt_min and pt_min > 0.0:
-                    dei = raw[ev_key][:].astype(np.int64)
-                    ept = derive_event_pt(info.n_events, raw["A_pT"][:].astype(np.float64),
-                                          raw["A_event_idx"][:].astype(np.int64), event_pt_mode)
-                    elig = elig & (ept[dei] >= pt_min)
-            else:
-                if is_excluded_sample(info.sample_id, hasadd_mode):
-                    elig = np.zeros(elig.shape, dtype=bool)
+        try:
+            with robust_h5_open(info.path) as raw:
+                elig = hasadd_object_mask(np.asarray(raw[ha_key][:]), hasadd_mode)
+                if is_background:
+                    if pt_min and pt_min > 0.0:
+                        dei = raw[ev_key][:].astype(np.int64)
+                        ept = derive_event_pt(info.n_events, raw["A_pT"][:].astype(np.float64),
+                                              raw["A_event_idx"][:].astype(np.int64), event_pt_mode)
+                        elig = elig & (ept[dei] >= pt_min)
+                else:
+                    if is_excluded_sample(info.sample_id, hasadd_mode):
+                        elig = np.zeros(elig.shape, dtype=bool)
+        except SkippableFileError:
+            print(f"[eval-select][SKIP] {info.path}", flush=True)
+            continue
         per_file.append((info.stem, elig))
     return per_file
 
@@ -132,7 +138,8 @@ def build_eval_sample(input_dir, output_path, hasadd_mode, signal_frac=0.20,
         out.attrs["effective_pt_bin_edges"] = PT_BIN_EDGES_WITH_OVERFLOW
         files_group = out.create_group("files")
         for info in file_infos:
-            with h5py.File(info.path, "r") as raw:
+          try:
+            with robust_h5_open(info.path) as raw:
                 a_pt = raw["A_pT"][:].astype(np.float64)
                 a_event_idx = raw["A_event_idx"][:].astype(np.int64)
                 event_pt = derive_event_pt(info.n_events, a_pt, a_event_idx, mode=event_pt_mode)
@@ -156,6 +163,9 @@ def build_eval_sample(input_dir, output_path, hasadd_mode, signal_frac=0.20,
                     grp.create_dataset(DET_EVENT_IDX_KEYS[det],
                                        data=det_event_idx.astype(np.int64),
                                        compression="gzip")
+          except SkippableFileError:
+              print(f"[eval-write][SKIP] {info.path}", flush=True)
+              continue
     return output_path
 
 

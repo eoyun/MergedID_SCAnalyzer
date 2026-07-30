@@ -12,7 +12,7 @@ from train_resnet_image_classifier import (
     build_split_event_maps,
     build_object_manifest,
 )
-from build_event_level_weights import PT_BIN_EDGES, PT_BIN_EDGES_WITH_OVERFLOW
+from build_event_level_weights import PT_BIN_EDGES, PT_BIN_EDGES_WITH_OVERFLOW, robust_h5_open
 
 SPLIT_CODE = {"train": 0, "val": 1, "test": 2}
 VLEN_F32 = h5py.special_dtype(vlen=np.float32)
@@ -42,7 +42,7 @@ def _read_file_objects(task):
     sorted_idx = obj_idx[order]          # increasing -> valid h5py fancy index
     inv = np.argsort(order, kind="stable")
     out = {"rows": np.asarray(rows, dtype=np.int64)}
-    with h5py.File(raw_path, "r") as r:
+    with robust_h5_open(raw_path) as r:
         out["calo"] = r[calo_k][sorted_idx][inv]
         out["es"] = {k: r[k][sorted_idx][inv] for k in es_keys}
         idx_d, val_d = {}, {}
@@ -100,7 +100,7 @@ def build_compact_dataset(weight_h5_path, detector, track_types, output_path,
     src = raw_source_keys(detector, track_types)
     calo_k = src["calo"][0]
 
-    with h5py.File(weight_h5_path, "r") as wf:
+    with robust_h5_open(weight_h5_path) as wf:
         hasadd_mode = str(wf.attrs.get("hasadd_mode", ""))
 
     with h5py.File(output_path, "w") as out:
@@ -124,7 +124,7 @@ def build_compact_dataset(weight_h5_path, detector, track_types, output_path,
 
         # derive per-object image shapes from a raw file (do not hardcode 32x32)
         r0_path = file_entries[int(man["file_idx"][0])].raw_path
-        with h5py.File(r0_path, "r") as r0:
+        with robust_h5_open(r0_path) as r0:
             calo_shape = r0[calo_k].shape[1:]
             es_shapes = {k: r0[k].shape[1:] for k in src["es"]}
         calo_ds = out.create_dataset(calo_k, shape=(n,) + calo_shape, dtype="f4",

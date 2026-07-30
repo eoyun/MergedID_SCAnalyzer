@@ -2,15 +2,93 @@
 
 import argparse
 import ast
+import contextlib
 import csv
 import json
+import os
 import re
+import subprocess
+import tempfile
+import time
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 
 import h5py
 import numpy as np
+
+
+import concurrent.futures
+
+
+class SkippableFileError(OSError):
+    """A raw file that could not be read (bad/hung EOS replica) after all attempts.
+    Callers should log and SKIP it rather than crash the whole build."""
+
+
+def _fuse_open_bounded(path, timeout):
+    """h5py.File over EOS FUSE can HANG indefinitely on a bad replica (no error,
+    just blocks). Run the open in a worker thread and give up after `timeout`s. A
+    hung thread is leaked (holds the stuck FUSE handle) but the caller continues;
+    bad files are rare so leaks are bounded."""
+    ex = concurrent.futures.ThreadPoolExecutor(max_workers=1)
+    fut = ex.submit(h5py.File, path, "r")
+    try:
+        fh = fut.result(timeout=timeout)
+        ex.shutdown(wait=False)
+        return fh
+    except Exception:
+        ex.shutdown(wait=False)
+        return None
+
+
+@contextlib.contextmanager
+def robust_h5_open(path, rounds=4, fuse_timeout=15.0, xrdcp_timeout=90.0, sleep=4.0):
+    """Open a raw HDF5 file robustly against a flaky EOS backend. Some raw files sit
+    on a bad replica: the FUSE open HANGS, and xrdcp intermittently returns exit 54
+    ('unauthorized identity'). Each round: (a) bounded FUSE open, then (b) xrdcp to
+    local scratch (killable via subprocess timeout) + read that. Back off between
+    rounds. If every attempt fails, raise SkippableFileError so the caller can skip
+    the file instead of hanging/crashing the build."""
+    path = str(path)
+    scratch = (os.environ.get("_CONDOR_SCRATCH_DIR")
+               or os.environ.get("TMPDIR") or "/tmp")
+    url = f"root://eosuser.cern.ch/{path}" if path.startswith("/eos/") else path
+    fh = None
+    tmp = None
+    last = None
+    for attempt in range(max(1, rounds)):
+        fh = _fuse_open_bounded(path, fuse_timeout)   # (a) FUSE, bounded
+        if fh is not None:
+            break
+        try:                                          # (b) xrdcp -> local
+            fd, tmp = tempfile.mkstemp(suffix=".h5", dir=scratch)
+            os.close(fd)
+            subprocess.run(["xrdcp", "-f", "--retry", "2", url, tmp], check=True,
+                           capture_output=True, text=True, timeout=xrdcp_timeout)
+            fh = h5py.File(tmp, "r")
+            break
+        except Exception as exc:
+            last = exc
+            if tmp is not None:
+                try:
+                    os.unlink(tmp)
+                except OSError:
+                    pass
+                tmp = None
+        time.sleep(sleep * (attempt + 1))
+    if fh is None:
+        raise SkippableFileError(f"unreadable after {rounds} rounds (FUSE hang + "
+                                 f"xrdcp fail): {path}; last: {last}")
+    try:
+        yield fh
+    finally:
+        fh.close()
+        if tmp is not None:
+            try:
+                os.unlink(tmp)
+            except OSError:
+                pass
 
 
 PT_BIN_EDGES = np.array(
@@ -169,16 +247,22 @@ def classify_sample(split: str, process_name: str):
 def scan_file_metadata(base_dir: Path):
     file_infos = []
     n_background_events = 0
+    skipped = []
 
     for file_index, (split, path) in enumerate(iter_h5_files(base_dir), start=1):
-        with h5py.File(path, "r") as handle:
-            source_path = extract_source_path(handle.attrs["source_root_files"])
-            process_name = extract_process_name(source_path)
-            sample_id = classify_sample(split, process_name)
-            n_events = int(handle["eventId"].shape[0])
-            n_a = int(handle["A_pT"].shape[0])
-            n_eb = int(handle["SC_energy"].shape[0])
-            n_ee = int(handle["EE_seed_energy"].shape[0])
+        try:
+            with robust_h5_open(path) as handle:
+                source_path = extract_source_path(handle.attrs["source_root_files"])
+                process_name = extract_process_name(source_path)
+                sample_id = classify_sample(split, process_name)
+                n_events = int(handle["eventId"].shape[0])
+                n_a = int(handle["A_pT"].shape[0])
+                n_eb = int(handle["SC_energy"].shape[0])
+                n_ee = int(handle["EE_seed_energy"].shape[0])
+        except SkippableFileError:
+            skipped.append(str(path))
+            print(f"[scan][SKIP unreadable] {path}", flush=True)
+            continue
 
         background_event_offset_start = n_background_events if sample_id == "background" else -1
         file_infos.append(
@@ -199,8 +283,11 @@ def scan_file_metadata(base_dir: Path):
             n_background_events += n_events
 
         if file_index % 250 == 0:
-            print(f"[scan] files={file_index}")
+            print(f"[scan] files={file_index}", flush=True)
 
+    if skipped:
+        print(f"[scan] SKIPPED {len(skipped)} unreadable file(s): "
+              f"{skipped[:10]}{' ...' if len(skipped) > 10 else ''}", flush=True)
     return file_infos, n_background_events
 
 
