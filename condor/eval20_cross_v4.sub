@@ -1,0 +1,20 @@
+universe                = vanilla
+executable              = condor/run_job.sh
+arguments               = $(arguments)
+MY.SendCredential       = True
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+transfer_input_files    = train_resnet_image_classifier.py, track_point_transformer.py, train_point_transformer_track_classifier.py, train_fusion_ensemble.py, train_fusion_cross_attention.py, build_event_level_weights.py, pipeline
+transfer_output_files   = ""
+output = condor/logs/eval_20gev/x.$(Cluster).$(Process)_crossv4.out
+error  = condor/logs/eval_20gev/x.$(Cluster).$(Process)_crossv4.err
+log    = condor/logs/eval_20gev/x.$(Cluster).$(Process)_crossv4.log
+request_cpus   = 8
+request_memory = 16 GB
+request_disk   = 8 GB
+request_gpus   = 1
+require_gpus   = (Capability >= 8.0)
+max_retries    = 3
++JobFlavour = "nextweek"
+
+queue arguments from condor/eval20_cross_v4.txt

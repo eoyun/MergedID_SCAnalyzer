@@ -1,0 +1,18 @@
+universe                = vanilla
+executable              = condor/run_train_build.sh
+arguments               = $(arguments)
+MY.SendCredential       = True
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+transfer_input_files    = build_category_weights.py, build_compact_dataset.py, build_event_level_weights.py, train_resnet_image_classifier.py, pipeline
+transfer_output_files   = ""
+output = condor/logs/build_pt100/build.$(Cluster).$(Process).out
+error  = condor/logs/build_pt100/build.$(Cluster).$(Process).err
+log    = condor/logs/build_pt100/build.$(Cluster).$(Process).log
+request_cpus   = 8
+request_memory = 24 GB
+request_disk   = 60 GB
+max_retries    = 3
++JobFlavour = "nextweek"
+
+queue arguments from condor/build_pt100.txt

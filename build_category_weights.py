@@ -15,6 +15,8 @@ from build_event_level_weights import (
     select_background_global_event_indices,
     select_background_global_event_indices_ptmin,
     get_background_local_event_indices,
+    robust_h5_open,
+    SkippableFileError,
 )
 
 HASADD_MODES = ("all", "eq0", "eq1")
@@ -96,13 +98,17 @@ def select_background_object_masks(file_infos, detector, hasadd_mode, max_object
     for info in file_infos:
         if info.sample_id != "background":
             continue
-        with h5py.File(info.path, "r") as raw:
-            elig = hasadd_object_mask(np.asarray(raw[ha_key][:]), hasadd_mode)
-            if pt_min and pt_min > 0.0:
-                dei = raw[ev_key][:].astype(np.int64)
-                event_pt = derive_event_pt(info.n_events, raw["A_pT"][:].astype(np.float64),
-                                           raw["A_event_idx"][:].astype(np.int64), event_pt_mode)
-                elig = elig & (event_pt[dei] >= pt_min)
+        try:
+            with robust_h5_open(info.path) as raw:
+                elig = hasadd_object_mask(np.asarray(raw[ha_key][:]), hasadd_mode)
+                if pt_min and pt_min > 0.0:
+                    dei = raw[ev_key][:].astype(np.int64)
+                    event_pt = derive_event_pt(info.n_events, raw["A_pT"][:].astype(np.float64),
+                                               raw["A_event_idx"][:].astype(np.int64), event_pt_mode)
+                    elig = elig & (event_pt[dei] >= pt_min)
+        except SkippableFileError:
+            print(f"[bg-select][SKIP] {info.path}", flush=True)
+            continue
         per_file.append((info.stem, elig))
         counts.append(int(elig.sum()))
 
@@ -165,20 +171,24 @@ def build_category_weights(input_dir, output_path, hasadd_mode,
     # ----- count pass: per detector, per sample, per pT bin (selected objects) -----
     counts = {det: {} for det in DETECTORS}
     for info in file_infos:
-        with h5py.File(info.path, "r") as raw:
-            a_pt = raw["A_pT"][:].astype(np.float64)
-            a_event_idx = raw["A_event_idx"][:].astype(np.int64)
-            event_pt = derive_event_pt(info.n_events, a_pt, a_event_idx, mode=event_pt_mode)
-            for det in DETECTORS:
-                bg_m = bg_masks[det].get(info.stem) if info.sample_id == "background" else None
-                det_event_idx, mask = _object_selection(
-                    raw, det, info.sample_id, hasadd_mode,
-                    event_pt=event_pt, pt_min=pt_min, bg_obj_mask=bg_m)
-                if not np.any(mask):
-                    continue
-                obj_bin = find_bin_indices(event_pt[det_event_idx][mask])
-                c = counts[det].setdefault(info.sample_id, np.zeros(N_BINS, dtype=np.int64))
-                c += np.bincount(obj_bin, minlength=N_BINS)
+        try:
+            with robust_h5_open(info.path) as raw:
+                a_pt = raw["A_pT"][:].astype(np.float64)
+                a_event_idx = raw["A_event_idx"][:].astype(np.int64)
+                event_pt = derive_event_pt(info.n_events, a_pt, a_event_idx, mode=event_pt_mode)
+                for det in DETECTORS:
+                    bg_m = bg_masks[det].get(info.stem) if info.sample_id == "background" else None
+                    det_event_idx, mask = _object_selection(
+                        raw, det, info.sample_id, hasadd_mode,
+                        event_pt=event_pt, pt_min=pt_min, bg_obj_mask=bg_m)
+                    if not np.any(mask):
+                        continue
+                    obj_bin = find_bin_indices(event_pt[det_event_idx][mask])
+                    c = counts[det].setdefault(info.sample_id, np.zeros(N_BINS, dtype=np.int64))
+                    c += np.bincount(obj_bin, minlength=N_BINS)
+        except SkippableFileError:
+            print(f"[count][SKIP] {info.path}", flush=True)
+            continue
 
     # ----- per-detector weight lookups -----
     lookups = {}
@@ -203,7 +213,8 @@ def build_category_weights(input_dir, output_path, hasadd_mode,
         out.attrs["effective_pt_bin_edges"] = PT_BIN_EDGES_WITH_OVERFLOW
         files_group = out.create_group("files")
         for info in file_infos:
-            with h5py.File(info.path, "r") as raw:
+          try:
+            with robust_h5_open(info.path) as raw:
                 a_pt = raw["A_pT"][:].astype(np.float64)
                 a_event_idx = raw["A_event_idx"][:].astype(np.int64)
                 event_pt = derive_event_pt(info.n_events, a_pt, a_event_idx, mode=event_pt_mode)
@@ -232,6 +243,9 @@ def build_category_weights(input_dir, output_path, hasadd_mode,
                     grp.create_dataset(DET_EVENT_IDX_KEYS[det],
                                        data=det_event_idx.astype(np.int64),
                                        compression="gzip")
+          except SkippableFileError:
+              print(f"[write][SKIP] {info.path}", flush=True)
+              continue
     return output_path
 
 
