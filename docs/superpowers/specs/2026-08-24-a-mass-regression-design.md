@@ -93,8 +93,8 @@ categories across the three families (~48 runs), mirroring v8+cross_v2.
 - **Gaussian-NLL** per-object uncertainty head — a v2 upgrade if per-object σ is wanted.
 - New lower-cut (pt20 / no-cut) training data for a wider ΔR range.
 
-## 9. Open item for the user
+## 9. Categories scope (decided)
 
-Categories scope: this design mirrors **all** pt50 categories (all/eq0/eq1). If you'd
-rather focus the first pass on the mass-informative ones (**all** and **eq1**, skipping
-the image-only **eq0**), say so and the run list shrinks accordingly.
+Mirror **all** pt50 categories — AOD/MiniAOD × eb/ee{es,noes for image} ×
+**all/eq0/eq1** — across the three families (~48 runs, like v8+cross_v2). eq0 is kept
+despite being the weakest (image-only, no track separation) so the full set is covered.
