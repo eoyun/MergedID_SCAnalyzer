@@ -142,11 +142,24 @@ def main():
 
     best = -np.inf
     best_path = output_dir / "best_model.pt"
+    last_path = output_dir / "last.pt"
+    hist = []
+    start_epoch = 1
     if args.resume_eos_dir:
         from pipeline import resume as _r
         _r.stage_in(args.resume_eos_dir, output_dir, ["best_model.pt", "last.pt"])
-    hist = []
-    for epoch in range(1, args.epochs + 1):
+        if last_path.exists():
+            rck = torch.load(last_path, map_location=device)
+            model.load_state_dict(rck["model_state_dict"])
+            if "optimizer_state_dict" in rck:
+                opt.load_state_dict(rck["optimizer_state_dict"])
+            if rck.get("scheduler_state_dict") is not None:
+                sched.load_state_dict(rck["scheduler_state_dict"])
+            start_epoch = int(rck.get("epoch", 0)) + 1
+            best = float(rck.get("best_metric", best))
+            hist = rck.get("history", hist)
+            print(f"[resume] from epoch {rck.get('epoch')} -> start {start_epoch}", flush=True)
+    for epoch in range(start_epoch, args.epochs + 1):
         tr = run_epoch(model, train_loader, device, code_to_sample, args.lam, opt)
         va = run_epoch(model, val_loader, device, code_to_sample, args.lam, None)
         vm = mc.regression_metrics(va["m_true"][va["is_sig"]], va["m_pred"][va["is_sig"]])
@@ -154,14 +167,18 @@ def main():
         hist.append({"epoch": epoch, "train_loss": tr["loss"], "val_loss": va["loss"],
                      "val_auc": va["auc"], "val_mass_mae": vm["mae"]})
         print(f"[epoch {epoch}] val_auc={va['auc']:.4f} val_mass_mae={vm['mae']:.4f}", flush=True)
-        ck = {"epoch": epoch, "model_state_dict": model.state_dict()}
-        torch.save(ck, output_dir / "last.pt")
+        ck = {"epoch": epoch, "model_state_dict": model.state_dict(),
+              "optimizer_state_dict": opt.state_dict(),
+              "scheduler_state_dict": sched.state_dict(),
+              "best_metric": best, "history": hist}
+        torch.save(ck, last_path)
         if np.isfinite(va["auc"]) and va["auc"] > best:
             best = va["auc"]
+            ck["best_metric"] = best
             torch.save(ck, best_path)
         if args.resume_eos_dir:
             from pipeline import resume as _r
-            _r.push(args.resume_eos_dir, output_dir / "last.pt")
+            _r.push(args.resume_eos_dir, last_path)
             if best_path.exists():
                 _r.push(args.resume_eos_dir, best_path)
 
