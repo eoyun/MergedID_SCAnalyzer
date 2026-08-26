@@ -7,6 +7,7 @@ import csv
 import json
 from pathlib import Path
 
+import h5py
 import numpy as np
 import torch
 import torch.nn as nn
@@ -18,7 +19,7 @@ from train_fusion_cross_attention import _RESNET_FEAT_CHANNELS
 from train_resnet_image_classifier import (
     build_resnet, DetectorObjectDataset, image_in_channels, set_seed,
     resolve_num_workers, save_roc_plot, safe_roc_auc, rebalance_manifest_class_weights,
-    DEFAULT_PREFETCH_FACTOR,
+    save_unweighted_test_plots, DEFAULT_PREFETCH_FACTOR,
 )
 
 torch.backends.cuda.matmul.allow_tf32 = True
@@ -30,7 +31,7 @@ def run_epoch(model, loader, device, code_to_sample, lam, optimizer=None):
     model.train() if is_train else model.eval()
     tot = 0.0
     n = 0
-    S_score, S_label, S_mpred, S_mtrue, S_sig = [], [], [], [], []
+    S_score, S_label, S_mpred, S_mtrue, S_sig, S_pt = [], [], [], [], [], []
     for batch in loader:
         x = batch["image"].to(device, non_blocking=True)
         label = batch["label"].to(device, non_blocking=True)
@@ -53,10 +54,11 @@ def run_epoch(model, loader, device, code_to_sample, lam, optimizer=None):
         S_mpred.append(mc.inv_transform(reg.detach().cpu().numpy()))
         S_mtrue.append(mc.inv_transform(logm_np))
         S_sig.append(mask_np)
+        S_pt.append(batch["pt"].numpy())
     label_all = np.concatenate(S_label)
     pack = {"loss": tot / max(n, 1),
             "score": np.concatenate(S_score), "label": label_all,
-            "weight": np.ones(len(label_all)),
+            "weight": np.ones(len(label_all)), "pt": np.concatenate(S_pt),
             "m_pred": np.concatenate(S_mpred), "m_true": np.concatenate(S_mtrue),
             "is_sig": np.concatenate(S_sig).astype(bool)}
     pack["auc"] = safe_roc_auc(pack["label"], pack["score"], pack["weight"])
@@ -149,10 +151,20 @@ def main():
 
     ckpt = torch.load(best_path, map_location=device)
     model.load_state_dict(ckpt["model_state_dict"])
+    val = run_epoch(model, val_loader, device, code_to_sample, args.lam, None)
     test = run_epoch(model, test_loader, device, code_to_sample, args.lam, None)
     sig = test["is_sig"]
+
+    # classification: weighted roc (kept) + unweighted roc/score/efficiency(WP 2.5/5/10%)
+    # + background fake-rate, exactly like the single-task trainers.
     save_roc_plot(test["label"], test["score"], test["weight"], output_dir / "roc_test.png")
+    with h5py.File(args.compact, "r") as cf:
+        pt_edges = np.asarray(cf.attrs["effective_pt_bin_edges"], dtype=np.float64)
+    save_unweighted_test_plots(output_dir, val["label"], val["score"],
+                               test["label"], test["score"], test["pt"], pt_edges)
+    # regression: mass plots
     mc.save_mass_regression_plots(str(output_dir), test["m_true"][sig], test["m_pred"][sig], suffix="_test")
+
     metrics = {"test_auc": test["auc"],
                **{f"mass_{k}": v for k, v in
                   mc.regression_metrics(test["m_true"][sig], test["m_pred"][sig]).items()}}
@@ -161,12 +173,16 @@ def main():
         json.dump(metrics, fh, indent=2)
     with (output_dir / "history.json").open("w") as fh:
         json.dump(hist, fh, indent=2)
-    with (output_dir / "test_predictions.csv").open("w", newline="") as fh:
-        w = csv.writer(fh)
-        w.writerow(["score", "label", "m_true", "m_pred", "is_sig"])
-        for i in range(len(test["score"])):
-            w.writerow([test["score"][i], int(test["label"][i]),
-                        test["m_true"][i], test["m_pred"][i], int(sig[i])])
+
+    def _save_csv(path, pk):
+        with path.open("w", newline="") as fh:
+            w = csv.writer(fh)
+            w.writerow(["score", "label", "pt", "m_true", "m_pred", "is_sig"])
+            for i in range(len(pk["score"])):
+                w.writerow([pk["score"][i], int(pk["label"][i]), pk["pt"][i],
+                            pk["m_true"][i], pk["m_pred"][i], int(pk["is_sig"][i])])
+    _save_csv(output_dir / "val_predictions.csv", val)
+    _save_csv(output_dir / "test_predictions.csv", test)
     print("[done] wrote plots + metrics to", output_dir, flush=True)
 
 
