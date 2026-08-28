@@ -125,8 +125,27 @@ class MultiTaskModel(nn.Module):
 # --------------------------------------------------------------------------- #
 # Plots (masses in GeV)
 # --------------------------------------------------------------------------- #
+def save_mass_pred_vs_true_linear(output_dir, m_true, m_pred, suffix="", hi=11.0):
+    """Predicted-vs-true A mass on LINEAR axes (companion to the log-log version)."""
+    m_true = np.asarray(m_true, dtype=np.float64)
+    m_pred = np.asarray(m_pred, dtype=np.float64)
+    fin = np.isfinite(m_pred) & np.isfinite(m_true) & (m_true > 0)
+    m_true, m_pred = m_true[fin], m_pred[fin]
+    lims = [0.0, hi]
+    plt.figure(figsize=(6, 6))
+    plt.hist2d(np.clip(m_true, *lims), np.clip(m_pred, *lims), bins=44,
+               range=[lims, lims], cmin=1)
+    plt.plot(lims, lims, "r--", lw=1)
+    plt.xlim(lims); plt.ylim(lims)
+    plt.xlabel("true m_A [GeV]"); plt.ylabel("predicted m_A [GeV]")
+    plt.title("Predicted vs true A mass (linear)"); plt.colorbar(label="objects")
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_dir, f"mass_pred_vs_true_linear{suffix}.png"))
+    plt.close()
+
+
 def save_mass_regression_plots(output_dir, m_true, m_pred, suffix=""):
-    """pred-vs-true, resolution-vs-mass, and per-point predicted-mass histograms."""
+    """pred-vs-true (log + linear), resolution-vs-mass, and per-point predicted-mass histograms."""
     m_true = np.asarray(m_true, dtype=np.float64)
     m_pred = np.asarray(m_pred, dtype=np.float64)
     fin = np.isfinite(m_pred) & np.isfinite(m_true) & (m_true > 0)
@@ -140,6 +159,8 @@ def save_mass_regression_plots(output_dir, m_true, m_pred, suffix=""):
     plt.xlabel("true m_A [GeV]"); plt.ylabel("predicted m_A [GeV]")
     plt.title("Predicted vs true A mass"); plt.colorbar(label="objects")
     plt.tight_layout(); plt.savefig(os.path.join(output_dir, f"mass_pred_vs_true{suffix}.png")); plt.close()
+
+    save_mass_pred_vs_true_linear(output_dir, m_true, m_pred, suffix)
 
     per = regression_metrics_per_point(m_true, m_pred)
     pts = sorted(per.keys())
