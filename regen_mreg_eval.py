@@ -20,7 +20,8 @@ import sys
 import numpy as np
 
 import multitask_common as mc
-from train_resnet_image_classifier import save_unweighted_test_plots
+from train_resnet_image_classifier import (
+    save_unweighted_test_plots, save_roc_plot, save_score_distribution)
 from build_event_level_weights import PT_BIN_EDGES_WITH_OVERFLOW
 
 RUNS = "/eos/user/y/yeo/4l/runs"
@@ -50,16 +51,24 @@ def process(run_dir, out_dir):
     if not os.path.exists(tp):
         return False
     test = _load(tp)
-    if "m_true" not in test or "pt" not in test:
+    if "m_true" not in test:
         return False
     os.makedirs(out_dir, exist_ok=True)
     # val for the WP threshold; fall back to test if no val CSV
     vp = os.path.join(run_dir, "val_predictions.csv")
     val = _load(vp) if os.path.exists(vp) else test
 
-    # --- classification: unweighted roc / score / efficiency (WP 2.5/5/10%) ---
-    save_unweighted_test_plots(out_dir, val["label"], val["score"],
-                               test["label"], test["score"], test["pt"], PT_EDGES)
+    # --- classification: unweighted roc / score (+ efficiency if pt available) ---
+    if "pt" in test:
+        save_unweighted_test_plots(out_dir, val["label"], val["score"],
+                                   test["label"], test["score"], test["pt"], PT_EDGES)
+    else:  # old-format CSV without pt -> roc + score only (no efficiency-vs-pt)
+        ones = np.ones_like(test["score"], dtype=np.float64)
+        save_roc_plot(test["label"], test["score"], ones, os.path.join(out_dir, "roc_test_unw.png"))
+        save_score_distribution(test["label"], test["score"], ones,
+                                os.path.join(out_dir, "score_distribution_test_unw.png"),
+                                normalize=True, ylabel="a.u.")
+        print(f"      (no pt column -> efficiency-vs-pt skipped for {os.path.basename(run_dir.rstrip('/'))})")
 
     # --- mass regression (signal only) ---
     sig = test["is_sig"].astype(float) > 0.5 if "is_sig" in test else np.ones(len(test["m_true"]), bool)
