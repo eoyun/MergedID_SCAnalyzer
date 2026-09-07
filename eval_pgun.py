@@ -23,7 +23,8 @@ from torch.utils.data import DataLoader
 import multitask_common as mc
 from pipeline.compact_manifest import load_compact_manifest
 from train_resnet_image_classifier import (
-    build_resnet, DetectorObjectDataset, image_in_channels, resolve_num_workers)
+    build_resnet, DetectorObjectDataset, image_in_channels, resolve_num_workers,
+    save_score_distribution)
 from train_fusion_cross_attention import (
     _RESNET_FEAT_CHANNELS, CrossAttentionFusion, CombinedDataset, collate_combined)
 from track_point_transformer import (
@@ -74,7 +75,7 @@ def make_loader(mtype, detector, fe, manifest, track_types, include_es, args, de
 @torch.no_grad()
 def infer(mtype, model, loader, device):
     model.eval()
-    reg_all, oidx_all = [], []
+    reg_all, score_all, oidx_all = [], [], []
     for b in loader:
         if mtype == "image":
             out = model(b["image"].to(device))
@@ -82,9 +83,10 @@ def infer(mtype, model, loader, device):
             out = model(b["points"].to(device), b["mask"].to(device))
         else:
             out = model(b["image"].to(device), b["points"].to(device), b["mask"].to(device))
+        score_all.append(torch.sigmoid(out[0]).cpu().numpy())   # classification score
         reg_all.append(out[1].cpu().numpy())
         oidx_all.append(b["object_idx"].numpy())
-    return np.concatenate(reg_all), np.concatenate(oidx_all)
+    return np.concatenate(reg_all), np.concatenate(score_all), np.concatenate(oidx_all)
 
 
 def save_pgun_plots(out_dir, m_true, m_pred, tag):
@@ -167,15 +169,22 @@ def main():
     ck = torch.load(os.path.join(a.run_dir, "best_model.pt"), map_location=device)
     model.load_state_dict(ck["model_state_dict"])
     loader = make_loader(a.model_type, a.detector, fe, manifest, tt, include_es, a, device)
-    reg_mu, oidx = infer(a.model_type, model, loader, device)
+    reg_mu, score, oidx = infer(a.model_type, model, loader, device)
     m_pred = mc.inv_transform(reg_mu)
     import h5py
     with h5py.File(a.compact, "r") as f:
         a_mass = f["a_mass"][:]
     m_true = a_mass[oidx]
     tag = os.path.basename(a.run_dir.rstrip("/"))
+    os.makedirs(a.output_dir, exist_ok=True)
     stats = save_pgun_plots(a.output_dir, m_true, m_pred, tag)
-    print(f"[pgun-eval] {tag}: n={stats['n']} mae={stats['mae']:.3f} mre={stats['mre']:.3f} -> {a.output_dir}", flush=True)
+    # classification score distribution (gun is signal-only -> one class)
+    save_score_distribution(np.ones_like(score, dtype=np.int64), score,
+                            np.ones_like(score, dtype=np.float64),
+                            os.path.join(a.output_dir, "pgun_score_distribution.png"),
+                            normalize=True, ylabel="a.u.")
+    print(f"[pgun-eval] {tag}: n={stats['n']} mae={stats['mae']:.3f} mre={stats['mre']:.3f} "
+          f"score[mean={score.mean():.3f} frac>0.5={np.mean(score>0.5):.3f}] -> {a.output_dir}", flush=True)
 
 
 if __name__ == "__main__":
