@@ -1,0 +1,6 @@
+AOD all
+AOD eq0
+AOD eq1
+MiniAOD all
+MiniAOD eq0
+MiniAOD eq1

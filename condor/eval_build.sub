@@ -1,0 +1,21 @@
+universe                = vanilla
+executable              = condor/run_eval_build.sh
+arguments               = $(arguments)
+# Forward the Kerberos credential so the worker can xrdcp results back to EOS.
+MY.SendCredential       = True
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+transfer_input_files    = build_eval_sample.py, build_compact_dataset.py, build_category_weights.py, build_event_level_weights.py, train_resnet_image_classifier.py, pipeline
+# Weight + compacts are staged to EOS via xrdcp inside the job; nothing comes back
+# through Condor's own transfer (would hit the AFS quota).
+transfer_output_files   = ""
+output = condor/logs/eval_build/build.$(Cluster).$(Process).out
+error  = condor/logs/eval_build/build.$(Cluster).$(Process).err
+log    = condor/logs/eval_build/build.$(Cluster).$(Process).log
+request_cpus   = 8
+request_memory = 24 GB
+request_disk   = 60 GB
+max_retries    = 3
++JobFlavour = "nextweek"
+
+queue arguments from condor/eval_build.txt
