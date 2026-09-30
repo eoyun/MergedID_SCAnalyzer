@@ -1,6 +1,3 @@
-eb 0 cross_pt100_eb
-ee 0 cross_pt100_ee_es
-ee 1 cross_pt100_ee_noes
-eb 0 cross_pt200_eb
-ee 0 cross_pt200_ee_es
-ee 1 cross_pt200_ee_noes
+eb 0 cross_pt50_eb
+ee 0 cross_pt50_ee_es
+ee 1 cross_pt50_ee_noes

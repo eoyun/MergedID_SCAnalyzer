@@ -42,7 +42,8 @@ torch.backends.cudnn.allow_tf32 = True
 WPS = [(2.5, "tab:blue"), (5.0, "tab:orange"), (10.0, "tab:green")]
 ET_EDGES = np.asarray(PT_BIN_EDGES_WITH_OVERFLOW, dtype=np.float64)
 MIN_DENOM = 20
-MASS_LIN = [0.0, 60.0]
+# linear mass pred-vs-true: full range + two zoom-ins (suffix, [lo,hi])
+MASS_RANGES = [("", [0.0, 60.0]), ("_0to10", [0.0, 10.0]), ("_0to5", [0.0, 5.0])]
 
 
 def build_model(detector, tt, include_es, a):
@@ -67,17 +68,21 @@ def infer(model, loader, device):
 
 
 def _eff_vs_et(pt, sel_mask, passed):
-    """efficiency (mean of `passed`) of objects in sel_mask, per ET bin."""
-    x, y = [], []
+    """efficiency (mean of `passed`) of objects in sel_mask, per ET bin, with binomial
+    statistical error sqrt(eff*(1-eff)/n) and the bin half-width as x error."""
+    x, y, ye, xe = [], [], [], []
     for i in range(len(ET_EDGES) - 1):
         lo, hi = ET_EDGES[i], ET_EDGES[i + 1]
         inb = sel_mask & (pt >= lo) & (pt < hi)
         d = int(inb.sum())
         if d < MIN_DENOM:
             continue
+        e = float(passed[inb].mean())
         x.append(lo if np.isinf(hi) else 0.5 * (lo + hi))
-        y.append(float(passed[inb].mean()))
-    return np.asarray(x), np.asarray(y)
+        y.append(e)
+        ye.append(float(np.sqrt(max(e * (1.0 - e), 0.0) / d)))
+        xe.append(0.0 if np.isinf(hi) else 0.5 * (hi - lo))
+    return np.asarray(x), np.asarray(y), np.asarray(ye), np.asarray(xe)
 
 
 def plot_9curve(out, pt, score, gun, haa, bkg, tag):
@@ -88,10 +93,10 @@ def plot_9curve(out, pt, score, gun, haa, bkg, tag):
         for mask, ls, mk, lbl in [(bkg, ":", "s", "bkg fake"),
                                    (gun, "-", "o", "gun eff"),
                                    (haa, "--", "^", "signal eff")]:
-            x, y = _eff_vs_et(pt, mask, passed)
+            x, y, ye, xe = _eff_vs_et(pt, mask, passed)
             if x.size:
-                plt.plot(x, y, ls=ls, marker=mk, ms=3, lw=1.4, color=color,
-                         label=f"{lbl} {wp:g}%")
+                plt.errorbar(x, y, yerr=ye, xerr=xe, ls=ls, marker=mk, ms=3, lw=1.4,
+                             color=color, capsize=2, elinewidth=0.8, label=f"{lbl} {wp:g}%")
     ax = plt.gca()
     plt.xscale("log"); plt.ylim(0.0, 1.05)
     plt.xlabel("reco SC $E_T$ [GeV]"); plt.ylabel("efficiency / fake-rate")
@@ -102,20 +107,60 @@ def plot_9curve(out, pt, score, gun, haa, bkg, tag):
     plt.tight_layout(); plt.savefig(os.path.join(out, "eff_fake_9curve_20GeV.png")); plt.close()
 
 
-def plot_mass_linear(out, m_true, m_pred, tag, fname):
+def plot_mass_linear(out, m_true, m_pred, tag, base):
+    """Linear pred-vs-true at full range [0,60] plus zoom-ins [0,10] and [0,5].
+    Files: <base>.png (full), <base>_0to10.png, <base>_0to5.png. No clipping — points
+    outside a range are dropped so each zoom is a true zoom (no edge pile-up)."""
     fin = np.isfinite(m_true) & np.isfinite(m_pred) & (m_true > 0)
     m_true, m_pred = m_true[fin], m_pred[fin]
-    plt.figure(figsize=(6, 6))
-    plt.hist2d(np.clip(m_true, *MASS_LIN), np.clip(m_pred, *MASS_LIN),
-               bins=60, range=[MASS_LIN, MASS_LIN], cmin=1)
-    plt.plot(MASS_LIN, MASS_LIN, "r--", lw=1); plt.xlim(MASS_LIN); plt.ylim(MASS_LIN)
-    plt.xlabel("true $m_A$ [GeV]"); plt.ylabel("predicted $m_A$ [GeV]")
-    plt.colorbar(label="objects"); plt.title(f"{tag} — mass pred vs true (linear)")
     mae = float(np.abs(m_pred - m_true).mean()) if len(m_true) else float("nan")
-    plt.text(0.05, 0.92, f"n={len(m_true)}\nMAE={mae:.2f} GeV", transform=plt.gca().transAxes,
-             va="top", fontsize=9, bbox=dict(fc="white", alpha=0.7))
-    plt.tight_layout(); plt.savefig(os.path.join(out, fname)); plt.close()
+    for suf, lims in MASS_RANGES:
+        insel = (m_true >= lims[0]) & (m_true <= lims[1])
+        plt.figure(figsize=(6, 6))
+        plt.hist2d(m_true, m_pred, bins=60, range=[lims, lims], cmin=1)
+        plt.plot(lims, lims, "r--", lw=1); plt.xlim(lims); plt.ylim(lims)
+        plt.xlabel("true $m_A$ [GeV]"); plt.ylabel("predicted $m_A$ [GeV]")
+        plt.colorbar(label="objects")
+        plt.title(f"{tag} — mass pred vs true (linear, {lims[1]:.0f} GeV)")
+        mae_r = float(np.abs(m_pred[insel] - m_true[insel]).mean()) if insel.any() else float("nan")
+        plt.text(0.05, 0.92, f"n={int(insel.sum())}\nMAE={mae_r:.2f} GeV",
+                 transform=plt.gca().transAxes, va="top", fontsize=9,
+                 bbox=dict(fc="white", alpha=0.7))
+        plt.tight_layout(); plt.savefig(os.path.join(out, f"{base}{suf}.png")); plt.close()
     return mae
+
+
+def plot_signal_pred_1d(out, m_true, m_pred, tag):
+    """Signal (H->AA) has DISCRETE true A masses. Instead of a 2D scatter, draw the
+    predicted-mass 1D distribution, one normalized histogram per true mass point,
+    distinguished by legend. Dotted vertical line marks each true mass."""
+    fin = np.isfinite(m_true) & np.isfinite(m_pred) & (m_true > 0)
+    m_true, m_pred = m_true[fin], m_pred[fin]
+    if not len(m_true):
+        return
+    # true masses cluster around nominal points (0.4,1,2,5,10,...) but with spread;
+    # group by relative gap (split when consecutive sorted values jump by >1.5x).
+    ms = np.sort(m_true)
+    splits = np.where(ms[1:] > ms[:-1] * 1.5)[0] + 1
+    groups = [g for g in np.split(ms, splits) if g.size]
+    hi = float(min(60.0, max(12.0, np.percentile(m_pred, 99.0))))
+    bins = np.linspace(0.0, hi, 61)
+    colors = plt.cm.viridis(np.linspace(0, 1, max(len(groups), 1)))
+    plt.figure(figsize=(7.5, 5))
+    for g, col in zip(groups, colors):
+        lo, high = float(g.min()), float(g.max())
+        nominal = float(np.median(g))
+        sel = (m_true >= lo) & (m_true <= high)
+        if int(sel.sum()) < 5:
+            continue
+        med = float(np.median(m_pred[sel]))
+        plt.hist(m_pred[sel], bins=bins, histtype="step", lw=1.8, density=True, color=col,
+                 label=f"true ~{nominal:.2g} GeV (n={int(sel.sum())}, med={med:.2f})")
+        plt.axvline(nominal, color=col, ls=":", lw=1.0, alpha=0.6)
+    plt.xlabel("predicted $m_A$ [GeV]"); plt.ylabel("a.u.")
+    plt.title(f"{tag} — predicted mass by true $m_A$")
+    plt.grid(True, alpha=0.3); plt.legend(fontsize=8)
+    plt.tight_layout(); plt.savefig(os.path.join(out, "mass_pred_dist_signal.png")); plt.close()
 
 
 def plot_score_dist(out, score, gun, haa, bkg):
@@ -231,11 +276,17 @@ def main():
     tag = os.path.basename(a.run_dir.rstrip("/"))
     print(f"[eval] {tag}: gun={gun.sum()} haa={haa.sum()} bkg={bkg.sum()}", flush=True)
 
+    # per-object scored arrays for cheap re-draws (any mass range) without re-scoring
+    np.savez(os.path.join(a.output_dir, "eval_predictions.npz"),
+             score=score, pt=pt, a_mass=a_mass, m_pred=m_pred, sample_id=sid)
+
     plot_9curve(a.output_dir, pt, score, gun, haa, bkg, tag)
+    # gun: continuous -> 2D pred-vs-true (0-60, 0-10, 0-5). signal: discrete -> 1D pred dist per mass.
     mae_gun = plot_mass_linear(a.output_dir, a_mass[gun], m_pred[gun], f"{tag} gun",
-                               "mass_pred_vs_true_linear_gun.png")
-    mae_haa = plot_mass_linear(a.output_dir, a_mass[haa], m_pred[haa], f"{tag} signal",
-                               "mass_pred_vs_true_linear_signal.png")
+                               "mass_pred_vs_true_linear_gun")
+    plot_signal_pred_1d(a.output_dir, a_mass[haa], m_pred[haa], f"{tag} signal")
+    fin_h = np.isfinite(a_mass[haa]) & np.isfinite(m_pred[haa]) & (a_mass[haa] > 0)
+    mae_haa = float(np.abs(m_pred[haa][fin_h] - a_mass[haa][fin_h]).mean()) if fin_h.any() else float("nan")
     plot_score_dist(a.output_dir, score, gun, haa, bkg)
     aucs = plot_roc(a.output_dir, score, gun, haa, bkg)
     import json
