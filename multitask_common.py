@@ -16,6 +16,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 MASS_POINTS = (0.4, 1.0, 2.0, 5.0, 10.0)
+PLOT_EXT = ".png"   # output format for mass plots
 
 
 # --------------------------------------------------------------------------- #
@@ -140,7 +141,7 @@ def save_mass_pred_vs_true_linear(output_dir, m_true, m_pred, suffix="", hi=11.0
     plt.xlabel("true m_A [GeV]"); plt.ylabel("predicted m_A [GeV]")
     plt.title("Predicted vs true A mass (linear)"); plt.colorbar(label="objects")
     plt.tight_layout()
-    plt.savefig(os.path.join(output_dir, f"mass_pred_vs_true_linear{suffix}.png"))
+    plt.savefig(os.path.join(output_dir, f"mass_pred_vs_true_linear{suffix}" + PLOT_EXT))
     plt.close()
 
 
@@ -158,7 +159,7 @@ def save_mass_regression_plots(output_dir, m_true, m_pred, suffix=""):
     plt.xscale("log"); plt.yscale("log"); plt.xlim(lims); plt.ylim(lims)
     plt.xlabel("true m_A [GeV]"); plt.ylabel("predicted m_A [GeV]")
     plt.title("Predicted vs true A mass"); plt.colorbar(label="objects")
-    plt.tight_layout(); plt.savefig(os.path.join(output_dir, f"mass_pred_vs_true{suffix}.png")); plt.close()
+    plt.tight_layout(); plt.savefig(os.path.join(output_dir, f"mass_pred_vs_true{suffix}" + PLOT_EXT)); plt.close()
 
     save_mass_pred_vs_true_linear(output_dir, m_true, m_pred, suffix)
 
@@ -172,7 +173,7 @@ def save_mass_regression_plots(output_dir, m_true, m_pred, suffix=""):
     plt.axhline(0, color="gray", lw=0.8)
     plt.xscale("log"); plt.xlabel("true m_A [GeV]"); plt.ylabel("relative residual")
     plt.title("Mass resolution / bias vs true mass"); plt.grid(True, alpha=0.3); plt.legend()
-    plt.tight_layout(); plt.savefig(os.path.join(output_dir, f"mass_resolution_vs_mass{suffix}.png")); plt.close()
+    plt.tight_layout(); plt.savefig(os.path.join(output_dir, f"mass_resolution_vs_mass{suffix}" + PLOT_EXT)); plt.close()
 
     plt.figure(figsize=(8, 6))
     for p in pts:
@@ -182,4 +183,4 @@ def save_mass_regression_plots(output_dir, m_true, m_pred, suffix=""):
         plt.axvline(p, color="gray", ls=":", lw=0.8)
     plt.xlabel("predicted m_A [GeV]"); plt.ylabel("objects")
     plt.title("Predicted mass per true mass point"); plt.legend(fontsize=9)
-    plt.tight_layout(); plt.savefig(os.path.join(output_dir, f"mass_pred_hist_per_point{suffix}.png")); plt.close()
+    plt.tight_layout(); plt.savefig(os.path.join(output_dir, f"mass_pred_hist_per_point{suffix}" + PLOT_EXT)); plt.close()

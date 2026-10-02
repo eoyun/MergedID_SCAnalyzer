@@ -77,7 +77,20 @@ def process(run_dir, out_dir):
 
 
 def main():
-    camps = sys.argv[1:] or ["mreg_v1"]
+    args = sys.argv[1:]
+    dpi = 200
+    if "--dpi" in args:
+        i = args.index("--dpi"); dpi = int(args[i + 1]); del args[i:i + 2]
+    import matplotlib
+    matplotlib.rcParams["savefig.dpi"] = dpi
+    matplotlib.rcParams["figure.dpi"] = dpi
+    if "--eps" in args:
+        args.remove("--eps")
+        import train_resnet_image_classifier as _tr
+        _tr.PLOT_EXT = ".eps"; mc.PLOT_EXT = ".eps"
+        print("[fmt] .eps", flush=True)
+    print(f"[dpi] {dpi}", flush=True)
+    camps = args or ["mreg_v1"]
     for camp in camps:
         base = f"{RUNS}/{camp}"
         eval_base = f"{RUNS}/{camp}_eval"

@@ -17,6 +17,7 @@ import torch
 import torch.nn as nn
 import matplotlib
 matplotlib.use("Agg")
+PLOT_EXT = ".png"   # output format; regen/--ext can set ".eps"
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 
@@ -101,7 +102,7 @@ def save_pgun_plots(out_dir, m_true, m_pred, tag):
     plt.plot(lims_lin, lims_lin, "r--", lw=1); plt.xlim(lims_lin); plt.ylim(lims_lin)
     plt.xlabel("true m_A [GeV] (gun)"); plt.ylabel("predicted m_A [GeV]")
     plt.title(f"pgun pred vs true (linear) - {tag}"); plt.colorbar(label="objects")
-    plt.tight_layout(); plt.savefig(f"{out_dir}/pgun_pred_vs_true_linear.png"); plt.close()
+    plt.tight_layout(); plt.savefig(f"{out_dir}/pgun_pred_vs_true_linear" + PLOT_EXT); plt.close()
     # log 2D (pred can exceed gun range since model trained on 0.4-10)
     plt.figure(figsize=(6, 6))
     plt.hist2d(np.clip(m_true, *lims_log), np.clip(m_pred, *lims_log), bins=50,
@@ -110,7 +111,7 @@ def save_pgun_plots(out_dir, m_true, m_pred, tag):
     plt.xscale("log"); plt.yscale("log"); plt.xlim(lims_log); plt.ylim(lims_log)
     plt.xlabel("true m_A [GeV] (gun)"); plt.ylabel("predicted m_A [GeV]")
     plt.title(f"pgun pred vs true (log) - {tag}"); plt.colorbar(label="objects")
-    plt.tight_layout(); plt.savefig(f"{out_dir}/pgun_pred_vs_true_log.png"); plt.close()
+    plt.tight_layout(); plt.savefig(f"{out_dir}/pgun_pred_vs_true_log" + PLOT_EXT); plt.close()
     # resolution & bias vs true mass (log-spaced bins over the gun range)
     edges = np.geomspace(max(m_true.min(), 0.01), m_true.max(), 13)
     cen, res, bias, med = [], [], [], []
@@ -127,7 +128,7 @@ def save_pgun_plots(out_dir, m_true, m_pred, tag):
     plt.axhline(0, color="gray", lw=0.8); plt.xscale("log")
     plt.xlabel("true m_A [GeV] (gun)"); plt.ylabel("relative residual")
     plt.title(f"pgun resolution/bias vs mass - {tag}"); plt.grid(True, alpha=0.3); plt.legend()
-    plt.tight_layout(); plt.savefig(f"{out_dir}/pgun_resolution_vs_mass.png"); plt.close()
+    plt.tight_layout(); plt.savefig(f"{out_dir}/pgun_resolution_vs_mass" + PLOT_EXT); plt.close()
     return {"n": int(len(m_true)),
             "mae": float(np.abs(m_pred - m_true).mean()),
             "mre": float((np.abs(m_pred - m_true) / m_true).mean())}
@@ -142,6 +143,8 @@ def parse_args():
     p.add_argument("--track-types", default="Lost,PF,GSF")
     p.add_argument("--no-es", action="store_true")
     p.add_argument("--output-dir", required=True)
+    p.add_argument("--dpi", type=int, default=200, help="savefig DPI (higher = sharper PNG)")
+    p.add_argument("--ext", default=".png", help="output format, e.g. .png or .eps")
     p.add_argument("--model", default="resnet50")
     p.add_argument("--embed-dim", type=int, default=128)
     p.add_argument("--depth", type=int, default=4)          # track depth
@@ -160,6 +163,10 @@ def parse_args():
 
 def main():
     a = parse_args()
+    global PLOT_EXT
+    PLOT_EXT = a.ext
+    matplotlib.rcParams["savefig.dpi"] = a.dpi
+    matplotlib.rcParams["figure.dpi"] = a.dpi
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     tt = parse_track_types(a.track_types)
     include_es = not a.no_es
@@ -177,11 +184,13 @@ def main():
     m_true = a_mass[oidx]
     tag = os.path.basename(a.run_dir.rstrip("/"))
     os.makedirs(a.output_dir, exist_ok=True)
+    np.savez(os.path.join(a.output_dir, "pgun_predictions.npz"),
+             score=score, reg_mu=reg_mu, m_pred=m_pred, m_true=m_true, oidx=oidx)
     stats = save_pgun_plots(a.output_dir, m_true, m_pred, tag)
     # classification score distribution (gun is signal-only -> one class)
     save_score_distribution(np.ones_like(score, dtype=np.int64), score,
                             np.ones_like(score, dtype=np.float64),
-                            os.path.join(a.output_dir, "pgun_score_distribution.png"),
+                            os.path.join(a.output_dir, "pgun_score_distribution" + PLOT_EXT),
                             normalize=True, ylabel="a.u.")
     print(f"[pgun-eval] {tag}: n={stats['n']} mae={stats['mae']:.3f} mre={stats['mre']:.3f} "
           f"score[mean={score.mean():.3f} frac>0.5={np.mean(score>0.5):.3f}] -> {a.output_dir}", flush=True)

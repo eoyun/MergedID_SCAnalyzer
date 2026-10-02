@@ -399,6 +399,9 @@ def compute_efficiency_by_pt(y_true, y_score, weights, pt, threshold, pt_edges):
     return results
 
 
+PLOT_EXT = ".png"   # output format for internally-named plots
+
+
 def save_efficiency_plot(rows, output_path: Path, threshold: float, min_denom=0):
     plt.figure(figsize=(8, 6))
     for class_name, color in [("signal", "tab:blue"), ("background", "tab:orange")]:
@@ -472,9 +475,9 @@ def save_unweighted_test_plots(output_dir, val_true, val_score, test_true, test_
     tfin = np.isfinite(test_score)
     test_true, test_score, test_pt = test_true[tfin], test_score[tfin], test_pt[tfin]
     ones = np.ones_like(test_score, dtype=np.float64)
-    save_roc_plot(test_true, test_score, ones, output_dir / "roc_test_unw.png")
+    save_roc_plot(test_true, test_score, ones, output_dir / ("roc_test_unw" + PLOT_EXT))
     save_score_distribution(test_true, test_score, ones,
-                            output_dir / "score_distribution_test_unw.png",
+                            output_dir / ("score_distribution_test_unw" + PLOT_EXT),
                             normalize=True, ylabel="a.u.")
     for tgt in fake_rate_targets:
         thr = threshold_for_bkg_eff_unw(val_true, val_score, tgt)
@@ -482,7 +485,7 @@ def save_unweighted_test_plots(output_dir, val_true, val_score, test_true, test_
         pct = tgt * 100.0
         ptag = (f"{int(round(pct)):02d}" if abs(pct - round(pct)) < 1e-9
                 else f"{pct:g}".replace(".", "p"))
-        save_efficiency_plot(rows, output_dir / f"efficiency_vs_pt_test_bkg{ptag}_unw.png", thr)
+        save_efficiency_plot(rows, output_dir / (f"efficiency_vs_pt_test_bkg{ptag}_unw" + PLOT_EXT), thr)
         with (output_dir / f"efficiency_vs_pt_test_bkg{ptag}_unw.json").open("w") as fh:
             json.dump(rows, fh, indent=2)
 
@@ -500,9 +503,9 @@ def save_eval_sample_plots(output_dir, y_true, y_score, pt, pt_edges,
     fin = np.isfinite(y_score)
     y_true, y_score, pt = y_true[fin], y_score[fin], pt[fin]
     ones = np.ones_like(y_score, dtype=np.float64)
-    save_roc_plot(y_true, y_score, ones, output_dir / f"roc_test_unw{suffix}.png")
+    save_roc_plot(y_true, y_score, ones, output_dir / (f"roc_test_unw{suffix}" + PLOT_EXT))
     save_score_distribution(y_true, y_score, ones,
-                            output_dir / f"score_distribution_test_unw{suffix}.png",
+                            output_dir / (f"score_distribution_test_unw{suffix}" + PLOT_EXT),
                             normalize=True, ylabel="a.u.")
     for tgt in fake_rate_targets:
         thr = threshold_for_bkg_eff_unw(y_true, y_score, tgt)  # threshold on this sample's bkg
@@ -510,7 +513,7 @@ def save_eval_sample_plots(output_dir, y_true, y_score, pt, pt_edges,
         pct = tgt * 100.0
         ptag = (f"{int(round(pct)):02d}" if abs(pct - round(pct)) < 1e-9
                 else f"{pct:g}".replace(".", "p"))
-        save_efficiency_plot(rows, output_dir / f"efficiency_vs_pt_test_bkg{ptag}_unw{suffix}.png",
+        save_efficiency_plot(rows, output_dir / (f"efficiency_vs_pt_test_bkg{ptag}_unw{suffix}" + PLOT_EXT),
                              thr, min_denom=min_denom)
         with (output_dir / f"efficiency_vs_pt_test_bkg{ptag}_unw{suffix}.json").open("w") as fh:
             json.dump(rows, fh, indent=2)
