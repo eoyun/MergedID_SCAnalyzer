@@ -44,6 +44,7 @@ ET_EDGES = np.asarray(PT_BIN_EDGES_WITH_OVERFLOW, dtype=np.float64)
 MIN_DENOM = 20
 # linear mass pred-vs-true: full range + two zoom-ins (suffix, [lo,hi])
 MASS_RANGES = [("", [0.0, 60.0]), ("_0to10", [0.0, 10.0]), ("_0to5", [0.0, 5.0])]
+PLOT_EXT = ".png"   # output format for all plots; set to ".eps" for vector (paper)
 
 
 def build_model(detector, tt, include_es, a):
@@ -104,7 +105,7 @@ def plot_9curve(out, pt, score, gun, haa, bkg, tag):
             fontsize=13, va="bottom", ha="left")
     plt.grid(True, alpha=0.3)
     plt.legend(fontsize=8, ncol=3, loc="center left", bbox_to_anchor=(0.01, 0.5))
-    plt.tight_layout(); plt.savefig(os.path.join(out, "eff_fake_9curve_20GeV.png")); plt.close()
+    plt.tight_layout(); plt.savefig(os.path.join(out, "eff_fake_9curve_20GeV" + PLOT_EXT)); plt.close()
 
 
 def plot_mass_linear(out, m_true, m_pred, tag, base):
@@ -126,7 +127,7 @@ def plot_mass_linear(out, m_true, m_pred, tag, base):
         plt.text(0.05, 0.92, f"n={int(insel.sum())}\nMAE={mae_r:.2f} GeV",
                  transform=plt.gca().transAxes, va="top", fontsize=9,
                  bbox=dict(fc="white", alpha=0.7))
-        plt.tight_layout(); plt.savefig(os.path.join(out, f"{base}{suf}.png")); plt.close()
+        plt.tight_layout(); plt.savefig(os.path.join(out, f"{base}{suf}" + PLOT_EXT)); plt.close()
     return mae
 
 
@@ -160,7 +161,7 @@ def plot_signal_pred_1d(out, m_true, m_pred, tag):
     plt.xlabel("predicted $m_A$ [GeV]"); plt.ylabel("a.u.")
     plt.title(f"{tag} — predicted mass by true $m_A$")
     plt.grid(True, alpha=0.3); plt.legend(fontsize=8)
-    plt.tight_layout(); plt.savefig(os.path.join(out, "mass_pred_dist_signal.png")); plt.close()
+    plt.tight_layout(); plt.savefig(os.path.join(out, "mass_pred_dist_signal" + PLOT_EXT)); plt.close()
 
 
 def plot_score_dist(out, score, gun, haa, bkg):
@@ -175,7 +176,7 @@ def plot_score_dist(out, score, gun, haa, bkg):
     plt.yscale("log")
     plt.xlabel("classification score"); plt.ylabel("a.u.")
     plt.grid(True, alpha=0.3); plt.legend(fontsize=9)
-    plt.tight_layout(); plt.savefig(os.path.join(out, "score_distribution_3class.png")); plt.close()
+    plt.tight_layout(); plt.savefig(os.path.join(out, "score_distribution_3class" + PLOT_EXT)); plt.close()
 
 
 def plot_roc(out, score, gun, haa, bkg):
@@ -185,7 +186,7 @@ def plot_roc(out, score, gun, haa, bkg):
         s = np.concatenate([score[sig], score[bkg]])
         fpr, tpr, _ = roc_curve(y, s)
         curves[name] = (fpr, tpr, sk_auc(fpr, tpr))
-    for scale, fname in [("log", "roc_log.png"), ("linear", "roc_linear.png")]:
+    for scale, fname in [("log", "roc_log"), ("linear", "roc_linear")]:
         plt.figure(figsize=(6.5, 6))
         for name, (fpr, tpr, au) in curves.items():
             plt.plot(fpr, tpr, lw=1.8, label=f"{name}  AUC={au:.4f}")
@@ -197,7 +198,7 @@ def plot_roc(out, score, gun, haa, bkg):
         plt.xlabel("background fake rate (FPR)"); plt.ylabel("signal efficiency (TPR)")
         plt.grid(True, alpha=0.3, which="both"); plt.legend(fontsize=10, loc="lower right")
         plt.title(f"ROC ({scale} FPR)")
-        plt.tight_layout(); plt.savefig(os.path.join(out, fname)); plt.close()
+        plt.tight_layout(); plt.savefig(os.path.join(out, fname + PLOT_EXT)); plt.close()
     return {k: float(v[2]) for k, v in curves.items()}
 
 
@@ -220,7 +221,7 @@ def plot_history(out, hist, tag):
     ax[2].plot(ep, mm, "o-", ms=3, color="tab:red")
     ax[2].set_title("val mass MAE [GeV]"); ax[2].set_xlabel("epoch"); ax[2].grid(alpha=0.3)
     fig.suptitle(f"{tag} — training history")
-    fig.tight_layout(); fig.savefig(os.path.join(out, "training_history.png")); plt.close(fig)
+    fig.tight_layout(); fig.savefig(os.path.join(out, "training_history" + PLOT_EXT)); plt.close(fig)
 
 
 def parse_args():

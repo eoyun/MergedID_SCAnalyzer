@@ -45,7 +45,13 @@ def redo(d):
 
 
 def main():
-    dirs = sys.argv[1:] or sorted(glob.glob(RUNS + "/*/"))
+    args = sys.argv[1:]
+    for flag, ext in (("--eps", ".eps"), ("--pdf", ".pdf"), ("--png", ".png")):
+        if flag in args:
+            args.remove(flag)
+            E.PLOT_EXT = ext
+    print(f"[fmt] writing {E.PLOT_EXT}", flush=True)
+    dirs = args or sorted(glob.glob(RUNS + "/*/"))
     ok = skip = 0
     for d in dirs:
         if redo(d):
