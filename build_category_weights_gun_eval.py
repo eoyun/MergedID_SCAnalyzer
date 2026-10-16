@@ -45,7 +45,7 @@ def _read_meta(task):
                 ei = r[DET_EVENT_IDX_KEYS[det]][:].astype(np.int64)
                 pt = r[SC_ET_KEYS[det]][:].astype(np.float32)
                 out[det] = (ei, pt)
-    except SkippableFileError as e:
+    except Exception as e:
         return {"path": str(path), "ok": False, "err": str(e)}
     return out
 
