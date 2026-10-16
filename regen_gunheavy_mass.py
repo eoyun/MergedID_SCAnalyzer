@@ -18,6 +18,7 @@ import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from train_resnet_image_classifier import cms_label
 
 RUNS = "/eos/user/y/yeo/4l/runs/gunheavy_v1"
 LIN = [0.0, 60.0]
@@ -52,7 +53,7 @@ def redraw(run_dir):
     plt.plot(LIN, LIN, "r--", lw=1); plt.xlim(LIN); plt.ylim(LIN)
     plt.xlabel("true $m_A$ [GeV]"); plt.ylabel("predicted $m_A$ [GeV]")
     plt.colorbar(label="objects"); plt.title(f"{tag} — mass pred vs true (linear)")
-    plt.tight_layout(); plt.savefig(os.path.join(run_dir, "mass_pred_vs_true_linear_test" + EXT)); plt.close()
+    plt.tight_layout(); cms_label(); plt.savefig(os.path.join(run_dir, "mass_pred_vs_true_linear_test" + EXT)); plt.close()
 
     # ---- log pred-vs-true (0.1-60) ----
     edges = np.logspace(np.log10(LOG[0]), np.log10(LOG[1]), 60)
@@ -62,7 +63,7 @@ def redraw(run_dir):
     plt.xscale("log"); plt.yscale("log"); plt.xlim(LOG); plt.ylim(LOG)
     plt.xlabel("true $m_A$ [GeV]"); plt.ylabel("predicted $m_A$ [GeV]")
     plt.colorbar(label="objects"); plt.title(f"{tag} — mass pred vs true (log)")
-    plt.tight_layout(); plt.savefig(os.path.join(run_dir, "mass_pred_vs_true_test" + EXT)); plt.close()
+    plt.tight_layout(); cms_label(); plt.savefig(os.path.join(run_dir, "mass_pred_vs_true_test" + EXT)); plt.close()
 
     # ---- resolution & bias vs true mass (log-spaced bins over the gun range) ----
     be = np.geomspace(max(m_true.min(), 0.1), min(m_true.max(), 60.0), 15)
@@ -79,7 +80,7 @@ def redraw(run_dir):
     plt.axhline(0, color="gray", lw=0.8); plt.xscale("log")
     plt.xlabel("true $m_A$ [GeV]"); plt.ylabel("relative residual")
     plt.title(f"{tag} — mass resolution/bias vs mass"); plt.grid(True, alpha=0.3); plt.legend()
-    plt.tight_layout(); plt.savefig(os.path.join(run_dir, "mass_resolution_vs_mass_test" + EXT)); plt.close()
+    plt.tight_layout(); cms_label(); plt.savefig(os.path.join(run_dir, "mass_resolution_vs_mass_test" + EXT)); plt.close()
 
     mae = float(np.abs(m_pred - m_true).mean())
     print(f"[ok] {tag}: n={len(m_true)} true[{m_true.min():.2f},{m_true.max():.2f}] "

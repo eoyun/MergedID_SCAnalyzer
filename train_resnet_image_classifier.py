@@ -409,6 +409,14 @@ def compute_efficiency_by_pt(y_true, y_score, weights, pt, threshold, pt_edges):
 PLOT_EXT = ".png"   # output format for internally-named plots
 
 
+def cms_label(ax=None, fontsize=13):
+    """Write "CMS Private Work" at the top-left, above the axes."""
+    import matplotlib.pyplot as _plt
+    a = ax if ax is not None else _plt.gca()
+    a.text(0.0, 1.01, r"$\bf{CMS}$ $\it{Private\ Work}$", transform=a.transAxes,
+           fontsize=fontsize, va="bottom", ha="left")
+
+
 def save_efficiency_plot(rows, output_path: Path, threshold: float, min_denom=0):
     plt.figure(figsize=(8, 6))
     for class_name, color in [("signal", "tab:blue"), ("background", "tab:orange")]:
@@ -449,6 +457,7 @@ def save_efficiency_plot(rows, output_path: Path, threshold: float, min_denom=0)
     plt.grid(True, alpha=0.3)
     plt.legend()
     plt.tight_layout()
+    cms_label()
     plt.savefig(output_path)
     plt.close()
 
@@ -542,6 +551,7 @@ def save_roc_plot(y_true, y_score, weights, output_path: Path):
     plt.grid(True, alpha=0.3)
     plt.legend()
     plt.tight_layout()
+    cms_label()
     plt.savefig(output_path)
     plt.close()
     return float(roc_auc)
@@ -574,6 +584,7 @@ def save_score_distribution(y_true, y_score, weights, output_path: Path,
     plt.grid(True, alpha=0.3)
     plt.legend()
     plt.tight_layout()
+    cms_label()
     plt.savefig(output_path)
     plt.close()
 
@@ -601,6 +612,7 @@ def save_history_plot(history, output_path: Path):
     plt.legend()
 
     plt.tight_layout()
+    cms_label()
     plt.savefig(output_path)
     plt.close()
 
