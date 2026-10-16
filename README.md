@@ -1,1040 +1,343 @@
-# Detector-Separated EB/EE Weighting, Classification, and Fusion
+# MergedID_SCAnalyzer — Cross-Attention Fusion for Merged-Electron ID
 
-This directory contains two workflows:
+Identifies **merged electrons** (a collimated A → ee pair reconstructed as one supercluster)
+and regresses the parent **A mass**. The main model is a **cross-attention fusion** network that
+combines the ECAL supercluster image with the track point cloud, trained as a multi-task model
+(classification + continuous mass regression).
 
-1. The current workflow for building sample-balanced pT weights, training EB/EE image and track classifiers, and combining them with a stacking ensemble.
-2. An older mass-regression workflow that uses a different HDF5 format and hard-coded paths.
+The previous README (event-level weights, standalone image/track classifiers, stacking ensemble,
+legacy regression) is kept in [`docs/README_legacy.md`](docs/README_legacy.md).
 
-The current workflow is the one to use for the EB/EE separation work.
+---
 
-## Files
+## Contents
+1. [Model](#1-model)
+2. [Pipeline overview](#2-pipeline-overview)
+3. [Datasets](#3-datasets)
+4. [Step-by-step](#4-step-by-step)
+5. [Running on Condor](#5-running-on-condor)
+6. [Evaluation and plots](#6-evaluation-and-plots)
+7. [Campaigns](#7-campaigns)
+8. [Environment](#8-environment)
+9. [Known issues](#9-known-issues)
+10. [Further documentation](#10-further-documentation)
 
-- `build_sample_pt_weights.py`
-  Builds weights for `A_pT` entries only. Each sample gets total weight sum `1`, and each non-empty pT bin inside that sample gets equal weight sum.
-- `build_event_level_weights.py`
-  Builds event-level sidecar weights and separates the balancing into three cases:
-  - overall event case
-  - `EB` case
-  - `EE` case
-- `train_resnet_image_classifier.py`
-  Trains a binary classifier on `EB` or `EE` detector images using the sidecar HDF5 produced by `build_event_level_weights.py`.
-- `train_point_transformer_track_classifier.py`
-  Trains a binary point-cloud transformer on `EB` or `EE` track points using the same sidecar HDF5.
-- `train_fusion_ensemble.py`
-  Loads one trained image run and one trained track run, re-scores the shared validation/test splits, then trains a stacking ensemble on the validation split.
-- `track_point_transformer.py`
-  Shared dataset, point-cloud construction, and model code used by the track trainer and the ensemble script.
-- `torch_resnet_concat.py`
-  Legacy custom ResNet used by the older regression scripts.
-- `train_regression.py`
-  Legacy regression trainer with hard-coded input paths.
-- `test_regression.py`
-  Legacy regression inference script with hard-coded model and test-file paths.
+---
 
-## Environment
+## 1. Model
 
-The code in this directory was run with the local virtual environment:
+`CrossAttentionFusion` (`train_fusion_cross_attention.py`) wrapped by `MultiTaskModel`
+(`multitask_common.py`).
+
+```
+ calo image (raw crop 32x32 or 48x48, + ES planes for EE)      track point cloud [N_t, F] + mask
+        │                                                               │
+ tile_to_square -> common square S (512 or 768)                 trk_in MLP (F -> d)
+ ResNet backbone (avgpool/fc removed) -> [C_f, S/32, S/32]       + null token, self-attention encoder
+ 1x1 conv -> Ni image tokens [Ni, d]  (+ img_type)               (+ trk_type)
+        └──────────── bidirectional cross-attention x depth ───────────┘
+                 img <- track (img2trk),  track <- img (trk2img)
+                                │
+           masked-mean pool per modality -> concat [2d] -> LayerNorm
+                                │ feat [512]
+                 ┌──────────────┴──────────────┐
+          cls_head Linear(512,1)        reg_head MLP(512->512->1)
+          merged-electron logit         predicted log(m_A)
+```
+
+| Item | Default |
+|---|---|
+| Image backbone | ResNet-18 (avgpool and fc removed) |
+| `d_model` / fused feature | 256 / 512 |
+| Heads / cross-attention depth / track depth | 4 / 2 / 2 |
+| Image tokens `Ni` | 256 at S=512, 576 at S=768 |
+| Loss | `BCE(cls; weight) + λ · MAE(reg, log m_A) · [signal]`, λ = 1.0 |
+| Optimizer | AdamW lr 1e-4, wd 1e-4, ReduceLROnPlateau on val AUC |
+| Precision | fp32 + TF32 (no AMP) |
+
+Key properties:
+- **Null track token** keeps attention defined for objects with zero tracks.
+- **No positional embedding**, so the number of image tokens follows the tile size automatically.
+- The **mass truth is only used in the loss**; the model sees only the image and tracks.
+- Background objects are masked out of the regression term.
+
+Full explanation: [`docs/cross-attention-logic.md`](docs/cross-attention-logic.md),
+line-by-line review: [`docs/gunheavy-model-code-review.md`](docs/gunheavy-model-code-review.md).
+
+### Image input and `IMAGE_TILE_SIZE`
+
+Every image channel (calo, ES plane 1, ES plane 2) is tiled by nearest-repeat to a common square
+`S` and stacked into `[C, S, S]`. `S` must be divisible by every channel's height and width:
+
+| Data | calo | ES planes | `S` |
+|---|---|---|---|
+| `MiniAOD` (32x32 crops) | 32x32 | 16x512, 512x16 | 512 (default) |
+| `MiniAOD_cropped` (48x48 crops) | 48x48 | 24x768, 768x24 | **768** |
+
+Set it with the environment variable `IMAGE_TILE_SIZE` (read in `train_resnet_image_classifier.py`):
 
 ```bash
-./.venv/bin/python -V
+export IMAGE_TILE_SIZE=768   # for MiniAOD_cropped
 ```
 
-The active scripts require:
+At S=768 the input has 2.25x the pixels of S=512, so use a smaller batch (8 instead of 16).
 
-- `python>=3.10`
-- `h5py`
-- `numpy`
-- `matplotlib`
-- `torch`
-- `torchvision`
-- `scikit-learn`
+Image channels are `log1p(energy)` with **no per-channel normalization**. ES values are about 1000x
+smaller than calo after `log1p`; per-channel normalization is a planned follow-up.
 
-If `matplotlib` complains about a non-writable config directory, use:
+---
+
+## 2. Pipeline overview
+
+```
+raw h5 (EOS data/<tier>/{signal_dir, W, Z})
+   │  build_category_weights_gun.py      per-object SC-ET cut + pT-bin balanced weights
+   ▼
+category_weights.h5
+   │  build_compact_dataset_gun.py       train/val/test split, images, tracks, pt, a_mass
+   ▼
+compact h5 (one per detector)
+   │  train_multitask_cross_gun.py       cross-attention multi-task training
+   ▼
+runs/<campaign>/<run>/  (best_model.pt, plots, CSVs, history.json)
+   │  build_category_weights_gun_eval.py + build_compact_dataset_gun.py   20 GeV eval sample
+   │  eval_gunheavy.py                   score + evaluation plots
+   ▼
+runs/<campaign>_eval/<run>/
+```
+
+### pT variable
+
+The pT used for the cut, the weight binning and the efficiency-vs-pT plots is the **per-object
+reconstructed supercluster transverse energy**: `SC_energyT_sum` (EB) and `EE_seed_energyT_sum` (EE).
+It exists in real data, unlike the generator-level `A_pT` used by the older 18-way pipeline
+(the `A_*` arrays hold the parent particle per sample: A for signal, W or Z boson for background).
+
+### Weights
+
+Each class (signal, background) sums to 1. Within a class, every non-empty SC-ET bin gets an equal
+share, split evenly over its objects:
+
+`w = 1 / (N_nonempty_bins(class) * n(class, bin))`
+
+so the classifier cannot use the pT spectrum as a shortcut. Background is randomly capped at
+1M objects per detector.
+
+### Regression target
+
+`a_mass` per object = the A mass of its event. In the particle-gun samples both A's in an event have
+the same mass, so no electron-to-A matching is needed. Background `a_mass = 0` and is masked.
+
+---
+
+## 3. Datasets
+
+On EOS under `/eos/user/y/yeo/4l/data/`:
+
+| Directory | Content | Role |
+|---|---|---|
+| `MiniAOD/particle_gun_heavy` | A → ee gun, continuous m_A 0.1–50 GeV | signal (gunheavy) |
+| `MiniAOD/signal` | H → AA → 4ℓ, discrete m_A (0.4, 1, 2, 5, 10 GeV) | evaluation signal |
+| `MiniAOD/W`, `MiniAOD/Z` | W → eν, Z → ee | background |
+| `MiniAOD_cropped/HToEleEle_dr03` | A → ee, ΔR < 0.3, continuous m_A, 48x48 crops | signal (dr03) |
+| `MiniAOD_cropped/{signal,W,Z}` | same as above, 48x48 crops | eval signal / background |
+
+File schema: [`docs/dataset-structure.md`](docs/dataset-structure.md).
+
+---
+
+## 4. Step-by-step
+
+Examples for the dr03 campaign at pT ≥ 50 GeV. Paths are on EOS.
+
+### 4.1 Category weights
 
 ```bash
-export MPLCONFIGDIR=/tmp/matplotlib
-mkdir -p "$MPLCONFIGDIR"
+python3 build_category_weights_gun.py \
+  --input-dir /eos/user/y/yeo/4l/data/MiniAOD_cropped \
+  --signal-dir HToEleEle_dr03 \
+  --pt-min 50 \
+  --output-path weights/categories_dr03_pt50/dr03_all/category_weights.h5
 ```
 
-In this workspace, prefer running scripts as:
+`--signal-dir` names the signal subdirectory; `W` and `Z` are always background.
+Default `--background-max-objects 1000000`. Unreadable files are skipped.
+
+### 4.2 Compact dataset
 
 ```bash
-./.venv/bin/python <script>.py ...
+python3 build_compact_dataset_gun.py \
+  --weight-h5 weights/categories_dr03_pt50/dr03_all/category_weights.h5 \
+  --detector ee --track-types Lost,PF,GSF \
+  --output-path compact_dr03_pt50/dr03_ee.h5
 ```
 
-## Input Dataset Layout
+The compact stores raw crops (no tiling), labels, weights, split (80/10/10), per-object `pt`
+(SC ET) and `a_mass`. Run once per detector (`eb`, `ee`).
 
-The weighting scripts expect an input directory with this structure:
-
-```text
-<input-dir>/
-  W/
-    *.h5
-  Z/
-    *.h5
-  signal/
-    *.h5
-```
-
-Background is formed by combining all files under `W/` and `Z/`.
-
-Signal sample IDs are parsed from the source ROOT path and become names like:
-
-- `signal_H250_A0p4`
-- `signal_H750_A10`
-- `signal_H2000_A5`
-
-The code expects 16 sample IDs in total:
-
-- `background`
-- 15 signal `(H, A)` combinations
-
-## pT Bins
-
-The weighting scripts use these pT bin edges:
-
-```text
-[0, 20, 30, 50, 60, 70, 80, 100, 125, 150, 200, 250, 300, 350, 400, 500, 600, 800, 1000, 1200, 1500, 2000, inf)
-```
-
-For every sample:
-
-- the total weight sum is `1`
-- every non-empty pT bin inside that sample gets the same total weight sum
-
-For `build_event_level_weights.py`, that balancing is done separately for:
-
-- `event`
-- `EB`
-- `EE`
-
-## How EB/EE-Separated Weighting Works
-
-The important point is that `EB` and `EE` are not weighted by reusing one shared detector-independent object weight.
-
-Instead, the script solves three separate balancing problems:
-
-1. `event` case
-   Uses all selected events in the sample.
-2. `EB` case
-   Uses only selected events that contain at least one `EB` object.
-3. `EE` case
-   Uses only selected events that contain at least one `EE` object.
-
-For each sample ID independently:
-
-- `background`
-- each of the 15 signal `(H, A)` samples
-
-the script does the following for each case independently:
-
-1. Derive one representative event pT from `A_pT` and `A_event_idx`.
-2. Select the events belonging to that case.
-3. Count how many selected events fall into each pT bin.
-4. Give every non-empty pT bin the same total weight sum.
-5. Force the total weight sum over that sample and case to be exactly `1`.
-
-That means:
-
-- `background` has total weight sum `1` in the `event` case.
-- `background` also has total weight sum `1` in the `EB` case.
-- `background` also has total weight sum `1` in the `EE` case.
-- The same is true for every signal sample.
-
-These are separate normalizations. They are not required to match event-by-event between `event`, `EB`, and `EE`.
-
-### Event membership for the detector-separated cases
-
-- If an event has at least one `EB` object, it contributes to the `EB` balancing.
-- If an event has at least one `EE` object, it contributes to the `EE` balancing.
-- If an event has both `EB` and `EE` objects, it contributes to both balancing problems independently.
-- If an event has no `EB` objects, it does not contribute to the `EB` normalization.
-- If an event has no `EE` objects, it does not contribute to the `EE` normalization.
-
-### Meaning of the saved weights
-
-- `event_weight`
-  Per-event weight from the detector-independent `event` normalization.
-- `EB_event_weight`
-  Per-event weight from the `EB` normalization only.
-- `EE_event_weight`
-  Per-event weight from the `EE` normalization only.
-- `A_weight_duplicate`
-  Copies `event_weight` onto every `A` object in the event.
-- `A_weight_split`
-  Splits `event_weight` equally across all `A` objects in the event.
-- `EB_weight_duplicate`
-  Copies `EB_event_weight` onto every `EB` object in the event.
-- `EB_weight_split`
-  Splits `EB_event_weight` equally across all `EB` objects in the event.
-- `EE_weight_duplicate`
-  Copies `EE_event_weight` onto every `EE` object in the event.
-- `EE_weight_split`
-  Splits `EE_event_weight` equally across all `EE` objects in the event.
-
-### Which weight should be used for training
-
-- Train the `EB` classifier with `EB_weight_split`.
-- Train the `EE` classifier with `EE_weight_split`.
-
-This is the correct detector-separated choice because the total object weight inside each sample is inherited from the detector-specific event balancing, not from the global `event` balancing.
-
-### What is equalized
-
-Inside one fixed sample and one fixed case:
-
-- the total weight sum is `1`
-- every non-empty pT bin gets the same total weight sum
-
-Example:
-
-- if sample `signal_H750_A10` has 14 non-empty pT bins in the `EB` case, then each non-empty `EB` pT bin gets total weight sum `1/14`
-- if the same sample has 15 non-empty pT bins in the `EE` case, then each non-empty `EE` pT bin gets total weight sum `1/15`
-
-So `EB` and `EE` can legitimately have different per-bin target sums for the same sample, because they are normalized independently.
-
-## Recommended Workflow
-
-### 1. Build detector-separated event weights
-
-This is the main sidecar used by the classifier.
-
-Example:
+### 4.3 Training
 
 ```bash
-./.venv/bin/python build_event_level_weights.py \
-  --input-dir /home/eoyun/data/260616_v2_Mini \
-  --output-dir outputs/test_event_background_1M_sep \
-  --background-max-events 100000
+export IMAGE_TILE_SIZE=768
+python3 train_multitask_cross_gun.py \
+  --detector ee --compact compact_dr03_pt50/dr03_ee.h5 \
+  --output-dir runs/dr03_v1/cross_pt50_ee_es \
+  --track-types Lost,PF,GSF --backbone resnet18 \
+  --epochs 50 --no-early-stopping --batch-size 8 --lr 1e-4 --lam 1.0
 ```
 
-What it does:
+- `--no-es` drops the ES planes (the `ee_noes` configuration).
+- `--lam` sets the regression weight λ.
+- `--resume-eos-dir` pushes/pulls `last.pt` and `best_model.pt` each epoch (set automatically by `condor/run_job.sh`).
 
-- reads all `W`, `Z`, and `signal` HDF5 files
-- derives one representative event pT from `A_pT` and `A_event_idx`
-- balances the total sample weight to `1`
-- equalizes the total weight across non-empty pT bins
-- repeats that balancing independently for:
-  - all selected events
-  - events with at least one `EB` object
-  - events with at least one `EE` object
+Outputs in the run directory: `best_model.pt`, `last.pt`, `history.json`, `test_metrics.json`,
+`val_predictions.csv`, `test_predictions.csv`, ROC / score / efficiency-vs-pT plots and mass
+regression plots.
 
-Important behavior:
-
-- `event_weight` is the overall event-balanced weight.
-- `EB_event_weight` is the event-balanced weight for the `EB` case only.
-- `EE_event_weight` is the event-balanced weight for the `EE` case only.
-- `EB_weight_split` divides `EB_event_weight` equally across all `EB` objects in the event.
-- `EE_weight_split` divides `EE_event_weight` equally across all `EE` objects in the event.
-
-For classifier training, use:
-
-- `EB_weight_split` for `--detector eb`
-- `EE_weight_split` for `--detector ee`
-
-### 2. Train a real EB model
-
-For real training, do not pass `--debug`.
-
-The classifier supports these model backbones:
-
-- `resnet18`
-- `resnet34`
-- `resnet50`
-
-These are torchvision architectures initialized from scratch inside the script. They are not ImageNet-pretrained in the current code.
-
-Recommended first full training command:
+### 4.4 Evaluation sample (20 GeV inclusive, 3 classes)
 
 ```bash
-./.venv/bin/python train_resnet_image_classifier.py \
-  --detector eb \
-  --weight-h5 outputs/test_event_background_1M_sep/event_level_weights.h5 \
-  --output-dir outputs/train_resnet_eb \
-  --model resnet18 \
-  --epochs 20 \
-  --batch-size 16 \
-  --lr 1e-4 \
-  --weight-decay 1e-4 \
-  --num-workers 4 \
-  --monitor auc \
-  --patience 5
+python3 build_category_weights_gun_eval.py --pt-min 20 \
+  --output-path gunheavy_eval_sel.h5
+python3 build_compact_dataset_gun.py --weight-h5 gunheavy_eval_sel.h5 \
+  --detector ee --track-types Lost,PF,GSF --output-path gunheavy_eval_ee.h5
 ```
 
-If you want a larger model:
+Classes: gun signal, H → AA signal (all mass points), W/Z background, all at SC ET ≥ 20 GeV.
+Caps: gun 300k, background 400k, H → AA all.
+
+### 4.5 Evaluation
 
 ```bash
-./.venv/bin/python train_resnet_image_classifier.py \
-  --detector eb \
-  --weight-h5 outputs/test_event_background_1M_sep/event_level_weights.h5 \
-  --output-dir outputs/train_resnet_eb_r34 \
-  --model resnet34 \
-  --epochs 30 \
-  --batch-size 16 \
-  --lr 1e-4 \
-  --weight-decay 1e-4 \
-  --num-workers 4 \
-  --monitor auc \
-  --patience 5
+python3 eval_gunheavy.py --detector ee --compact gunheavy_eval_ee.h5 \
+  --run-dir runs/gunheavy_v1/cross_pt100_ee_es \
+  --output-dir runs/gunheavy_v1_eval/cross_pt100_ee_es
 ```
 
-Or:
+See [section 6](#6-evaluation-and-plots).
+
+---
+
+## 5. Running on Condor
+
+All heavy steps run on HTCondor; do not run long jobs on the login node (its GPU is shared).
+Submit from the repository root.
+
+| Step | Executable | Submit file |
+|---|---|---|
+| Weights | `condor/run_gunheavy_weights.sh`, `condor/run_dr03_weights.sh` | `gunheavy_weights.sub`, `dr03_weights.sub` |
+| Compact | `condor/run_gunheavy_compact.sh`, `condor/run_dr03_compact.sh` | `gunheavy_compact{,_ee}.sub`, `dr03_compact.sub` |
+| Training (GPU) | `condor/run_job.sh` | `gunheavy_train.sub`, `gunheavy_lambda.sub`, `dr03_train.sub` |
+| Eval sample | `condor/run_gunheavy_eval_compact.sh` | `gunheavy_eval_compact.sub` |
+| Evaluation (GPU) | `condor/run_gunheavy_eval.sh` | `gunheavy_eval.sub` |
+| mreg particle-gun eval (GPU) | `condor/run_mreg_pgun_eval.sh` | `mreg_pgun_eval.sub` |
 
 ```bash
-./.venv/bin/python train_resnet_image_classifier.py \
-  --detector eb \
-  --weight-h5 outputs/test_event_background_1M_sep/event_level_weights.h5 \
-  --output-dir outputs/train_resnet_eb_r50 \
-  --model resnet50 \
-  --epochs 30 \
-  --batch-size 8 \
-  --lr 1e-4 \
-  --weight-decay 1e-4 \
-  --num-workers 4 \
-  --monitor auc \
-  --patience 5
+condor_submit condor/dr03_train.sub
 ```
 
-### 3. Train a real EE model
+Arguments come from the matching `condor/*.txt` file (one job per line).
 
-Recommended first full training command:
+`condor/run_job.sh` stages the compact to local scratch, rewrites `--output-dir` to local scratch,
+adds `--resume-eos-dir`, and copies the outputs back to EOS with `xrdcp`.
+`dr03_train.sub` sets `environment = "IMAGE_TILE_SIZE=768"`.
+
+Resources that have worked:
+- EB compact: 24 GB. EE compact: 64 GB (MiniAOD), 90 GB (MiniAOD_cropped) because of the ES planes.
+- Training and evaluation: 1 GPU with `Capability >= 8.0`.
+
+---
+
+## 6. Evaluation and plots
+
+`eval_gunheavy.py` writes, per run:
+
+| File | Content |
+|---|---|
+| `eff_fake_9curve_20GeV` | 3 working points (background fake rate 2.5 / 5 / 10 %, one global threshold) × {background fake rate, gun efficiency, H → AA efficiency} vs SC ET, with error bars |
+| `mass_pred_vs_true_linear_gun{,_0to10,_0to5}` | gun true vs predicted m_A, 0–60, 0–10, 0–5 GeV |
+| `mass_pred_dist_signal` | H → AA predicted-mass distribution per nominal A mass |
+| `score_distribution_3class` | gun / H → AA / background scores |
+| `roc_log`, `roc_linear` | gun-vs-background and H → AA-vs-background ROC |
+| `training_history` | loss, val AUC, val mass MAE per epoch |
+| `eval_predictions.npz` | per-object scores and masses for re-drawing |
+
+All training and evaluation plots carry the **CMS Private Work** label.
+
+### Output format and re-drawing
+
+Plots default to PNG. Re-draw from saved predictions without a GPU:
+
+| Script | Re-draws | Source |
+|---|---|---|
+| `regen_gunheavy_eval_plots.py [--eps\|--pdf]` | evaluation plots | `eval_predictions.npz` |
+| `regen_gunheavy_train_plots.py [--eps\|--pdf]` | training ROC / score / efficiency | `val/test_predictions.csv` |
+| `regen_gunheavy_mass.py [--eps]` | training mass plots, 0–60 GeV | `test_predictions.csv` |
+| `regen_mreg_eval.py [--eps] [--dpi N] <campaign>` | full mreg plot set | `val/test_predictions.csv` |
+| `regen_pgun_plots.py [--eps]` | mreg particle-gun plots | `pgun_predictions.npz` |
+
+The shared plot helpers honor a `PLOT_EXT` module variable (`.png` by default).
+
+### Notes for reading the plots
+- The training-time efficiency plot sets its threshold on the training test split background
+  (SC ET ≥ training cut). The 20 GeV evaluation sets it on the inclusive background. The
+  inclusive background contains low-ET W/Z that a pt100 model never saw, so its threshold is higher
+  and every ET bin shows lower efficiency. At the same threshold the two agree.
+- The `roc_test.png` written during training uses unit weights, so it matches `roc_test_unw.png`.
+  The training loss itself is weighted.
+
+---
+
+## 7. Campaigns
+
+| Campaign | Signal | Data | Cuts | Notes |
+|---|---|---|---|---|
+| `gunheavy_v1` | `particle_gun_heavy` | MiniAOD (32x32) | pt 50 / 100 / 200 × {eb, ee_es, ee_noes} | λ = 1.0, trained and evaluated |
+| `gunheavy_v2`–`v5` | `particle_gun_heavy` | MiniAOD | pt 50 / 100 × {eb, ee_es, ee_noes} | λ scan: 0.5, 0.1, 0.05, 0.01 |
+| `dr03_v1` | `HToEleEle_dr03` | MiniAOD_cropped (48x48) | pt 50 × {eb, ee_es, ee_noes} | `IMAGE_TILE_SIZE=768`, batch 8 |
+| `mreg_v1`–`v5` | H → AA (discrete masses) | MiniAOD / AOD | pt 50 | earlier multi-task campaign (image, track, cross) |
+
+Run outputs are in `/eos/user/y/yeo/4l/runs/<campaign>/`, evaluation in `runs/<campaign>_eval/`.
+History of earlier versions: [`docs/run-versions.md`](docs/run-versions.md).
+
+---
+
+## 8. Environment
 
 ```bash
-./.venv/bin/python train_resnet_image_classifier.py \
-  --detector ee \
-  --weight-h5 outputs/test_event_background_1M_sep/event_level_weights.h5 \
-  --output-dir outputs/train_resnet_ee \
-  --model resnet18 \
-  --epochs 20 \
-  --batch-size 16 \
-  --lr 1e-4 \
-  --weight-decay 1e-4 \
-  --num-workers 4 \
-  --monitor auc \
-  --patience 5
+set +u
+source /cvmfs/sft.cern.ch/lcg/views/LCG_109_cuda/x86_64-el9-gcc13-opt/setup.sh
+set -u
+export HDF5_USE_FILE_LOCKING=FALSE
+export TORCHDYNAMO_DISABLE=1
 ```
 
-If you want a larger model:
-
-```bash
-./.venv/bin/python train_resnet_image_classifier.py \
-  --detector ee \
-  --weight-h5 outputs/test_event_background_1M_sep/event_level_weights.h5 \
-  --output-dir outputs/train_resnet_ee_r34 \
-  --model resnet34 \
-  --epochs 30 \
-  --batch-size 16 \
-  --lr 1e-4 \
-  --weight-decay 1e-4 \
-  --num-workers 4 \
-  --monitor auc \
-  --patience 5
-```
-
-Or:
-
-```bash
-./.venv/bin/python train_resnet_image_classifier.py \
-  --detector ee \
-  --weight-h5 outputs/test_event_background_1M_sep/event_level_weights.h5 \
-  --output-dir outputs/train_resnet_ee_r50 \
-  --model resnet50 \
-  --epochs 30 \
-  --batch-size 8 \
-  --lr 1e-4 \
-  --weight-decay 1e-4 \
-  --num-workers 4 \
-  --monitor auc \
-  --patience 5
-```
-
-### 4. Optional smoke test
-
-Use this only to confirm the pipeline works before a full training run.
-
-EB:
-
-```bash
-./.venv/bin/python train_resnet_image_classifier.py \
-  --detector eb \
-  --weight-h5 outputs/test_event_background_1M_sep/event_level_weights.h5 \
-  --output-dir outputs/debug_resnet_eb_sep \
-  --epochs 1 \
-  --batch-size 2 \
-  --debug \
-  --debug-max-events-per-sample 12
-```
-
-EE:
-
-```bash
-./.venv/bin/python train_resnet_image_classifier.py \
-  --detector ee \
-  --weight-h5 outputs/test_event_background_1M_sep/event_level_weights.h5 \
-  --output-dir outputs/debug_resnet_ee_sep \
-  --epochs 1 \
-  --batch-size 2 \
-  --debug \
-  --debug-max-events-per-sample 12
-```
-
-## Output of `build_event_level_weights.py`
-
-The script writes:
-
-- `event_level_weights.h5`
-- `sample_event_bin_summary.csv`
-- `file_event_summary.csv`
-- `config.json`
-
-### `event_level_weights.h5`
-
-Top-level structure:
-
-```text
-event_level_weights.h5
-  sample_summary/
-    event/
-      <sample_id>/
-    eb/
-      <sample_id>/
-    ee/
-      <sample_id>/
-  files/
-    W/
-      <stem>/
-    Z/
-      <stem>/
-    signal/
-      <stem>/
-```
-
-Inside `sample_summary/<case>/<sample_id>/`:
-
-- `event_bin_counts`
-- `event_bin_weight_sums`
-- `event_weight_lookup`
-
-Inside `files/<split>/<stem>/`:
-
-- `event_pt`
-- `event_pt_bin`
-- `event_selected_mask`
-- `event_weight`
-- `A_weight_duplicate`
-- `A_weight_split`
-- `EB_event_selected_mask`
-- `EB_event_weight`
-- `EB_weight_duplicate`
-- `EB_weight_split`
-- `EE_event_selected_mask`
-- `EE_event_weight`
-- `EE_weight_duplicate`
-- `EE_weight_split`
-
-Key meaning:
-
-- `duplicate` means the event weight is copied to every object in that collection.
-- `split` means the event weight is divided equally among the objects in that collection for that event.
-
-For the current classifier code, `split` is the correct choice.
-
-### `sample_event_bin_summary.csv`
-
-One row per:
-
-- balancing case: `event`, `EB`, or `EE`
-- sample
-- pT bin
-
-Columns:
-
-- `case`
-- `sample_id`
-- `bin_index`
-- `pt_low`
-- `pt_high`
-- `event_count`
-- `event_bin_weight_sum`
-- `per_event_weight`
-
-### `file_event_summary.csv`
-
-One row per input HDF5 file.
-
-Columns include:
-
-- `selected_events`
-- `selected_eb_events`
-- `selected_ee_events`
-- `n_a`
-- `n_eb`
-- `n_ee`
-
-### `config.json`
-
-Stores:
-
-- pT bin edges
-- sample IDs
-- selected background size
-- available balanced cases
-- default classifier weight keys
-
-## Output of `train_resnet_image_classifier.py`
-
-Each run writes to the directory passed by `--output-dir`.
-
-Typical files:
-
-- `best_model.pt`
-- `run_config.json`
-- `manifest_summary.json`
-- `history.json`
-- `training_history.png`
-- `test_metrics.json`
-- `val_predictions.csv`
-- `test_predictions.csv`
-- `roc_test.png`
-- `score_distribution_test.png`
-- `efficiency_vs_pt_test.json`
-- `efficiency_vs_pt_test.png`
-
-### What the classifier does
-
-- reads the weight sidecar and raw HDF5 paths from `event_level_weights.h5`
-- picks `EB_weight_split` or `EE_weight_split` by default
-- builds event-level train/val/test splits per sample
-- rescales object weights inside each split so `background` and `all signal combined` have the same total weight sum
-- converts sparse detector data into dense `512 x 512` images
-- trains a binary classifier with weighted BCE loss
-- chooses the operating threshold from the validation set
-- evaluates weighted AUC and weighted F1 on the test set
-- saves `val_predictions.csv` and `test_predictions.csv` from the best checkpoint for downstream fusion
-
-### Important training options
-
-- `--detector`
-  Must be `eb` or `ee`. Train them in separate runs.
-- `--model`
-  Chooses the classifier backbone: `resnet18`, `resnet34`, or `resnet50`.
-- `--epochs`
-  Maximum number of epochs. Training can stop earlier because of early stopping.
-- `--batch-size`
-  Increase this if GPU memory allows. For `resnet50`, a smaller batch size is usually safer.
-- `--num-workers`
-  Data loading workers. Start with `4` if multiprocessing is available. In restricted environments, the script now falls back automatically to `0`.
-- `--monitor`
-  Early stopping metric. `auc` is the current default and usually the better first choice.
-- `--patience`
-  Number of epochs without improvement before stopping.
-- `--disable-log-scale`
-  Turns off `log1p` preprocessing for detector channels. Leave this off unless you want an explicit comparison.
-- `--threshold-mode`
-  Threshold choice on validation set. Default is `max-f1`.
-- `--weight-key`
-  Override the weight dataset in the sidecar. Normally leave this unset so the script uses `EB_weight_split` or `EE_weight_split`.
-- `--debug`
-  Only for smoke tests. Do not use it for real training.
-
-### How to choose a model
-
-- Start with `resnet18` if you want the simplest stable baseline.
-- Use `resnet34` if you want more capacity and training time is acceptable.
-- Use `resnet50` only if your GPU memory is large enough and you want the heaviest backbone currently supported.
-
-### Training behavior
-
-- The script automatically uses `cuda` if available, otherwise it runs on CPU.
-- If PyTorch multiprocessing is blocked by the environment, the script automatically falls back to `num_workers=0` instead of crashing.
-- The script now caps raw HDF5 handles per dataset worker and uses PyTorch `file_system` sharing when available to reduce file-descriptor pressure.
-- The script saves the best checkpoint to `best_model.pt` according to `--monitor`.
-- The script does not currently support resume-from-checkpoint training. Each run starts from scratch in a new output directory.
-- Train, validation, and test splits are created per sample, not globally across all objects.
-- After each split manifest is built, the trainer renormalizes weights so the total `background` weight equals the total `signal` weight in that split while preserving relative weights inside each class.
-
-### Detector channels
-
-For `EB`, the image has 4 channels:
-
-- `SC_energy`
-- `EB_track_pt_Lost`
-- `EB_track_pt_PF`
-- `EB_track_pt_GSF`
-
-For `EE`, the image has 6 channels:
-
-- `EE_seed_energy`
-- `ES_seed_plane1_energy`
-- `ES_seed_plane2_energy`
-- `EE_track_pt_Lost`
-- `EE_track_pt_PF`
-- `EE_track_pt_GSF`
-
-Sparse track features are expanded into dense `512 x 512` maps.
-
-## Track Point-Cloud Transformer
-
-`train_point_transformer_track_classifier.py` is the track-only branch. It uses the same object manifests, the same event-level split logic, and the same detector-specific weights as the image trainer.
-
-### Point-cloud definition
-
-For each `EB` or `EE` object, the script reads:
-
-- `*_track_pt_GSF_idx` and `*_track_pt_GSF_val`
-- `*_track_pt_PF_idx` and `*_track_pt_PF_val`
-- `*_track_pt_Lost_idx` and `*_track_pt_Lost_val`
-
-where `*` is `EB` or `EE`.
-
-Each sparse track entry becomes one point with 6 input features:
-
-1. `x`
-   Derived from `flat_idx % 512`, then normalized to `[-1, 1]`.
-2. `y`
-   Derived from `flat_idx // 512`, then normalized to `[-1, 1]`.
-3. `track_pt_feature`
-   By default `log1p(pT)`. Use `--disable-log-track-pt` to switch to raw `pT`.
-4. `is_gsf`
-5. `is_pf`
-6. `is_lost`
-
-So the track branch does not train three separate models for `GSF`, `PF`, and `Lost`. It trains one model on one merged point cloud and lets the one-hot type bits tell the model which track family each point belongs to.
-
-### Track truncation
-
-- The default `--max-points` is `16`.
-- If an object has more than `--max-points` total track points, the script keeps the highest-`pT` points.
-- Empty point clouds are allowed. In that case the transformer still sees its learned class token, so inference does not crash.
-
-### Track model architecture
-
-The track model is a small point-cloud transformer:
-
-- linear projection from 6 input features to `--embed-dim`
-- learned class token
-- `--depth` transformer encoder blocks
-- `--num-heads` attention heads per block
-- MLP expansion controlled by `--mlp-ratio`
-- final MLP head that outputs one logit
-
-The default configuration is:
-
-- `--embed-dim 128`
-- `--depth 4`
-- `--num-heads 4`
-- `--mlp-ratio 4.0`
-- `--dropout 0.1`
-
-### What the track trainer writes
-
-Each run directory contains:
-
-- `best_model.pt`
-- `run_config.json`
-- `manifest_summary.json`
-- `history.json`
-- `training_history.png`
-- `test_metrics.json`
-- `val_predictions.csv`
-- `test_predictions.csv`
-- `roc_test.png`
-- `score_distribution_test.png`
-- `efficiency_vs_pt_test.json`
-- `efficiency_vs_pt_test.png`
-
-The track prediction CSVs include the usual object identifiers plus:
-
-- `n_gsf`
-- `n_pf`
-- `n_lost`
-- `sum_pt_gsf`
-- `sum_pt_pf`
-- `sum_pt_lost`
-
-These extra fields are later reused by the fusion step.
-
-### Train the track branch
-
-Example full training:
-
-```bash
-./.venv/bin/python train_point_transformer_track_classifier.py \
-  --detector eb \
-  --weight-h5 outputs/test_event_background_1M_sep/event_level_weights.h5 \
-  --output-dir outputs/train_point_transformer_eb \
-  --epochs 20 \
-  --batch-size 64 \
-  --num-workers 4
-
-./.venv/bin/python train_point_transformer_track_classifier.py \
-  --detector ee \
-  --weight-h5 outputs/test_event_background_1M_sep/event_level_weights.h5 \
-  --output-dir outputs/train_point_transformer_ee \
-  --epochs 20 \
-  --batch-size 64 \
-  --num-workers 4
-```
-
-Example smoke test:
-
-```bash
-./.venv/bin/python train_point_transformer_track_classifier.py \
-  --detector eb \
-  --weight-h5 outputs/test_event_background_1M_sep/event_level_weights.h5 \
-  --output-dir outputs/debug_point_transformer_eb_sep \
-  --epochs 1 \
-  --batch-size 4 \
-  --debug \
-  --debug-max-events-per-sample 12
-```
-
-### Important track options
-
-- `--max-points`
-  Maximum number of merged track points kept per object.
-- `--disable-log-track-pt`
-  Uses raw `pT` instead of `log1p(pT)`.
-- `--embed-dim`, `--depth`, `--num-heads`, `--mlp-ratio`, `--dropout`
-  Transformer architecture controls.
-- `--monitor`
-  Early stopping metric, same meaning as in the image trainer.
-- `--threshold-mode`
-  Validation rule used to choose the final operating point.
-
-## Image + Track Stacking Ensemble
-
-The current fusion workflow is a holdout baseline.
-
-That means:
-
-- the image model is trained once on the `train` split
-- the track model is trained once on the `train` split
-- the stacker is trained on `val_predictions.csv`
-- the final score is reported on `test_predictions.csv`
-
-This is intentionally different from OOF stacking. OOF would require repeated fold-wise base-model training and is not the current implementation in this repository.
-
-`train_fusion_ensemble.py` is the fusion step. It does not train the base models from scratch. Instead it takes:
-
-- one completed image run directory from `train_resnet_image_classifier.py`
-- one completed track run directory from `train_point_transformer_track_classifier.py`
-
-and then:
-
-1. verifies that both runs use the same detector, weight sidecar, split seed, split fractions, and debug settings
-2. reads `val_predictions.csv` and `test_predictions.csv` from both run directories by default
-3. aligns image and track predictions by `file_idx`, `object_idx`, and `event_idx`
-4. trains a weighted logistic-regression stacking model on the `val` split
-5. applies the fitted fusion model to the `test` split
-
-If saved CSVs are unavailable, the script can still fall back to raw-data rescoring.
-
-### Fusion features
-
-The stacking model uses 8 features:
-
-1. `image_logit`
-2. `track_logit`
-3. `log1p_n_gsf`
-4. `log1p_n_pf`
-5. `log1p_n_lost`
-6. `log1p_sum_pt_gsf`
-7. `log1p_sum_pt_pf`
-8. `log1p_sum_pt_lost`
-
-The script standardizes these features and fits a weighted `LogisticRegression` model from `scikit-learn`.
-
-### Why the fusion is trained on validation, not test
-
-The ensemble weights must be learned on a split that is separate from the final test set. That is why the script uses:
-
-- `val` to fit the logistic-regression stacker and choose the final threshold
-- `test` only for the final reported performance
-
-This avoids leaking test information into the ensemble coefficients.
-
-### Why the current baseline does not train the stacker on `train`
-
-The current baseline uses holdout stacking, not OOF stacking.
-
-- the large `train` split is already used to fit the two base models
-- the stacker is deliberately trained on `val`, where the base-model predictions come from samples that were not used to fit those base models
-- this keeps the baseline simple and leakage-safe
-
-If you want to use more data for the stacker later, that is the point where an OOF pipeline becomes useful.
-
-### Prediction sources
-
-`train_fusion_ensemble.py` supports three modes:
-
-- `--prediction-source csv`
-  Use saved `val_predictions.csv` and `test_predictions.csv`.
-- `--prediction-source auto`
-  Use CSVs if present, otherwise fall back to rescoring from raw HDF5.
-- `--prediction-source rescore`
-  Force raw-data rescoring even if CSVs exist.
-
-For the holdout baseline, `csv` is usually the preferred choice because it avoids an extra full pass over the raw detector files.
-
-### Run the ensemble
-
-Example:
-
-```bash
-./.venv/bin/python train_fusion_ensemble.py \
-  --image-run-dir outputs/train_resnet_eb \
-  --track-run-dir outputs/train_point_transformer_eb \
-  --output-dir outputs/fusion_eb \
-  --prediction-source csv
-
-./.venv/bin/python train_fusion_ensemble.py \
-  --image-run-dir outputs/train_resnet_ee \
-  --track-run-dir outputs/train_point_transformer_ee \
-  --output-dir outputs/fusion_ee \
-  --prediction-source csv
-```
-
-Example smoke test:
-
-```bash
-./.venv/bin/python train_fusion_ensemble.py \
-  --image-run-dir outputs/debug_resnet_eb_sep_csv \
-  --track-run-dir outputs/debug_point_transformer_eb_sep \
-  --output-dir outputs/debug_fusion_eb_csv \
-  --prediction-source csv
-```
-
-### What the ensemble writes
-
-- `run_config.json`
-- `manifest_summary.json`
-- `stacking_coefficients.json`
-- `test_metrics.json`
-- `val_predictions.csv`
-- `test_predictions.csv`
-- `roc_test.png`
-- `score_distribution_test.png`
-- `efficiency_vs_pt_test.json`
-- `efficiency_vs_pt_test.png`
-
-`stacking_coefficients.json` records:
-
-- the feature names
-- the fitted logistic-regression coefficients
-- the intercept
-- the mean and scale used by the `StandardScaler`
-
-### Required CSV files for holdout stacking
-
-The CSV-driven holdout baseline expects:
-
-- image run:
-  - `val_predictions.csv`
-  - `test_predictions.csv`
-- track run:
-  - `val_predictions.csv`
-  - `test_predictions.csv`
-
-The track trainer already writes both files. The image trainer now also writes both files from the best checkpoint.
-
-### Important ensemble requirement
-
-The image and track runs must be compatible. In practice that means:
-
-- same `--detector`
-- same `--weight-h5`
-- same `--weight-key`
-- same `--seed`
-- same `--train-frac`
-- same `--val-frac`
-- same `--debug`
-- same `--debug-max-events-per-sample`
-
-If these do not match, the script stops instead of silently combining mismatched models.
-
-## Optional: Build A-level pT weights
-
-`build_sample_pt_weights.py` is separate from the detector classifier workflow.
-
-Use it if you want a sidecar for `A_pT` entries themselves.
-
-Example:
-
-```bash
-./.venv/bin/python build_sample_pt_weights.py \
-  --input-dir /home/eoyun/data/260616_v2_Mini \
-  --output-dir outputs/test_background_1M \
-  --background-max-entries 100000
-```
-
-This writes:
-
-- `A_pT_weights.h5`
-- `sample_bin_summary.csv`
-- `file_summary.csv`
-- `config.json`
-
-This script does not create detector-separated `EB` and `EE` weights.
-
-## Legacy Regression Workflow
-
-The following files are older and are not part of the new detector-separated classifier pipeline:
-
-- `train_regression.py`
-- `test_regression.py`
-- `torch_resnet_concat.py`
-
-Important limitations:
-
-- they use a different HDF5 schema
-- they expect datasets like `all_jet`, `am`, `iphi`, and `ieta`
-- they rely on hard-coded file paths
-- they write to `MODELS/`, `LOGS/`, and `PLOTS/`
-- they are GPU-oriented and assume `.cuda()` is available
-
-Use them only if you are working with the old mass-regression dataset and are prepared to edit paths manually.
-
-## Common Commands
-
-Rebuild the detector-separated sidecar:
-
-```bash
-./.venv/bin/python build_event_level_weights.py \
-  --input-dir /home/eoyun/data/260616_v2_Mini \
-  --output-dir outputs/test_event_background_1M_sep \
-  --background-max-events 100000
-```
-
-Run full training:
-
-```bash
-./.venv/bin/python train_resnet_image_classifier.py \
-  --detector eb \
-  --weight-h5 outputs/test_event_background_1M_sep/event_level_weights.h5 \
-  --output-dir outputs/train_resnet_eb \
-  --model resnet18 \
-  --epochs 20 --batch-size 16 --num-workers 4
-
-./.venv/bin/python train_resnet_image_classifier.py \
-  --detector ee \
-  --weight-h5 outputs/test_event_background_1M_sep/event_level_weights.h5 \
-  --output-dir outputs/train_resnet_ee \
-  --model resnet18 \
-  --epochs 20 --batch-size 16 --num-workers 4
-
-./.venv/bin/python train_point_transformer_track_classifier.py \
-  --detector eb \
-  --weight-h5 outputs/test_event_background_1M_sep/event_level_weights.h5 \
-  --output-dir outputs/train_point_transformer_eb \
-  --epochs 20 --batch-size 64 --num-workers 4
-
-./.venv/bin/python train_point_transformer_track_classifier.py \
-  --detector ee \
-  --weight-h5 outputs/test_event_background_1M_sep/event_level_weights.h5 \
-  --output-dir outputs/train_point_transformer_ee \
-  --epochs 20 --batch-size 64 --num-workers 4
-
-./.venv/bin/python train_fusion_ensemble.py \
-  --image-run-dir outputs/train_resnet_eb \
-  --track-run-dir outputs/train_point_transformer_eb \
-  --output-dir outputs/fusion_eb \
-  --prediction-source csv
-
-./.venv/bin/python train_fusion_ensemble.py \
-  --image-run-dir outputs/train_resnet_ee \
-  --track-run-dir outputs/train_point_transformer_ee \
-  --output-dir outputs/fusion_ee \
-  --prediction-source csv
-```
-
-Run the full holdout baseline pipeline with one shell command:
-
-```bash
-./run_holdout_fusion_pipeline.sh \
-  --detector eb \
-  --weight-h5 outputs/test_event_background_1M_sep/event_level_weights.h5 \
-  --output-root outputs/holdout_eb \
-  --epochs 20 \
-  --num-workers 4 \
-  --prediction-source csv
-```
-
-What the shell script does:
-
-1. trains the image model
-2. trains the track model
-3. runs the fusion step on the resulting run directories
-
-Output directories created under `--output-root`:
-
-- `image_<detector>`
-- `track_<detector>`
-- `fusion_<detector>`
-
-Run smoke tests:
-
-```bash
-./.venv/bin/python train_resnet_image_classifier.py \
-  --detector eb \
-  --weight-h5 outputs/test_event_background_1M_sep/event_level_weights.h5 \
-  --output-dir outputs/debug_resnet_eb_sep_csv \
-  --epochs 1 --batch-size 2 --debug --debug-max-events-per-sample 12
-
-./.venv/bin/python train_resnet_image_classifier.py \
-  --detector ee \
-  --weight-h5 outputs/test_event_background_1M_sep/event_level_weights.h5 \
-  --output-dir outputs/debug_resnet_ee_sep_csv \
-  --epochs 1 --batch-size 2 --debug --debug-max-events-per-sample 12
-
-./.venv/bin/python train_point_transformer_track_classifier.py \
-  --detector eb \
-  --weight-h5 outputs/test_event_background_1M_sep/event_level_weights.h5 \
-  --output-dir outputs/debug_point_transformer_eb_sep \
-  --epochs 1 --batch-size 4 --debug --debug-max-events-per-sample 12
-
-./.venv/bin/python train_fusion_ensemble.py \
-  --image-run-dir outputs/debug_resnet_eb_sep_csv \
-  --track-run-dir outputs/debug_point_transformer_eb_sep \
-  --output-dir outputs/debug_fusion_eb_csv \
-  --prediction-source csv
-
-./run_holdout_fusion_pipeline.sh \
-  --detector eb \
-  --weight-h5 outputs/test_event_background_1M_sep/event_level_weights.h5 \
-  --output-root outputs/debug_holdout_eb \
-  --epochs 1 \
-  --image-batch-size 2 \
-  --track-batch-size 4 \
-  --debug \
-  --prediction-source csv
-```
-
-## Troubleshooting
-
-- If `python` is not found, use `./.venv/bin/python`.
-- If plots fail with a Matplotlib config permission warning, set `MPLCONFIGDIR=/tmp/matplotlib`.
-- If `num_workers > 0` is not allowed on your machine, the training script now falls back automatically to `num_workers=0`.
-- If you hit `OSError: [Errno 24] Too many open files`, update to the latest script and, if needed, reduce `--num-workers` first.
-- If training is slow, reduce `--batch-size`, reduce `--num-workers`, or start with `--debug`.
-- If a sample has no entries in a detector case, the weight builder will raise an error because equal per-sample balancing is impossible for that case.
-- If you want to override the default weight dataset in the classifier, use `--weight-key`.
-- If the fusion script reports incompatible runs, retrain one branch so the image and track models share the same split settings.
-- If `--prediction-source csv` fails, check that both the image and track run directories contain `val_predictions.csv` and `test_predictions.csv`.
-
-## Verified Example Outputs in This Workspace
-
-These outputs were generated successfully in this directory:
-
-- `outputs/test_event_background_1M_sep/`
-- `outputs/debug_resnet_eb_sep/`
-- `outputs/debug_resnet_ee_sep/`
-- `outputs/debug_point_transformer_eb_sep/`
-- `outputs/debug_fusion_eb_sep/`
-
-The detector-separated sidecar was verified so that, for every sample:
-
-- total weight sum is `1.0` in the `event` case
-- total weight sum is `1.0` in the `EB` case
-- total weight sum is `1.0` in the `EE` case
-- non-empty pT bins inside each case have equal total weight sum
+The system `python3` is too old; always use the LCG view.
+
+---
+
+## 9. Known issues
+
+- **Corrupt files in `MiniAOD_cropped/W` and `/Z`** (about 20 truncated or with broken HDF5 headers).
+  The weight builders skip them. Regenerate them if full background statistics are needed.
+- **EOS quota**: checkpoints are the largest consumer. Delete `last.pt` from finished runs if the
+  quota is reached (`errno 122` / `[3021]`).
+- **EE compact memory**: worker results can pile up in memory; raise `request_memory` or lower `--workers`.
+- **Login-node GPU** is shared with other users; jobs there can be very slow. Use Condor.
+- The evaluation sample builder (`build_category_weights_gun_eval.py`) still has `particle_gun_heavy`
+  hardcoded as the gun class; it needs a signal-directory option before evaluating dr03.
+
+---
+
+## 10. Further documentation
+
+| File | Content |
+|---|---|
+| [`docs/cross-attention-logic.md`](docs/cross-attention-logic.md) | Cross-attention model logic |
+| [`docs/gunheavy-model-code-review.md`](docs/gunheavy-model-code-review.md) | Line-by-line model review |
+| [`docs/gunheavy-pipeline-code-review.md`](docs/gunheavy-pipeline-code-review.md) | Line-by-line data pipeline review |
+| [`docs/cross_attention_model.md`](docs/cross_attention_model.md) | Original single-task cross-attention classifier |
+| [`docs/dataset-structure.md`](docs/dataset-structure.md) | Raw HDF5 schema |
+| [`docs/PROJECT_HANDOFF.md`](docs/PROJECT_HANDOFF.md) | Project handoff notes |
+| [`docs/run-versions.md`](docs/run-versions.md) | Run version history |
+| [`docs/README_legacy.md`](docs/README_legacy.md) | Previous README |
