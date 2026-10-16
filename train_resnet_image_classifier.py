@@ -210,16 +210,23 @@ def configure_torch_multiprocessing():
         return None
 
 
-def repeat_to_512(arr: np.ndarray):
+# Common square size that every channel (calo, ES planes, sparse tracks) is tiled to
+# before stacking into the multi-channel image. 512 for the 32x32 crops; set env
+# IMAGE_TILE_SIZE=768 for the 48x48 cropped data (LCM of 48,24,768). Must be divisible
+# by every channel's H and W.
+IMAGE_TILE_SIZE = int(os.environ.get("IMAGE_TILE_SIZE", "512"))
+
+
+def tile_to_square(arr: np.ndarray, size: int = None):
+    size = IMAGE_TILE_SIZE if size is None else size
     h, w = arr.shape
-    if 512 % h != 0 or 512 % w != 0:
-        raise ValueError(f"Cannot tile shape {arr.shape} exactly to 512x512.")
-    rep_h = 512 // h
-    rep_w = 512 // w
-    return np.repeat(np.repeat(arr, rep_h, axis=0), rep_w, axis=1)
+    if size % h != 0 or size % w != 0:
+        raise ValueError(f"Cannot tile shape {arr.shape} exactly to {size}x{size}.")
+    return np.repeat(np.repeat(arr, size // h, axis=0), size // w, axis=1)
 
 
-def sparse_to_dense(flat_idx, values, size=512):
+def sparse_to_dense(flat_idx, values, size=None):
+    size = IMAGE_TILE_SIZE if size is None else size
     dense = np.zeros((size, size), dtype=np.float32)
     idx = np.asarray(flat_idx, dtype=np.int64)
     val = np.asarray(values, dtype=np.float32)
@@ -684,7 +691,7 @@ class DetectorObjectDataset(Dataset):
         channels = []
         for kind, key in self.channel_keys:
             if kind in ("calo", "es"):
-                channels.append(repeat_to_512(raw[key][obj_idx]))
+                channels.append(tile_to_square(raw[key][obj_idx]))
             else:  # track: key is the "{PREFIX}_track_pt_{TYPE}" stem
                 channels.append(sparse_to_dense(raw[f"{key}_idx"][obj_idx],
                                                 raw[f"{key}_val"][obj_idx]))

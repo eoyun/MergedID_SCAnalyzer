@@ -235,11 +235,16 @@ def parse_args():
     p.add_argument("--background-max-objects", type=int, default=1_000_000, help="-1 = keep all")
     p.add_argument("--seed", type=int, default=1234)
     p.add_argument("--workers", type=int, default=16)
+    p.add_argument("--signal-dir", default="particle_gun_heavy",
+                   help="signal subdirectory name (W,Z are background); e.g. HToEleEle_dr03")
     return p.parse_args()
 
 
 def main():
     a = parse_args()
+    global SIGNAL_DIR, SPLITS
+    SIGNAL_DIR = a.signal_dir
+    SPLITS = ("W", "Z", SIGNAL_DIR)
     bmax = None if a.background_max_objects is not None and a.background_max_objects < 0 else a.background_max_objects
     build(a.input_dir, a.output_path, a.pt_min, bmax, a.seed, a.workers)
 
